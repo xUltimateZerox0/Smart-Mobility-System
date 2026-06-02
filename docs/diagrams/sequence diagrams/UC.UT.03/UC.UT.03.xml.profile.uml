@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Profile name="UC_UT_03_profile" xmi:id="J56C8nmD.AACAQpr_profile" xmi:version="2.1" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/2.0.0/UML" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+	<packageImport xmi:id="J56C8nmD.AACAQpr_profile_UMLMetaModel">
+		<importedPackage href="pathmap://UML_METAMODELS/UML.metamodel.uml#_0" xmi:type="uml:Model"/>
+	</packageImport>
+	<eAnnotations source="http://www.eclipse.org/uml2/2.0.0/UML" xmi:id="J56C8nmD.AACAQpr_profile_definition">
+		<contents name="UC_UT_03_profile" nsPrefix="UC_UT_03_profile" nsURI="http:///schemas/UC_UT_03_profile/0" xmi:id="J56C8nmD.AACAQpr_content" xmi:type="ecore:EPackage">
+			<eClassifiers name="elementGroup" xmi:id=".0piCnmD.AACARXc_classifier" xmi:type="ecore:EClass">
+				<eAnnotations references=".0piCnmD.AACARXc" source="http://www.eclipse.org/uml2/2.0.0/UML" xmi:id=".0piCnmD.AACARXc_annotation"/>
+				<eStructuralFeatures lowerBound="1" name="base_SysMLElementGroup" ordered="false" xmi:id=".0piCnmD.AACARXc_structuralFeature" xmi:type="ecore:EReference">
+					<eType href="http://www.eclipse.org/uml2/2.0.0/UML#//SysMLElementGroup" xmi:type="ecore:EClass"/>
+				</eStructuralFeatures>
+			</eClassifiers>
+		</contents>
+	</eAnnotations>
+	<packagedElement name="elementGroup" xmi:id=".0piCnmD.AACARXc" xmi:type="uml:Stereotype">
+		<ownedAttribute association=".0piCnmD.AACARXc_extension" name="base_SysMLElementGroup" xmi:id=".0piCnmD.AACARXc_to">
+			<type href="pathmap://UML_METAMODELS/UML.metamodel.uml#SysMLElementGroup" xmi:type="uml:Class"/>
+		</ownedAttribute>
+	</packagedElement>
+	<packagedElement memberEnd=".0piCnmD.AACARXc_from .0piCnmD.AACARXc_to" name="SysMLElementGroup_elementGroup" xmi:id=".0piCnmD.AACARXc_extension" xmi:type="uml:Extension">
+		<ownedEnd aggregation="composite" association=".0piCnmD.AACARXc_extension" type=".0piCnmD.AACARXc" xmi:id=".0piCnmD.AACARXc_from" xmi:type="uml:ExtensionEnd"/>
+	</packagedElement>
+</uml:Profile>
