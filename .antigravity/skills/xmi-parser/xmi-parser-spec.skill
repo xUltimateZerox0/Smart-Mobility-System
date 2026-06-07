@@ -21,10 +21,9 @@ Devi dedurre la logica mancante partendo dalle interazioni del diagramma in modo
    - È OBBLIGATORIO includere tutti i passaggi di transizione di stato, compresi quelli UI/UX impliciti.
    - Regola ferrea: Un'azione dell'utente NON PUÒ avvenire se il sistema non ha prima esposto l'interfaccia o l'opzione.
    - Esempio corretto: "1. Il sistema renderizza la view di Login -> 2. L'utente compila i campi -> 3. L'utente clicca 'Invia'".
-3. REQUISITO DELLE CONDIZIONI BINARIE (PRE/POST): Le Precondizioni e le Postcondizioni DEVONO essere espresse in formato strettamente BINARIO (Booleano) o tramite validazione di stato verificabile a livello di codice.
-   - Formato obbligatorio: [Entità].[Stato] == [Valore]
-   - Esempi ammessi: `UserSession.isValid == True`, `Database.UserRecord.exists == False`, `Network.isConnected == True`.
-   - Esempi vietati: "L'utente ha effettuato l'accesso", "Il sistema è pronto".
+3. REQUISITO DELLE CONDIZIONI BINARIE (PRE/POST): Le Precondizioni e le Postcondizioni DEVONO essere strettamente verificabili o validabili a livello di stato verificabile a livello di codice.
+   - Esempi ammessi: `L'utente ha effettuato l'accesso' 'Il mezzo è stato 
+   - Esempi vietati: "L'utente ha pianificato una corsa", "Il sistema è pronto".
 4. OBBLIGO DI TRACCIABILITÀ: Qualsiasi logica, stato o passaggio DEDOTTO e non estratto letteralmente dall'XMI, DEVE essere preceduto dal prefisso **[INFERRED]**.
 </CONTROLLED_INFERENCE_POLICY>
 
@@ -65,8 +64,9 @@ Breve descrizione: [Obiettivo dell'interazione]
 Attori principali: [Elenco degli Actor]
 
 Precondizioni:
-    - [Entità].[Stato] == [Valore Booleano/Binario]
-    - [Entità].[Stato] == [Valore Booleano/Binario]
+    - [Precondizione : es L'utente è loggato]
+    - [Precondizione : es L'utente ha avviato la corsa]
+    - [Precondizione : es Il mezzo è disponibile]
     
 Flusso principale:
     1. [Step UI/Sistema: es. Il sistema renderizza la View X]
@@ -79,7 +79,9 @@ Flussi alternativi:
         2. [Step UI/Sistema: es. Renderizza feedback visivo di errore]
         
 Postcondizioni:
-    - [Entità].[Stato] == [Valore Booleano/Binario]
+    - [Postcondizione: es L'utente effettua il pagamento]
+    - [Postcondizione: es L'utente effettua il log out]
+    - [Postcondizione: es Il mezzo viene bloccato]
     
 Include: [Lista ID/Nomi o "Nessuno"]
 
