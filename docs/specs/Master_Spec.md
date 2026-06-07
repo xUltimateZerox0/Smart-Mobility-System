@@ -72,18 +72,18 @@ Il Component Diagram definisce esplicitamente un'architettura **Model-View-Contr
 │  │ AppPA        │    │ Stat.&Restr. │    │              │          │
 │  │ AppOperSC    │    │ Profilazione │    └──────┬───────┘          │
 │  └──────────────┘    │ Amm. Flotta  │           │                  │
-│                      │              │    ┌──────▼───────┐          │
-│                      │ GestioneCorsa│    │    DBMS      │          │
-│                      │ RicercaMezzi │    │ Conness. Dati│          │
-│                      │ GestorePag.  │    └──────────────┘          │
-│                      └──────┬───────┘                              │
-│                             │                                      │
-│              ┌──────────────┼──────────────┐                       │
-│              ▼              ▼              ▼                       │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐               │
-│  │ServizioMappa │ │Gateway Pagam.│ │  Mezzo: IoT  │               │
-│  │  API Mappa   │ │ API Pagamento│ │ API Controllo│               │
-│  └──────────────┘ └──────────────┘ └──────────────┘               │
+│                      │              │    ┌──────▼───────┐           │
+│                      │ GestioneCorsa│    │    DBMS      │           │
+│                      │ RicercaMezzi │    │ Conness. Dati│           │
+│                      │ GestorePag.  │    └──────────────┘           │
+│                      └──────┬───────┘                               │
+│                             │                                       │
+│              ┌──────────────┼──────────────┐                        │
+│              ▼              ▼              ▼                        │ 
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 │
+│  │ServizioMappa │ │Gateway Pagam.│ │  Mezzo: IoT  │                 │
+│  │  API Mappa   │ │ API Pagamento│ │ API Controllo│                 │
+│  └──────────────┘ └──────────────┘ └──────────────┘                 │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
