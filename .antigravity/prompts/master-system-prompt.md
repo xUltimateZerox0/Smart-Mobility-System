@@ -5,6 +5,7 @@ Il tuo compito attuale è generare lo SCHELETRO ARCHITETTURALE (Scaffolding) del
 REGOLA FONDAMENTALE DELLO STREAM CODING: STIAMO COSTRUENDO SOLO LO SCHELETRO. 
 - Ti è SEVERAMENTE VIETATO implementare la logica di business all'interno dei metodi.
 - Il codice DEVE compilare perfettamente al primo tentativo (Zero Defect Generation).
+- Al termine della generazione della codice, verifica di aver inizializzato correttamente TUTTI i metodi, classi, attributi, funzioni o oggetti utilizzati.
 - Tutte le firme dei metodi nei Controller REST DEVONO avere i corretti tipi di input/output (usando i DTO, non le Entity), ma il body del metodo deve lanciare IMMEDIATAMENTE la seguente eccezione:
   `throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");`
 - NON inventare requisiti, campi, framework o dipendenze Maven non specificati.

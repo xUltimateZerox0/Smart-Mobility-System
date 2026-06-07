@@ -1,9 +1,5 @@
-status: SUCCESS_WITH_INFERENCE
-extractor_version: "3.1-SequenceToUseCase"
-Use Case: Analisi Stato Flotta
-
-```text
-UserStories: [INFERRED] Come Pubblica Amministrazione (PA) voglio monitorare lo stato dei mezzi della flotta e avviare interventi di manutenzione sui veicoli che lo richiedono, affinché il servizio di mobilità rimanga efficiente e sicuro.
+UserStories
+AP.02
 
 Nome
 Analisi Stato Flotta
@@ -53,6 +49,3 @@ Generalizza il caso d'uso
 -
 Requisiti
 Database aggiornato con lo stato operativo di ciascun mezzo della flotta. Sistema di segnalazione per la gestione degli interventi di manutenzione.
-
-
-```

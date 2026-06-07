@@ -1,10 +1,5 @@
-status: SUCCESS_WITH_INFERENCE
-extractor_version: "3.1-SequenceToUseCase"
-Use Case: Moderazione Utenti
-
-```text
-UserStories: [INFERRED] Come operatore del servizio clienti voglio cercare un utente per visualizzarne il report e, se necessario, applicare un'azione correttiva con notifica all'utente interessato.
-
+UserStories
+OP.02, OP.03
 Nome
 Moderazione Utenti
 ID
@@ -50,6 +45,3 @@ Generalizza il caso d'uso
 -
 Requisiti
 Sistema di gestione utenti con report consultabili e modificabili. Meccanismo di notifica asincrona verso l'interfaccia dell'utente (AppUtente) per comunicare le azioni correttive.
-
-
-```
