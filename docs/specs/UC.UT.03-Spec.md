@@ -34,7 +34,12 @@ Flusso principale:
     14. L'applicazione trasmette il comando di avvio al gestore (`avviaCorsa`).
     15. Il gestore invia un comando asincrono di sblocco hardware al mezzo (`sbloccoMezzoFisico`).
     16. Il gestore aggiorna lo stato logico del mezzo impostandolo a in uso (`setStato(in_uso)`).
-    17. Il gestore crea e registra a sistema l'entità della nuova corsa (`creaCorsa`).
+    17. Il gestore crea e registra a siste
+720P
+30 FPS
+Qualità streaming
+IN ONDA
+ma l'entità della nuova corsa (`creaCorsa`).
     18. Il mezzo conferma l'avvenuto sblocco (`true`) e il cambio di stato logico (`void`).
     19. Il gestore conferma l'avvio della corsa all'applicazione (`true`).
     20. [INFERRED] Il sistema inizia un loop di aggiornamento periodico impostato ogni 30 secondi.
