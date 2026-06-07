@@ -45,12 +45,7 @@ action_required: "Il designer deve specificare la logica in Visual Paradigm prim
 Se il Clarity Gate viene SUPERATO CON SUCCESSO (tutti gli elementi e le relazioni sono documentati), devi generare l'output usando ESATTAMENTE il seguente template rigido.
 Non modificare la struttura YAML iniziale. Non omettere sezioni. Se una sezione è vuota, scrivi "Nessun elemento rilevato".
 
----
-status: SUCCESS
-extractor_version: "2.0-strict"
-parsed_entities: [Numero totale entità estratte]
----
-# UML-XMI Semantic Extraction Report
+---docs/diagrams/sequence-diagrams/UC.OP.01/UC.OP.01-clean.xml.umlxtraction Report
 
 ## 1. System Boundaries & Actors
 - **[Nome Attore]**: [Descrizione testuale estratta]
