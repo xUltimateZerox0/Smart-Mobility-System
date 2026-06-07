@@ -1,10 +1,5 @@
-status: SUCCESS_WITH_INFERENCE
-extractor_version: "3.1-SequenceToUseCase"
-Use Case: Gestione Flotta
-
-```text
-UserStories: [INFERRED] Come operatore tecnico voglio accedere alla mappa della flotta per monitorare lo stato dei veicoli e, se necessario, inviare comandi remoti di blocco ai mezzi che richiedono un intervento.
-
+UserStories
+OP.01, OP.04
 Nome: Gestione Flotta
 
 ID: UC.OP.01
@@ -57,4 +52,3 @@ Specializza il caso d'uso: Nessuno
 Generalizza il caso d'uso: Nessuno
 
 Requisiti:Connettività IoT per il comando remoto dei veicoli. Sistema di segnalazione per la gestione dei veicoli non raggiungibili. 
-```

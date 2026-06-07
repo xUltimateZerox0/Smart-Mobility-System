@@ -1,10 +1,5 @@
-status: SUCCESS_WITH_INFERENCE
-extractor_version: "3.1-SequenceToUseCase"
-Use Case: Annullamento Prenotazione da Operatore
-
-```text
-UserStories: [INFERRED] Come operatore del servizio clienti voglio poter visualizzare le prenotazioni attive e annullarne una selezionata, affinché il mezzo venga reso disponibile e l'utente venga notificato dell'annullamento.
-
+UserStories
+OP.05
 Nome
 Amministrazione Prenotazioni
 ID
@@ -57,6 +52,3 @@ Generalizza il caso d'uso
 -
 Requisiti
 Connettività IoT affidabile per il comando remoto di sblocco dei mezzi. Sistema di segnalazione per la gestione dei fallimenti di comunicazione.
-
-
-```

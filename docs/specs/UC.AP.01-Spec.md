@@ -1,13 +1,8 @@
-status: SUCCESS_WITH_INFERENCE
-extractor_version: "3.1-SequenceToUseCase"
-Use Case: Monitoraggio Statistiche e Analisi Tratte
-
-```text
-UserStories: [INFERRED] Come Pubblica Amministrazione (PA) voglio consultare le statistiche delle corse effettuate in un periodo selezionato e scaricare un report, affinché possa analizzare l'utilizzo del servizio di mobilità e pianificare interventi sul territorio.
-
-Nome
+UserStories
+AP.01, AP.03
+Nome 
 Monitoraggio Statistiche e Analisi Tratte
-ID
+ID 
 UC.AP.01
 Breve descrizione
 L'attore PA (Pubblica Amministrazione) seleziona un intervallo temporale di interesse. Il sistema recupera le corse effettuate nel periodo indicato, genera un file di statistiche aggregate e lo presenta all'utente con la possibilità di scaricarlo.
@@ -46,6 +41,3 @@ Generalizza il caso d'uso
 -
 Requisiti
 Disponibilità di dati storici delle corse nel database. Capacità di generazione di file di statistiche aggregate esportabili.
-
-
-```

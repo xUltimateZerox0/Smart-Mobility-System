@@ -1,9 +1,5 @@
-status: SUCCESS_WITH_INFERENCE
-extractor_version: "3.1-SequenceToUseCase"
-Use Case: Restrizioni Geografiche
-
-```text
-UserStories: [INFERRED] Come Amministrazione Pubblica voglio gestire le restrizioni geografiche sulle zone operative della flotta, affinché il servizio di mobilità rispetti le normative vigenti e le limitazioni territoriali.
+UserStories
+AP.04
 
 Nome
 Restrizioni Geografiche
@@ -62,6 +58,3 @@ Generalizza il caso d'uso
 -
 Requisiti
 Sistema di gestione delle zone geografiche con supporto alla verifica dei conflitti tra restrizioni sovrapposte. Visualizzazione cartografica interattiva delle zone operative.
-
-
-```
