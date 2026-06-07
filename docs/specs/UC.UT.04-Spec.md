@@ -1,11 +1,11 @@
 status: SUCCESS_WITH_INFERENCE
 extractor_version: "3.1-SequenceToUseCase"
-Use Case: Calcolo Percorso Corsa
+Use Case: Ottimizzazione Percorso
 
 ```text
 UserStories: [INFERRED] Come utente voglio inserire una destinazione e visualizzare il percorso calcolato sulla mappa, in modo da poter avviare una corsa verso la mia meta.
 
-Nome: Calcolo Percorso Corsa
+Nome: Ottimizzazione Percorso
 
 ID: UC.UT.04
 
