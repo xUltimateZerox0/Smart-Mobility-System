@@ -1,4 +1,4 @@
-[INIZIALIZZAZIONE SISTEMA ANTIGRAVITY]
+[INIZIALIZZAZIONE SISTEMA OPENCODE]
 In allegato trovi il documento system-master-prompt.md.
 Questo file contiene le tue direttive architetturali, il tech stack obbligatorio, il protocollo di Stream Coding e le regole ferree per superare il Quality Gate di SonarQube.
 
