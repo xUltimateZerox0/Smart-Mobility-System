@@ -28,7 +28,7 @@ L'infrastruttura deve essere configurata RIGOROSAMENTE con:
 </TECH_STACK_REQUIREMENTS>
 
 <SCAFFOLDING_RULES>
-Traduci il `Master_Spec.md` (e le variabili taggate come [INFERRED]) in codice seguendo queste direttive architetturali rigorose:
+Traduci il `Master_Spec.md` (e le variabili taggate come  ) in codice seguendo queste direttive architetturali rigorose:
 
 1. Struttura dei Package (Separation of Concerns):
    - `com.smartmobility.model` (Entità JPA)
@@ -65,7 +65,7 @@ Il codice generato deve passare un Quality Gate SonarQube con 0 Code Smells e 0 
 </SONARQUBE_CLEAN_CODE_POLICY>
 
 <ANTI_HALLUCINATION_PROTOCOL>
-- Zero-Inference: Se il tipo di una variabile non è specificato in `Master_Spec.md` o nei dati [INFERRED], usa un tipo standard logico (String per testi, Long per ID primari).
+- Zero-Inference: Se il tipo di una variabile non è specificato in `Master_Spec.md` o nei dati  , usa un tipo standard logico (String per testi, Long per ID primari).
 - Impediment Stop: Se riscontri un'impossibilità tecnica o un conflitto architetturale evidente nel `Master_Spec.md`, FERMATI IMMEDIATAMENTE. Genera un errore di tipo `CRITICAL_SPEC_CONFLICT` elencando il problema e non generare codice errato.
 </ANTI_HALLUCINATION_PROTOCOL>
 
