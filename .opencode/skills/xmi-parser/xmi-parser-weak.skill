@@ -21,7 +21,7 @@ In questa modalità, sei autorizzato a dedurre la logica mancante, ma devi farlo
    - Il nome dell'entità (es. se si chiama "Gateway Pagamento", deduci logica di transazione finanziaria).
    - Il pattern architetturale implicito (es. MVC se vedi "Model", "View", "Controller").
    - La topologia delle dipendenze (es. se "App" dipende da "API", deduci chiamate client-server).
-3. OBBLIGO DI TRACCIABILITÀ: Qualsiasi logica, responsabilità o spiegazione di relazione che hai DEDOTTO e non estratto esplicitamente dal testo XMI, DEVE essere preceduta dal prefisso ** **.
+3. OBBLIGO DI TRACCIABILITÀ: Qualsiasi logica, responsabilità o spiegazione di relazione che hai DEDOTTO e non estratto esplicitamente dal testo XMI, DEVE essere preceduta dal prefisso ** [INFERRED] **.
 </CONTROLLED_INFERENCE_POLICY>
 
 <CLARITY_GATE>
@@ -44,7 +44,7 @@ action_required: "Il modello UML presenta errori strutturali o riferimenti fanta
 
 <OUTPUT_TEMPLATE_REQUIREMENT>
 Se il Clarity Gate viene SUPERATO, genera l'output usando ESATTAMENTE il seguente template rigido.
-Non modificare la struttura YAML iniziale. Se la logica descritta non era documentata nel file ma l'hai dedotta tu, usa SEMPRE il prefisso   prima del testo.
+Non modificare la struttura YAML iniziale. Se la logica descritta non era documentata nel file ma l'hai dedotta tu, usa SEMPRE il prefisso [INFERRED]  prima del testo.
 status: SUCCESS_WITH_INFERENCE
 extractor_version: "2.0-unsafe"
 parsed_entities: [Numero totale entità analizzate]

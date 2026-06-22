@@ -28,7 +28,7 @@ L'infrastruttura deve essere configurata RIGOROSAMENTE con:
 </TECH_STACK_REQUIREMENTS>
 
 <SCAFFOLDING_RULES>
-Traduci il `Master_Spec.md` (e le variabili taggate come  ) in codice seguendo queste direttive architetturali rigorose:
+Traduci il `Master_Spec.md` (e le variabili taggate come [INFERRED]) in codice seguendo queste direttive architetturali rigorose:
 
 1. Struttura dei Package (Separation of Concerns):
    - `com.smartmobility.model` (Entità JPA)

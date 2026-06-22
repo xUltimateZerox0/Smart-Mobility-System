@@ -24,7 +24,7 @@ Devi dedurre la logica mancante partendo dalle interazioni del diagramma in modo
 3. REQUISITO DELLE CONDIZIONI BINARIE (PRE/POST): Le Precondizioni e le Postcondizioni DEVONO essere strettamente verificabili o validabili a livello di stato verificabile a livello di codice.
    - Esempi ammessi: `L'utente ha effettuato l'accesso' 'Il mezzo è stato 
    - Esempi vietati: "L'utente ha pianificato una corsa", "Il sistema è pronto".
-4. OBBLIGO DI TRACCIABILITÀ: Qualsiasi logica, stato o passaggio DEDOTTO e non estratto letteralmente dall'XMI, DEVE essere preceduto dal prefisso ** **.
+4. OBBLIGO DI TRACCIABILITÀ: Qualsiasi logica, stato o passaggio DEDOTTO e non estratto letteralmente dall'XMI, DEVE essere preceduto dal prefisso **[INFERRED]**.
 </CONTROLLED_INFERENCE_POLICY>
 
 <CLARITY_GATE>
