@@ -1,4 +1,3 @@
-	
 
 **Cofee Coders**
 
@@ -667,4 +666,3 @@ Il sistema implementa la separazione delle responsabilità secondo la seguente l
 1. View: I componenti AppUtente, AppOperatoreSC, AppPA, AppOperatoreTecnico e Autenticazione rappresentano lo strato di presentazione. Esse sono completamente disaccoppiate dal dominio dei dati. Le View non interrogano mai direttamente lo stato del sistema né rimangono in ascolto di eventi generati dal Model; ogni interazione avviene inviando richieste esplicite ai rispettivi Controller e attendendo da essi i dati per l'aggiornamento.   
 2. Controller: I componenti di controllo fungono da intermediari attivi del sistema. Il Controller intercetta gli input della View, valida le richieste, interroga o aggiorna il Model e, una volta elaborata la risposta, si occupa di indirizzare e formattare i dati per la View.   
 3. Model: Rappresentato dalle entità core del sistema (Mezzo, Utente, Corsa, Flotta ecc..), il Model ricopre un ruolo prettamente passivo. Esso espone i metodi per l'accesso e la modifica dello stato (getter/setter) richiesti dai Controller, ma è totalmente privo di logiche di notifica verso l'esterno.
-
