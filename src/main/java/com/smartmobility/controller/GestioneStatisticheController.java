@@ -5,13 +5,11 @@ import com.smartmobility.dto.request.ExportStatisticsRequest;
 import com.smartmobility.dto.response.StatisticheResponse;
 import com.smartmobility.service.GestioneStatisticheService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/statistics")
@@ -25,11 +23,14 @@ public class GestioneStatisticheController {
 
     @PostMapping("/analyze")
     public ResponseEntity<StatisticheResponse> analyzeStatistics(@Valid @RequestBody AnalyzeStatisticsRequest request) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        StatisticheResponse stats = gestioneStatisticheService.analisiTratte(
+                request.getDataInizio(), request.getDataFine());
+        return ResponseEntity.ok(stats);
     }
 
     @PostMapping("/export")
     public ResponseEntity<Void> exportStatistics(@Valid @RequestBody ExportStatisticsRequest request) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneStatisticheService.generaFileStatistiche(request.getCorse());
+        return ResponseEntity.ok().build();
     }
 }

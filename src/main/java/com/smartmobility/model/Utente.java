@@ -10,7 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 @PrimaryKeyJoinColumn(name = "id")
 public class Utente extends Attore {
 
-    @Column(name = "id_utente", unique = true, nullable = false)
+    @Column(name = "id_utente", unique = true)
     private Long idUtente;
 
     @Column(name = "nome_utente")

@@ -1,7 +1,7 @@
 package com.smartmobility.model;
 
 import jakarta.persistence.*;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "corsa")
@@ -15,10 +15,10 @@ public class Corsa {
     private float costo;
 
     @Column(name = "orario_inizio")
-    private LocalTime orarioInizio;
+    private LocalDateTime orarioInizio;
 
     @Column(name = "orario_fine")
-    private LocalTime orarioFine;
+    private LocalDateTime orarioFine;
 
     @Column(name = "coordinate_partenza")
     private String coordinatePartenza;
@@ -29,6 +29,10 @@ public class Corsa {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_metodo_pagamento")
     private MetodoPagamento metodoPagamento;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_mezzo")
+    private Mezzo mezzo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_utente")
@@ -52,19 +56,19 @@ public class Corsa {
         this.costo = costo;
     }
 
-    public LocalTime getOrarioInizio() {
+    public LocalDateTime getOrarioInizio() {
         return orarioInizio;
     }
 
-    public void setOrarioInizio(LocalTime orarioInizio) {
+    public void setOrarioInizio(LocalDateTime orarioInizio) {
         this.orarioInizio = orarioInizio;
     }
 
-    public LocalTime getOrarioFine() {
+    public LocalDateTime getOrarioFine() {
         return orarioFine;
     }
 
-    public void setOrarioFine(LocalTime orarioFine) {
+    public void setOrarioFine(LocalDateTime orarioFine) {
         this.orarioFine = orarioFine;
     }
 
@@ -90,6 +94,14 @@ public class Corsa {
 
     public void setMetodoPagamento(MetodoPagamento metodoPagamento) {
         this.metodoPagamento = metodoPagamento;
+    }
+
+    public Mezzo getMezzo() {
+        return mezzo;
+    }
+
+    public void setMezzo(Mezzo mezzo) {
+        this.mezzo = mezzo;
     }
 
     public Utente getUtente() {

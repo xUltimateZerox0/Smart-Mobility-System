@@ -5,7 +5,7 @@ import com.smartmobility.dto.response.PrenotazioneResponse;
 import java.util.List;
 
 public interface GestionePrenotazioneService {
-    void inviaRichiestaPrenotazione();
+    void inviaRichiestaPrenotazione(Long idMezzo, Long idUtente);
     List<PrenotazioneResponse> richiediLista();
     boolean annullaPrenotazione(Long idPrenotazione);
     void gestisciTimeout();
