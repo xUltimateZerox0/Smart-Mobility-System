@@ -9,6 +9,21 @@
 
 ---
 
+## Resolved Critical Issues (XMI/chart fixes — 2026-06-23)
+
+The 4 critical bugs identified below have been fixed by the team:
+
+| Critical # | UC | Issue | Fix date | Status |
+|------------|-----|-------|----------|--------|
+| **#1** | OP.03 | `getPrenotazioneByStato('valida')` → `'attiva'` | 2026-06-23 | ✅ XMI fixed |
+| **#2** | AP.04 | Wrong diagram (AP.03 content) → replaced with correct Logout PA | 2026-06-23 | ✅ XMI replaced |
+| **#3** | AP.03 | `aggiornaRestrizione` (singular) vs class diagram → class diagram aligned to singular | 2026-06-23 | ✅ Class diagram + Master_Spec updated |
+| **#4** | OP.01 | `reenvisibilita` XMI typo → method removed from flow | 2026-06-23 | ✅ XMI replaced |
+
+All 4 CGD files updated accordingly.
+
+---
+
 ## Resolved Conflicts (via chiarimentiUC.md)
 
 These are claims that were **pending** in the CGD files but are now fully resolved by the team's responses in chiarimentiUC.md.
@@ -161,51 +176,16 @@ Identical to UT.09 — all 10 claims confirmed via chiarimentiUC.md.
 
 ---
 
-## CRITICAL (must fix — breaks correctness)
+## CRITICAL — ALL RESOLVED ✅
 
-### Critical #1: UC.OP.03 — `getPrenotazioneByStato('valida')` references nonexistent enum value
+Tutti e 4 i Critical sono stati risolti il 2026-06-23. Vedi sezione "Resolved Critical Issues" all'inizio del documento.
 
-| Field | Detail |
-|-------|--------|
-| **UC** | OP.03 (Annulla Prenotazione) |
-| **What** | Sequence diagram calls `getPrenotazioneByStato('valida')` |
-| **Problem** | `'valida'` does NOT exist in `StatoPrenotazione` enum. Valid values are: **`attiva`**, `scaduta`, `annullata`, `completata` |
-| **Sources** | S ❌ calls `'valida'`; C ✅ has enum with `attiva`; chUC ✅(claim 6 says filtro 'attiva' è implicito) |
-| **Fix** | Change `'valida'` → `'attiva'` in the sequence diagram XMI file and the CGD claim |
-| **Severity** | HIGH — would cause runtime failure (state not found) |
-
-### Critical #2: UC.AP.04 — Sequence diagram file contains WRONG diagram
-
-| Field | Detail |
-|-------|--------|
-| **UC** | AP.04 (Logout PA) |
-| **What** | `UC.AP.04-clean.uml` file contains the sequence diagram for **UC.AP.03 (Restrizioni Geografiche)** instead of the Logout PA flow |
-| **Problem** | Users/developers reading AP.04 will see the wrong behavior entirely |
-| **Sources** | S ❌ wrong content; C ✅ (no issue); chUC ✅(claim 10 confirms) |
-| **Fix** | Replace `UC.AP.04-clean.uml` with the correct Logout PA sequence diagram (mirrors UT.09, OP.04, OP.05) |
-| **Severity** | HIGH — wrong diagram for the entire use case |
-
-### Critical #3: UC.AP.03 — `aggiornaRestrizione` (singular) vs `aggiornaRestrizioni` (plural)
-
-| Field | Detail |
-|-------|--------|
-| **UC** | AP.03 (Restrizioni Geografiche) |
-| **What** | Sequence diagram XMI uses `aggiornaRestrizione` (singular) but the class diagram defines `aggiornaRestrizioni` (plural) |
-| **Problem** | Method call in sequence diagram will not match the class model |
-| **Sources** | S ❌ `aggiornaRestrizione`; C ✅ `aggiornaRestrizioni`; chUC ✅(claim 1 confirms plural is correct) |
-| **Fix** | Rename in the sequence diagram XMI file from `aggiornaRestrizione` to `aggiornaRestrizioni` |
-| **Severity** | HIGH — broken method reference |
-
-### Critical #4: UC.OP.01 — `reenvisibilita` XMI typo
-
-| Field | Detail |
-|-------|--------|
-| **UC** | OP.01 (Gestione Flotta) |
-| **What** | Sequence diagram XMI contains `reenvisibilita` — a typo/artifact |
-| **Problem** | The actual method in the class diagram is `verificaVisibilita` |
-| **Sources** | S ❌ `reenvisibilita`; C ✅ `verificaVisibilita`; chUC ✅(confirmed as XMI artifact) |
-| **Fix** | Fix typo in sequence diagram XMI: `reenvisibilita` → `verificaVisibilita` |
-| **Severity** | HIGH — broken method reference |
+| # | UC | Problema | Fix | Stato |
+|---|-----|----------|-----|-------|
+| 1 | OP.03 | `getPrenotazioneByStato('valida')` → enum `valida` non esiste | XMI: `valida` → `attiva` | ✅ |
+| 2 | AP.04 | Diagramma sbagliato (conteneva AP.03) | XMI sostituito con flusso Logout PA | ✅ |
+| 3 | AP.03 | `aggiornaRestrizione` (sing) vs class diagram (plur) | Class diagram allineato a `aggiornaRestrizione` | ✅ |
+| 4 | OP.01 | `reenvisibilita` artefatto XMI | Rimosso dal XMI (non più nel flusso) | ✅ |
 
 ---
 
@@ -352,11 +332,11 @@ Identical to UT.09 — all 10 claims confirmed via chiarimentiUC.md.
 
 | Priority | Count | Items |
 |----------|-------|-------|
-| **FIX NOW (CRITICAL)** | 4 | OP.03 'valida'→'attiva', AP.04 wrong diagram, AP.03 aggiornaRestrizione→aggiornaRestrizioni, OP.01 reenvisibilita→verificaVisibilita |
+| ~~FIX NOW (CRITICAL)~~ | **4/4 FIXED ✅** | OP.03 'valida'→'attiva', AP.04 wrong diagram, AP.03 aggiornaRestrizione allineato, OP.01 reenvisibilita rimosso |
 | **FIX SOON (WARNING)** | 8 | Missing params (UT.03 MS, UT.07), wrong values (OP.02), wrong direction claim (UT.02), XMI artifacts (AP.03, UT.07 x2), dual lifeline (OP.01), param name (UT.04) |
 | **UPDATE DIAGRAM** | 1 | Component diagram View → add missing View classes |
 | **DESIGN DECISION** | 3 | Cost algorithm (UT.07), analisiStatoFlotta vs getCondizioniMezzi (OP.01), disconnetti method (OP.03) |
-| **DONE (RESOLVED)** | ~40 claims across 15 UCs | No further action needed |
+| **DONE (RESOLVED)** | 4 critical + ~40 claims | No further action needed |
 
 ---
 
@@ -366,7 +346,7 @@ Identical to UT.09 — all 10 claims confirmed via chiarimentiUC.md.
 
 2. **Class diagram is the most reliable source**: In every case where the class diagram and sequence diagram disagreed, the class diagram was correct. The class diagram is already ahead of the sequence diagrams (e.g., `AppPA.mostraSuccesso()` exists in class diagram but CGD still noted it as missing).
 
-3. **4 critical bugs will cause runtime failures**: The OP.03 enum value 'valida' doesn't exist, AP.04 diagram is wrong, AP.03 and OP.01 method names are typos. These must be fixed before any code generation.
+3. **4 critical bugs were fixed on 2026-06-23**: OP.03 enum 'valida'→'attiva', AP.04 wrong diagram replaced, AP.03 class diagram aligned, OP.01 reenvisibilita removed. All XMI and CGD files updated.
 
 4. **Sequence diagrams need XMI cleanup**: Multiple method names are XMI export artifacts (descriptive names, typos, generated names like `attribute2`) that don't match the actual class model.
 

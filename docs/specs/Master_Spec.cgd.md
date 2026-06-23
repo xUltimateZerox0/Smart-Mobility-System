@@ -669,7 +669,7 @@ CRUD di zone geografiche e verifica conflitti tra restrizioni sovrapposte.
 
 | Metodo | Ritorno | Parametri |
 |--------|---------|-----------|
-| `aggiornaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` | void | idArea, tipoRestrizione, noteRestrizione, zona |
+| `aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)` | void | idArea, tipoRestrizione, noteRestrizione, zona |
 | `analisiConflitti(zona)` | bool | zona: ZonaGeografica |
 | `getZoneGeografiche()` | ZonaGeografica | — |
 | `getIdGestioneAree()` | — | — |

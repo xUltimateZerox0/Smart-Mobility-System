@@ -10,15 +10,15 @@ rag-ingestable: false
 document-sha256: e494ba73a1009ff30340b917bdeea28502d0b9574bb276415bb700edf0115f21
 hitl-claims:
   - id: claim-ap03-a01
-    text: "Il metodo XMI `aggiornaRestrizione` (singolare) è typo — il nome corretto è `aggiornaRestrizioni` (plurale) come da Master_Spec.cgd.md §3 GestioneAree"
-    value: "CONFERMATO: plural is correct. aggiornaRestrizione → aggiornaRestrizioni (see Critical #3 from response2.md)."
-    source: "UC.AP.03-clean.uml (XMI: aggiornaRestrizione) vs Master_Spec.cgd.md §3 (aggiornaRestrizioni)"
+    text: "Il metodo XMI `aggiornaRestrizione` (singolare) — il diagramma delle classi è stato aggiornato per corrispondere. Il nome canonico è ora `aggiornaRestrizione` (singolare). Critical #3 da response2.md risolta 2026-06-23."
+    value: "RESOLVED: classDiagram-v1.8-clean.uml aggiornato per usare `aggiornaRestrizione` (singolare). Nome canonico: aggiornaRestrizione. Master_Spec.cgd.md aggiornato."
+    source: "classDiagram-v1.8-clean.uml + Master_Spec.cgd.md §3 GestioneAree"
     location: "GestioneAree/methods"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-by: Team Cofee Coders (via user — class diagram fixed 2026-06-23)
     confirmed-date: 2026-06-23
   - id: claim-ap03-a02
-    text: "Il metodo XMI `salvaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` su ZonaGeografica non esiste nel Master_Spec — è un artefatto XMI; la persistenza avviene tramite setter di ZonaGeografica + DBMS CRUD orchestrati da GestioneAree.aggiornaRestrizioni()"
+    text: "Il metodo XMI `salvaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` su ZonaGeografica non esiste nel Master_Spec — è un artefatto XMI; la persistenza avviene tramite setter di ZonaGeografica + DBMS CRUD orchestrati da GestioneAree.aggiornaRestrizione()"
     value: "CONFERMATO: salvaRestrizioni is XMI artifact — remove."
     source: "UC.AP.03-clean.uml (XMI: salvaRestrizioni) vs Master_Spec.cgd.md §2 ZonaGeografica (no salvaRestrizioni)"
     location: "UC.AP.03/flusso-principale/step-5"
@@ -60,11 +60,11 @@ hitl-claims:
 | **User Story** | AP.04 *(Non Funzionale — vincolo architetturale: impedire che i mezzi vengano lasciati in aree non designate, chiarimenti-vari.md punto 4)* |
 | **Nome** | Restrizioni Geografiche |
 | **ID** | UC.AP.03 |
-| **Breve descrizione** | L'Amministrazione Pubblica accede alla mappa per gestire le restrizioni geografiche. Il sistema mostra le zone esistenti e consente la modifica delle restrizioni tramite `GestioneAree.aggiornaRestrizioni()`. In caso di conflitto con restrizioni già presenti, rilevato da `ZonaGeografica.verificaSovrapposizioni()`, l'Amministrazione Pubblica può scegliere di sovrascrivere le regole esistenti (`AppPA.confermaSovrascrittura()`) o annullare l'operazione (`AppPA.rifiutaSovrascrittura()`). Il successo dell'operazione è comunicato implicitamente tramite l'aggiornamento della mappa (`AppPA.mostraMappa()`) — AppPA non dispone di un metodo `mostraSuccesso()` dedicato (osservazione 8 in §10). |
+| **Breve descrizione** | L'Amministrazione Pubblica accede alla mappa per gestire le restrizioni geografiche. Il sistema mostra le zone esistenti e consente la modifica delle restrizioni tramite `GestioneAree.aggiornaRestrizione()`. In caso di conflitto con restrizioni già presenti, rilevato da `ZonaGeografica.verificaSovrapposizioni()`, l'Amministrazione Pubblica può scegliere di sovrascrivere le regole esistenti (`AppPA.confermaSovrascrittura()`) o annullare l'operazione (`AppPA.rifiutaSovrascrittura()`). Il successo dell'operazione è comunicato implicitamente tramite l'aggiornamento della mappa (`AppPA.mostraMappa()`) — AppPA non dispone di un metodo `mostraSuccesso()` dedicato (osservazione 8 in §10). |
 | **Attori principali** | Amministrazione Pubblica (PA) |
 | **Attori secondari** | — |
 | **Precondizioni** | 1. L'Amministrazione Pubblica ha effettuato l'accesso ed ha una sessione attiva. 2. Il sistema dispone di zone geografiche registrate *(anche se vuote — la lista può essere vuota)*. |
-| **Flusso principale** | 1. Il caso d'uso inizia quando l'Amministrazione Pubblica accede alla sezione per la gestione delle aree tramite `AppPA.selezionaMappa()`. 2. Il sistema recupera le zone geografiche esistenti: `GestioneAree.getZoneGeografiche()` → `ZonaGeografica.getZone()`. 3. Il sistema mostra la mappa con le zone esistenti: `AppPA.mostraMappa(zone)`. 4. L'Amministrazione Pubblica richiede la modifica delle restrizioni per una zona: `AppPA.modificaRestrizioni(zona)`. 5. Il sistema riceve la modifica: `GestioneAree.aggiornaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)`. 6. Il sistema verifica eventuali sovrapposizioni: `GestioneAree.analisiConflitti(zona)` → `ZonaGeografica.verificaSovrapposizioni(zona)` → `bool`. 7. Se nessun conflitto, il sistema persiste le modifiche via `ZonaGeografica.setTipoRestrizione()` / `setNoteRestrizione()` / `setZona()` + DBMS Update, e mostra la situazione aggiornata: `AppPA.mostraMappa(zone)`. |
+| **Flusso principale** | 1. Il caso d'uso inizia quando l'Amministrazione Pubblica accede alla sezione per la gestione delle aree tramite `AppPA.selezionaMappa()`. 2. Il sistema recupera le zone geografiche esistenti: `GestioneAree.getZoneGeografiche()` → `ZonaGeografica.getZone()`. 3. Il sistema mostra la mappa con le zone esistenti: `AppPA.mostraMappa(zone)`. 4. L'Amministrazione Pubblica richiede la modifica delle restrizioni per una zona: `AppPA.modificaRestrizioni(zona)`. 5. Il sistema riceve la modifica: `GestioneAree.aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)`. 6. Il sistema verifica eventuali sovrapposizioni: `GestioneAree.analisiConflitti(zona)` → `ZonaGeografica.verificaSovrapposizioni(zona)` → `bool`. 7. Se nessun conflitto, il sistema persiste le modifiche via `ZonaGeografica.setTipoRestrizione()` / `setNoteRestrizione()` / `setZona()` + DBMS Update, e mostra la situazione aggiornata: `AppPA.mostraMappa(zone)`. |
 | **Flussi alternativi** | **A1 — Conflitto con restrizioni esistenti – Sovrascrittura confermata:** Al passo 6 del flusso principale, `ZonaGeografica.verificaSovrapposizioni()` restituisce `true` (conflitto rilevato). Il sistema notifica il conflitto all'Amministrazione Pubblica. L'Amministrazione Pubblica conferma la sovrascrittura: `AppPA.confermaSovrascrittura(idArea, tipoRestrizione, noteRestrizione)`. Il sistema salva le restrizioni sovrascritte e mostra l'aggiornamento: `AppPA.mostraMappa(zone)`. **A2 — Conflitto con restrizioni esistenti – Annullamento:** Al passo 2 del flusso alternativo A1, l'Amministrazione Pubblica rifiuta la sovrascrittura: `AppPA.rifiutaSovrascrittura()`. Il sistema annulla le modifiche e riporta la mappa allo stato precedente: `AppPA.mostraMappa(zone)`. |
 | **Postcondizioni** | 1. La zona geografica è stata aggiornata con le nuove regole *(se sovrascrittura confermata o nessun conflitto)*. 2. Le restrizioni sono state salvate nel sistema via DBMS. |
 | **Include** | — |
@@ -88,7 +88,7 @@ hitl-claims:
 | 2a | ↳ Recupera zone dal Model | ZonaGeografica *(Model)* | `getZone()` | `ZonaGeografica` | — | `ZonaGeografica` (collezione) | Master_Spec §2 |
 | 3 | Sistema mostra mappa | AppPA *(View)* | `mostraMappa(zone)` | `void` | `zone: ZonaGeografica` | — | Master_Spec §4 |
 | 4 | PA modifica restrizioni | AppPA *(View)* | `modificaRestrizioni(zona)` | `void` | `zona: ZonaGeografica` | — | Master_Spec §4 |
-| 5 | Sistema riceve modifica e prepara update | GestioneAree *(Controller)* | `aggiornaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` | `void` | `idArea, tipoRestrizione, noteRestrizione, zona` | — | Master_Spec §3 |
+| 5 | Sistema riceve modifica e prepara update | GestioneAree *(Controller)* | `aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)` | `void` | `idArea, tipoRestrizione, noteRestrizione, zona` | — | Master_Spec §3 |
 | 6 | Sistema verifica conflitti | GestioneAree *(Controller)* | `analisiConflitti(zona)` | `bool` | `zona: ZonaGeografica` | `true` (conflitto) \| `false` | Master_Spec §3 |
 | 6a | ↳ Controlla sovrapposizioni | ZonaGeografica *(Model)* | `verificaSovrapposizioni(zona)` | `bool` | `zona: ZonaGeografica` | `true` \| `false` | Master_Spec §2 |
 | 7 | Sistema salva (se nessun conflitto o sovrascrittura confermata) | ZonaGeografica *(Model)* | `setTipoRestrizione(tipoRestrizione)` / `setNoteRestrizione(noteRestrizione)` / `setZona(zona)` | `void` | `tipoRestrizione, noteRestrizione, zona` | — | Master_Spec §2 |
@@ -109,8 +109,8 @@ hitl-claims:
 
 | Metodo | Parametro | Tipo | Formato | Fonte |
 |:-------|:----------|:-----|:--------|:------|
-| `GestioneAree.aggiornaRestrizioni()` | `tipoRestrizione` | `TipoRestrizione` | Enum: `divieto_parcheggio` \| `ZTL` \| `limite_velocita` | Master_Spec §1 + claim-2d4e6f010 |
-| `GestioneAree.aggiornaRestrizioni()` | `zona` | `LineString` | Poligono geospaziale (delimitazione area) | Master_Spec §2 ZonaGeografica |
+| `GestioneAree.aggiornaRestrizione()` | `tipoRestrizione` | `TipoRestrizione` | Enum: `divieto_parcheggio` \| `ZTL` \| `limite_velocita` | Master_Spec §1 + claim-2d4e6f010 |
+| `GestioneAree.aggiornaRestrizione()` | `zona` | `LineString` | Poligono geospaziale (delimitazione area) | Master_Spec §2 ZonaGeografica |
 | `ZonaGeografica.verificaSovrapposizioni()` | `zona` | `ZonaGeografica` | Istanza completa di ZonaGeografica per confronto geometrico | Master_Spec §2 |
 | `AppPA.mostraMappa()` | `zone` | `ZonaGeografica` | Collezione di zone da renderizzare su mappa | Master_Spec §4 |
 | `AppPA.confermaSovrascrittura()` | `tipoRestrizione` | `TipoRestrizione` | Enum — deve corrispondere a valore valido | Master_Spec §1 |
@@ -139,7 +139,7 @@ Il sequence diagram `UC.AP.03-clean.uml` (XMI 2.1) è stato analizzato e mappato
 | `ZonaGeografica.getZone()` | `getZone()` | **Match** — firma identica |
 | `reindirizzaMappa(Lista<ZonaGeografica>)` | `mostraMappa(zone)` | **Diverge** — XMI usa nome diverso; Master_Spec è autoritativo (claim-ap03-a03) |
 | `modificaRestrizioni(ZonaGeografica)` | `modificaRestrizioni(zona)` | **Match** — firma identica |
-| `aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)` | `aggiornaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` | **Diverge** — XMI singolare; Master_Spec plurale (claim-ap03-a01) |
+| `aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)` | `aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)` | **Match** — class diagram aggiornato per allinearsi (claim-ap03-a01 risolto) |
 | `salvaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` | *(non esiste)* | **Artefatto XMI** — mappato a setter ZonaGeografica + DBMS Update (claim-ap03-a02) |
 | `AnalisiConflitti(ZonaGeografica)` | `analisiConflitti(zona)` | **Diverge** — XMI maiuscola; Master_Spec camelCase (claim-ap03-a04) |
 | `verificaSovrapposizioni(ZonaGeografica)` | `verificaSovrapposizioni(zona)` | **Match** — firma identica |
@@ -159,7 +159,7 @@ Il sequence diagram `UC.AP.03-clean.uml` (XMI 2.1) è stato analizzato e mappato
 
 | # | Artefatto XMI | Correzione | Riferimento |
 |:--|:--------------|:-----------|:------------|
-| 1 | `aggiornaRestrizione` (singolare) | `aggiornaRestrizioni` (plurale) — confermato da Master_Spec §3 | claim-ap03-a01 *(PENDING)* |
+| 1 | `aggiornaRestrizione` (era singolare nel XMI, class diagram aggiornato per corrispondere) | Allineato — class diagram e XMI usano entrambi `aggiornaRestrizione` | claim-ap03-a01 *(RISOLTO: class diagram aggiornato 2026-06-23)* |
 | 2 | `salvaRestrizioni(...)` su ZonaGeografica | Non esiste — mappato a `setTipoRestrizione()` + `setNoteRestrizione()` + `setZona()` + DBMS Update | claim-ap03-a02 *(PENDING)* |
 | 3 | `reindirizzaMappa(...)` su AppPA | `mostraMappa(zone)` — nome canonico da Master_Spec §4 | claim-ap03-a03 *(PENDING)* |
 | 4 | `AnalisiConflitti` (A maiuscola) | `analisiConflitti` (camelCase) — typo XMI da chiarimenti-vari.md punto 14 | claim-ap03-a04 *(PENDING)* |
@@ -221,7 +221,7 @@ AppPA.mostraMappa(zone)
 AppPA.modificaRestrizioni(zona)
        │
        ▼
-GestioneAree.aggiornaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)
+GestioneAree.aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)
        │
        ▼
 GestioneAree.analisiConflitti(zona)
@@ -292,7 +292,7 @@ GestioneAree.analisiConflitti(zona)
 
 | # | Claim ID | Claim | Fonte | Stato |
 |:--|:---------|:------|:------|:------|
-| 1 | claim-ap03-a01 | `aggiornaRestrizione` (XMI, singolare) → `aggiornaRestrizioni` (Master_Spec, plurale) | UC.AP.03-clean.uml vs Master_Spec §3 | PENDING |
+| 1 | claim-ap03-a01 | `aggiornaRestrizione` — class diagram aggiornato per corrispondere al XMI (singolare canonico) | UC.AP.03-clean.uml + classDiagram-v1.8-clean.uml + Master_Spec §3 | RESOLVED |
 | 2 | claim-ap03-a02 | `salvaRestrizioni(...)` su ZonaGeografica non esiste in Master_Spec — mappato a setter + DBMS | UC.AP.03-clean.uml vs Master_Spec §2 | PENDING |
 | 3 | claim-ap03-a03 | `reindirizzaMappa(...)` (XMI) → `mostraMappa(zone)` (Master_Spec) | UC.AP.03-clean.uml vs Master_Spec §4 | PENDING |
 | 4 | claim-ap03-a04 | `AnalisiConflitti` (XMI, A maiuscola) → `analisiConflitti` (Master_Spec, camelCase) | UC.AP.03-clean.uml vs Master_Spec §3 | PENDING |
@@ -306,8 +306,8 @@ GestioneAree.analisiConflitti(zona)
 
 | # | Inconsistenza | Fonte A | Fonte B | Risoluzione |
 |:--|:-------------|:--------|:--------|:------------|
-| 1 | Nome metodo: `aggiornaRestrizione` (singolare) vs `aggiornaRestrizioni` (plurale) | UC.AP.03-clean.uml (XMI) | Master_Spec.cgd.md §3 | Master_Spec è autoritativo (chiarimenti-vari.md p.15) → `aggiornaRestrizioni` |
-| 2 | Metodo `salvaRestrizioni(...)` su ZonaGeografica | UC.AP.03-clean.uml (XMI) | Master_Spec.cgd.md §2 | Artefatto XMI — mappato a setter ZonaGeografica + DBMS Update orchestrati da `GestioneAree.aggiornaRestrizioni()` |
+| 1 | Nome metodo: `aggiornaRestrizione` — class diagram e XMI allineati | classDiagram-v1.8-clean.uml (aggiornato) | UC.AP.03-clean.uml (XMI) | Risolto: class diagram aggiornato per usare `aggiornaRestrizione` (singolare) il 2026-06-23 |
+| 2 | Metodo `salvaRestrizioni(...)` su ZonaGeografica | UC.AP.03-clean.uml (XMI) | Master_Spec.cgd.md §2 | Artefatto XMI — mappato a setter ZonaGeografica + DBMS Update orchestrati da `GestioneAree.aggiornaRestrizione()` |
 | 3 | Nome metodo View: `reindirizzaMappa(...)` vs `mostraMappa(zone)` | UC.AP.03-clean.uml (XMI) | Master_Spec.cgd.md §4 | Master_Spec è autoritativo → `mostraMappa(zone)` |
 | 4 | Capitalizzazione: `AnalisiConflitti` vs `analisiConflitti` | UC.AP.03-clean.uml (XMI) | Master_Spec.cgd.md §3 | Typo XMI (chiarimenti-vari.md p.14) → `analisiConflitti(zona)` |
 | 5 | Param count `confermaSovrascrittura`: 4 (XMI) vs 3 (Master_Spec) | UC.AP.03-clean.uml (XMI, include `zona`) | Master_Spec.cgd.md §4 (3 params) | Master_Spec è autoritativo → 3 params: `(idArea, tipoRestrizione, noteRestrizione)` — `zona` ridondante, già in contesto di modifica |
@@ -321,7 +321,7 @@ GestioneAree.analisiConflitti(zona)
 
 | # | Verifica | Risultato | Dettaglio |
 |:--|:---------|:----------|:----------|
-| 1 | `GestioneAree.aggiornaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` — 4 params | ✅ CONFERMATO | Master_Spec.cgd.md §3: firma esatta con 4 parametri. XMI usa nome singolare ma stessa firma. |
+| 1 | `GestioneAree.aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, zona)` — 4 params | ✅ CONFERMATO | Master_Spec.cgd.md §3: firma esatta con 4 parametri. XMI usa nome singolare ma stessa firma. |
 | 2 | `ZonaGeografica.verificaSovrapposizioni(ZonaGeografica) → bool` | ✅ CONFERMATO | Master_Spec.cgd.md §2: `verificaSovrapposizioni(zona)` con param `zona: ZonaGeografica`, ritorna `bool`. XMI match. |
 | 3 | `ZonaGeografica.creaZonaGeografica(idArea, tipoRestrizione, noteRestrizione, zona)` — 4 params | ✅ CONFERMATO | Master_Spec.cgd.md §2: firma esatta con 4 parametri. Usato per creazione nuove zone (caso base di gestione aree, non esplicitamente nel flusso UC.AP.03 che si concentra sulla modifica). |
 | 4 | `TipoRestrizione`: `divieto_parcheggio`, `ZTL`, `limite_velocita` | ✅ CONFERMATO | Master_Spec.cgd.md §1 + claim-2d4e6f010 *(HITL Round A verified)*. XMI non contiene enum espliciti ma i valori sono coerenti con il dominio. |
@@ -337,7 +337,7 @@ GestioneAree.analisiConflitti(zona)
 
 | Metodo | Firma Completa | Ruolo in UC.AP.03 |
 |:-------|:---------------|:-------------------|
-| `aggiornaRestrizioni` | `void aggiornaRestrizioni(idArea, tipoRestrizione: TipoRestrizione, noteRestrizione: String, zona: LineString)` | Aggiorna le restrizioni di una zona esistente (passo 5 flusso principale) |
+| `aggiornaRestrizione` | `void aggiornaRestrizione(idArea, tipoRestrizione: TipoRestrizione, noteRestrizione: String, zona: LineString)` | Aggiorna le restrizioni di una zona esistente (passo 5 flusso principale) |
 | `analisiConflitti` | `bool analisiConflitti(zona: ZonaGeografica)` | Verifica se la zona modificata confligge con altre zone esistenti (passo 6) |
 | `getZoneGeografiche` | `ZonaGeografica getZoneGeografiche()` | Recupera tutte le zone registrate nel sistema (passo 2) |
 

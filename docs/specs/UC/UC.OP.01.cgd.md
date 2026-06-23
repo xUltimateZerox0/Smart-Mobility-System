@@ -26,11 +26,11 @@ hitl-claims:
      confirmed-date: 2026-06-23
   - id: claim-op01-creasegnalazione-sd-typo
     text: "Il diagramma di sequenza ha 'creaSegnalazione (idMezzo, statoS data, ora, note)' con una virgola mancante tra 'statoS' e 'data'. La firma canonica in Master_Spec.cgd.md §2 Segnalazione:460 è 'creaSegnalazione(idMezzo, statoS, data, ora, note)' con 5 parametri separati da virgola."
-    value: "CONFIRMED — XMI artifact. reenvisibilita → verificaVisibilita (see Critical #4 from response2.md)."
-    source: "UC.OP.01-clean.uml message IYiFQXmD.AACAQ5Y vs Master_Spec.cgd.md:460"
+    value: "CONFIRMED — missing comma is XMI artifact. Critical #4 (reenvisibilita) risolta: il metodo non compare più nel XMI OP.01 aggiornato — rimosso dal flusso."
+    source: "UC.OP.01-clean.uml message IYiFQXmD.AACAQ5Y vs Master_Spec.cgd.md:460; XMI aggiornato 2026-06-23"
     location: "sequence-diagram/UC.OP.01/creaSegnalazione-typo"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-by: Team Cofee Coders (via user — XMI sostituito 2026-06-23)
     confirmed-date: 2026-06-23
   - id: claim-op01-getcondizionimezzi-return-type
     text: "GestioneFlotta.getCondizioniMezzi(idFlotta) ha tipo di ritorno 'Mezzo' (singolare) in Master_Spec.cgd.md:620, ma il diagramma di sequenza mostra 'lista<Mezzo>' come valore di ritorno. Un metodo che interroga per idFlotta dovrebbe restituire una collezione di mezzi, non un singolo Mezzo."
@@ -357,7 +357,7 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 
 **Firma completa:** `creaSegnalazione(idMezzo, statoS: StatoSegnalazione, data: date, ora: time, note: String) → void` *(Master_Spec:460)*
 
-> **Nota XMI:** Il diagramma di sequenza ha un typo nel messaggio `creaSegnalazione (idMezzo, statoS data, ora, note)` — manca una virgola tra `statoS` e `data`. Artefatto di esportazione XMI *(chiarimenti-vari.md punto 14)*. *(Vedi HITL claim-op01-creasegnalazione-sd-typo)*
+> **Nota XMI:** Il diagramma di sequenza ha un typo nel messaggio `creaSegnalazione (idMezzo, statoS data, ora, note)` — manca una virgola tra `statoS` e `data`. Artefatto di esportazione XMI *(chiarimenti-vari.md punto 14)*. *(Vedi HITL claim-op01-creasegnalazione-sd-typo)*. Critical #4 (reenvisibilita) risolta: il XMI aggiornato (2026-06-23) non contiene più il metodo.
 
 ---
 

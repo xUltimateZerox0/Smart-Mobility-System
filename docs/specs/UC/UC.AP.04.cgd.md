@@ -81,12 +81,12 @@ hitl-claims:
     confirmed-by: Team Cofee Coders (via response2.md)
     confirmed-date: 2026-06-23
   - id: claim-6a1f2d8c
-    text: "UC.AP.04-clean.uml contiene il flusso UC.AP.03 (Restrizioni Geografiche), non UC.AP.04 (Logout PA) — XMI model named UCAP03, interaction named Restrizioni Geografiche - UC.AP.03, zero logout-related messages"
-    value: "CONFERMATO: UC.AP.04-clean.uml contains wrong diagram (AP.03 content). Critical #2 from response2.md."
-    source: "UC.AP.04-clean.uml + grep conferma 0 match per richiestaLogout/inviaRichiestaLogout/logout/destroy"
+    text: "UC.AP.04-clean.uml conteneva il flusso UC.AP.03 (Restrizioni Geografiche), non UC.AP.04 (Logout PA) — XMI model named UCAP03, interaction named Restrizioni Geografiche - UC.AP.03, zero logout-related messages"
+    value: "FIXED: UC.AP.04-clean.uml now contains correct Logout PA flow. Critical #2 from response2.md resolved 2026-06-23."
+    source: "UC.AP.04-clean.uml + grep conferma presenza Logout PA e messaggi richiestaLogout/inviaRichiestaLogout/logout/destroy"
     location: "UC.AP.04-clean.uml"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-by: Team Cofee Coders (via user, XMI sostituito)
     confirmed-date: 2026-06-23
   - id: claim-3d7e9b1a
     text: "AppPA non dispone del metodo mostraSuccesso() — a differenza di AppUtente (mostraSuccesso(): void), AppOperatoreTecnico (mostraSuccesso(msg): void) e AppOperatoreSC (mostraSuccesso(msg): void)"
@@ -144,17 +144,15 @@ La seguente tabella traccia ogni chiamata di metodo nel flusso UC.AP.04 alla ris
 
 > **Nota sul feedback di successo:** A differenza di AppUtente (`mostraSuccesso(): void` — Master_Spec.cgd.md:694), AppOperatoreTecnico (`mostraSuccesso(msg: String): void` — Master_Spec.cgd.md:735) e AppOperatoreSC (`mostraSuccesso(msg: String): void` — Master_Spec.cgd.md:760), la View AppPA **non dispone** di un metodo `mostraSuccesso()`. Il flusso di logout PA si conclude con la distruzione dell'istanza AppPA e il reindirizzamento alla View Autenticazione, senza notifica esplicita di successo. *(Vedi claim-3d7e9b1a)*
 
-### Sequence Diagram (UC.AP.04-clean.uml) — INCONSISTENZA RILEVATA
+### Sequence Diagram (UC.AP.04-clean.uml) — CORRETTO
 
-> **ATTENZIONE:** Il file `UC.AP.04-clean.uml` contiene **contenuto errato**. Il modello XMI e denominato `UCAP03` e l'interazione e `Restrizioni Geografiche - UC.AP.03`. Il diagramma descrive il flusso di modifica delle restrizioni geografiche (metodi: `mostraMappa()`, `getZoneGeografiche()`, `modificaRestrizioni(ZonaGeografica)`, `confermaSovrascrittura()`, `rifiutaSovrascrittura()`, `verificaSovrapposizioni(ZonaGeografica)`) — completamente estraneo al logout PA.
+> **Il file `UC.AP.04-clean.uml` e stato corretto.** Precedentemente conteneva erroneamente il diagramma UC.AP.03 *(Critical #2 da response2.md)*. Ora contiene il corretto flusso Logout PA, allineato al pattern strutturale di UC.UT.09, UC.OP.04 e UC.OP.05.
 >
-> Nessun messaggio `richiestaLogout`, `inviaRichiestaLogout`, `logout` o `destroy` e presente nel file *(0 match su grep)*. Si tratta di un artefatto di esportazione XMI *(chiarimenti-vari.md punto 14)*. Il diagramma corretto dovrebbe seguire lo stesso pattern strutturale di UC.UT.09, UC.OP.04 e UC.OP.05.
+> Modello XMI: `UC.GEN.02` — interazione `Logout PA - UC.AP.04`, con messaggi `richiestaLogout(email)`, `inviaRichiestaLogout(email)`, `mostraErrore(msg)`, `void (reply)`, e destroy dell'istanza AppPA. Fix applicato il 2026-06-23.
 
 *Fonte: `/docs/diagrams/sequence-diagrams/UC.AP.04/UC.AP.04-clean.uml`*
 
-### Sequence Diagram Atteso (per analogia strutturale con UC.UT.09, UC.OP.04, UC.OP.05)
-
-Sulla base del pattern comune a tutti i logout *(chiarimenti-vari.md punto 13)*, il flusso atteso e:
+### Flusso del Sequence Diagram
 
 ```
 PA → AppPA:                            richiestaLogout(email)
@@ -295,7 +293,7 @@ AppPA e l'unica tra le 4 View di ruolo a non disporre del metodo `mostraSuccesso
 | documentazione.md | `docs/specs/documentazione.md` | Sorgente primaria — specifica UC.AP.04 (§2.2.2) |
 | Master_Spec.cgd.md | `docs/specs/Master_Spec.cgd.md` | Metodi, vincoli, architettura (§3, §4, §7, §8) |
 | chiarimenti-vari.md | `docs/specs/chiarimenti-vari.md` | Punti 5, 10, 11, 13, 14 |
-| UC.AP.04-clean.uml | `docs/diagrams/sequence-diagrams/UC.AP.04/UC.AP.04-clean.uml` | Diagramma di sequenza *(contenuto errato: UC.AP.03)* |
+| UC.AP.04-clean.uml | `docs/diagrams/sequence-diagrams/UC.AP.04/UC.AP.04-clean.uml` | Diagramma di sequenza *(corretto il 2026-06-23: ora contiene Logout PA)* |
 | UC.UT.09.cgd.md | `docs/specs/UC/UC.UT.09.cgd.md` | Riferimento strutturale per pattern logout |
 | Clarity Gate Format Spec | *(v2.1)* | Struttura CGD |
 
