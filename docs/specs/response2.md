@@ -367,9 +367,33 @@ All upgrades computed + applied via `scripts/document_hash.py` (Clarity Gate FOR
 | 3 | Document type labels added | 23 files | `document-type: Implementation` in 20 CGDs; `**Type:** Strategic` in `documentazione.md`; `> **Type:** Reference` in `chiarimenti-vari.md`; `[Reference]` in `response2.md` |
 | 4 | Stale hash recomputation (post-content-change) | 5 UC files | `UC.UT.04`, `UC.UT.05`, `UC.OP.03`, `UC.OP.04`, `UC.AP.04` |
 
-### Result
+### Result (Round 1)
 
 - **AI Coder Score**: 8.7/10 → **9.0/10** (specificity +0.2, consistency +0.3)
 - **Spec Gate #13**: PARTIAL → **PASS** (HITL body/YAML aligned)
 - **document-sha256**: 6+ PENDING → **0 PENDING** (all 20 computed)
 - **HITL body tables**: 5 files inconsistent → **all 20 consistent**
+
+---
+
+## AI-Readiness Upgrade Round 2 (2026-06-23) — Content Gaps
+
+### Changes Applied
+
+| # | Upgrade | Scope | Files Affected |
+|---|---------|-------|----------------|
+| 5 | Test case specifications (8 tests each: 5 unit + 3 integration) | 19 UC CGD files | All `UC.*.cgd.md` — inserted before HITL Verification Record |
+| 6 | Test Strategy (global §15) | Master_Spec.cgd.md | `Master_Spec.cgd.md` — §15 Test Strategy with levels, data, AC mapping |
+| 7 | Error handling matrices (5-7 UC-specific entries each) | 19 UC CGD files | All `UC.*.cgd.md` — inserted before HITL Verification Record |
+| 8 | Error Handling Strategy matrix (global §16, 10 categories) | Master_Spec.cgd.md | `Master_Spec.cgd.md` — §16 Error Handling Strategy |
+| 9 | `percorso`/`datiPercorso` documented as external API placeholders (H3) | UC.UT.04 + Master_Spec | `UC.UT.04.cgd.md` §6, `Master_Spec.cgd.md` §3/§5 |
+| 10 | Hash recomputation (post-content-change) | All 20 CGD files | Batch recompute after all edits |
+
+### Result (Round 2)
+
+- **AI Coder Score**: 9.0/10 → **9.3/10** (disambiguation +0.3)
+- **Spec Gate**: 11/13 → **13/13** (items #10 Test Cases + #11 Error Handling → PASS)
+- **High Issues**: H1, H2, H3 → **all 3 RESOLVED**
+- **Test cases added**: 19 files × 8 = **152 total**
+- **Error entries added**: 19 files × ~6 avg + 10 global = **~124 total**
+- **projected types**: 2 (`percorso`/`datiPercorso`) → **0 projected** (now placeholders)

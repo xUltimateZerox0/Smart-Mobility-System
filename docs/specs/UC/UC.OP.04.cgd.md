@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 3e81e4de55a4571d5d04aa58934d01164040248fc945d0e9f30ab4ee4e845e8a
+document-sha256: 9d7440f5840455c094adb1fac0a29c936b3541fd7a98a8d22d806dd2edcd0779
 hitl-claims:
   - id: claim-111b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
@@ -293,6 +293,29 @@ Questa e una differenza architetturale rispetto ad AppUtente, che dipende da 5 C
 | UC.OP.04-clean.uml | `docs/diagrams/sequence-diagrams/UC.OP.04/UC.OP.04-clean.uml` | Diagramma di sequenza |
 | UC.UT.09.cgd.md | `docs/specs/UC/UC.UT.09.cgd.md` | Riferimento per pattern strutturale logout |
 | Clarity Gate Format Spec | *(v2.1)* | Struttura CGD |
+
+## 10. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP04-01 | AppOperatoreTecnico | Logout invocation from any screen | Sessione attiva, AppOperatoreTecnico visibile | `richiestaLogout(email)` chiamato | `inviaRichiestaLogout(email)` invocato su GestioneAutenticazione | Sessione terminata | Verificare che il logout sia accessibile da ogni schermata secondaria |
+| TC-OP04-02 | GestioneAutenticazione | Security — no access post-logout | Logout completato, sessione terminata | Tentativo di accesso a endpoint GestioneFlotta | Richiesta rifiutata (errore autenticazione) | Nessuna operazione riservata eseguita | Test su tutti gli endpoint protetti |
+| TC-OP04-03 | GestioneAutenticazione | Session invalidation | Sessione attiva con `idSessioneOperatoreTecnico` valido | `inviaRichiestaLogout(email)` eseguito | `idSessioneOperatoreTecnico` impostato a null/invalidato | Sessione non piu valida | Verificare anche rilascio risorse associate |
+| TC-OP04-04 | AppOperatoreTecnico | Redirect to Autenticazione | Logout completato con successo | Reply da GestioneAutenticazione (void) | View Autenticazione mostrata, istanza AppOperatoreTecnico distrutta | Attore interagisce solo con Autenticazione | Verificare che nessuna schermata di AppOperatoreTecnico sia accessibile |
+| TC-OP04-05 | AppOperatoreTecnico | One-click behavior | Sessione attiva | Singolo click su comando logout | Logout completato senza ulteriori conferme | Sessione terminata immediatamente | Verificare assenza di dialog di conferma intermedi |
+| IT-OP04-01 | AppOperatoreTecnico → GestioneAutenticazione | Integration richiestaLogout → inviaRichiestaLogout | Sessione attiva, View e Controller inizializzati | `richiestaLogout(email)` invocato su View | `inviaRichiestaLogout(email)` ricevuto dal Controller entro timeout definito | Catena di chiamata completata | Parametro `email` deve corrispondere esattamente alla sessione attiva |
+| IT-OP04-02 | GestioneAutenticazione → AppOperatoreTecnico | Integration notification | Logout elaborato con successo | GestioneAutenticazione completa elaborazione | `mostraSuccesso(msg)` invocato su AppOperatoreTecnico | Utente notificato | Messaggio di successo deve essere significativo |
+| IT-OP04-03 | AppOperatoreTecnico | Error recovery — mostraErrore | Sessione attiva ma Controller fallisce | `inviaRichiestaLogout(email)` restituisce `false` | `mostraErrore(msg)` invocato, sessione potrebbe rimanere attiva | Attore informato del fallimento | Verificare che il sistema rimanga in stato consistente |
+
+---
+
+## 11. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|---|---|---|---|---|---|---|
+| ERR-OP04-01 | Logout senza sessione attiva | AppOperatoreTecnico | Invocazione `richiestaLogout(email)` senza sessione | Il comando di logout non dovrebbe essere disponibile (View non istanziata senza sessione) | — (prevenuto dall'architettura: View non istanziata) | Evento di sicurezza (tentativo di accesso illegale) |
+| ERR-OP04-02 | Fallimento controller logout | GestioneAutenticazione | `inviaRichiestaLogout(email)` restituisce `false` | `mostraErrore(msg)` notifica l'operatore del fallimento | La sessione potrebbe rimanere attiva; l'operatore puo riprovare | Log errore con dettagli del fallimento |
+| ERR-OP04-03 | Sessione gia terminata (race condition) | GestioneAutenticazione | Richiesta di logout per sessione gia invalidata | Gestione idempotente: nessuna azione necessaria | Risposta positiva implicita (sessione gia terminata) | Log informativo: tentativo di logout su sessione gia terminata |
 
 ---
 

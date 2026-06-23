@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 7a1b4f0f914d230de1d70a24c50753988a65229552899fde1833c7a33e24e543
+document-sha256: e808a8cc2b399e3c2d3092ca6996e1ab1ad59cf212ff0650d44ea7119c98e0dc
 hitl-claims:
   - id: claim-333b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
@@ -288,6 +288,30 @@ A differenza di AppUtente che usa `mostraSuccesso()` senza parametri, AppOperato
 | UC.OP.05-clean.uml | `docs/diagrams/sequence-diagrams/UC.OP.05/UC.OP.05-clean.uml` | Diagramma di sequenza |
 | UC.UT.09.cgd.md | `docs/specs/UC/UC.UT.09.cgd.md` | Pattern di riferimento strutturale |
 | Clarity Gate Format Spec | *(v2.1)* | Struttura CGD |
+
+## 10. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP05-01 | AppOperatoreSC | Logout invocation from any screen | Sessione attiva, AppOperatoreSC visibile | `richiestaLogout(email)` chiamato | `inviaRichiestaLogout(email)` invocato su GestioneAutenticazione | Sessione terminata | Verificare che il logout sia accessibile da ogni schermata secondaria |
+| TC-OP05-02 | GestioneAutenticazione | Security — no access post-logout | Logout completato, sessione terminata | Tentativo di accesso a endpoint protetti (moderazione, amministrazione prenotazioni) | Richiesta rifiutata (errore autenticazione) | Nessuna operazione riservata eseguita | Test su tutti gli endpoint protetti per OperatoreSC |
+| TC-OP05-03 | GestioneAutenticazione | Session invalidation | Sessione attiva con `idSessioneOperatoreSC` valido | `inviaRichiestaLogout(email)` eseguito | `idSessioneOperatoreSC` impostato a null/invalidato | Sessione non piu valida | Verificare anche rilascio risorse associate |
+| TC-OP05-04 | AppOperatoreSC | Redirect to Autenticazione | Logout completato con successo | Reply da GestioneAutenticazione (void) | View Autenticazione mostrata, istanza AppOperatoreSC distrutta | Attore interagisce solo con Autenticazione | Verificare che nessuna schermata di AppOperatoreSC sia accessibile |
+| TC-OP05-05 | AppOperatoreSC | One-click behavior | Sessione attiva | Singolo click su comando logout | Logout completato senza ulteriori conferme | Sessione terminata immediatamente | Verificare assenza di dialog di conferma intermedi |
+| IT-OP05-01 | AppOperatoreSC → GestioneAutenticazione | Integration richiestaLogout → inviaRichiestaLogout | Sessione attiva, View e Controller inizializzati | `richiestaLogout(email)` invocato su View | `inviaRichiestaLogout(email)` ricevuto dal Controller entro timeout definito | Catena di chiamata completata | Parametro `email` deve corrispondere esattamente alla sessione attiva |
+| IT-OP05-02 | GestioneAutenticazione → AppOperatoreSC | Integration notification | Logout elaborato con successo | GestioneAutenticazione completa elaborazione | `mostraSuccesso(msg)` invocato su AppOperatoreSC | Utente notificato | Messaggio di successo deve essere significativo |
+| IT-OP05-03 | AppOperatoreSC | Error recovery — mostraErrore | Sessione attiva ma Controller fallisce | `inviaRichiestaLogout(email)` restituisce `false` | `mostraErrore(msg)` invocato, sessione potrebbe rimanere attiva | Attore informato del fallimento | Verificare che il sistema rimanga in stato consistente |
+
+---
+
+## 11. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|---|---|---|---|---|---|---|
+| ERR-OP05-01 | Logout senza sessione attiva | AppOperatoreSC | Invocazione `richiestaLogout(email)` senza sessione | Il comando di logout non dovrebbe essere disponibile (View non istanziata senza sessione) | — (prevenuto dall'architettura: View non istanziata) | Evento di sicurezza (tentativo di accesso illegale) |
+| ERR-OP05-02 | Fallimento controller logout | GestioneAutenticazione | `inviaRichiestaLogout(email)` restituisce `false` | `mostraErrore(msg)` notifica l'operatore del fallimento | La sessione potrebbe rimanere attiva; l'operatore puo riprovare | Log errore con dettagli del fallimento |
+| ERR-OP05-03 | Sessione gia terminata (race condition) | GestioneAutenticazione | Richiesta di logout per sessione gia invalidata | Gestione idempotente: nessuna azione necessaria | Risposta positiva implicita (sessione gia terminata) | Log informativo: tentativo di logout su sessione gia terminata |
+| ERR-OP05-04 | Email non corrispondente | GestioneAutenticazione | L'email passata non corrisponde alla sessione attiva dell'operatore | `mostraErrore(msg)` — possibile errore di sicurezza | Sessione non terminata, operatore non autenticato per la sessione target | Evento di sicurezza (tentativo di logout di sessione altrui) |
 
 ---
 

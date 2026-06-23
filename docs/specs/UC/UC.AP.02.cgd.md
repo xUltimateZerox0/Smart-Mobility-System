@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 18fe5cedc81ee190628c046e13c8a1a178801f8c75a5a45a27d87018c9c7d92c
+document-sha256: 9a2a83906e049c2efee8095618d9863b078e7879764ef3788f9e314ed2da3ef1
 hitl-claims:
   - id: claim-ap02-e5f6g7h8
     text: "GestioneFlotta.avviaManutenzione(idFlotta) restituisce bool (true = intervento avviato, false = nessun intervento necessario)"
@@ -288,6 +288,32 @@ UC.AP.02 introduce il percorso `qualsiasi stato → manutenzione` quando la PA a
 | Saltare la verifica di autenticazione | PC-01 richiede sessione PA attiva |
 | Permettere modifica stato senza creare segnalazione | `avviaManutenzione()` orchestra sia la creazione di `Segnalazione` sia l'aggiornamento dello stato `Mezzo` |
 | Ignorare mezzi non operativi | Il flusso alternativo FA-01 gestisce il caso in cui nessun veicolo necessita manutenzione |
+
+---
+
+## 15. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|---------------|-------|-----------------|----------------|------------|
+| TC-01 | Mezzo (Model) | `getCondizioniMezzi(idFlotta)` restituisce condizioni mezzi | Flotta con 3 mezzi registrati; sessione PA attiva | `idFlotta = "FLT-001"` | Collezione `List<Mezzo>` con condizioni operative di ciascun mezzo | Mezzi invariati; nessuna modifica stato | Flotta vuota → lista vuota; mezzo con stato `manutenzione` incluso |
+| TC-02 | GestioneFlotta (Controller) | `avviaManutenzione(idFlotta)` — veicoli necessitano intervento | Flotta con 2 mezzi in stato `danneggiato`; PA autenticata | `idFlotta = "FLT-001"` | `bool = true` | Segnalazioni create per ogni mezzo; stato mezzi → `manutenzione` | Un solo mezzo danneggiato; tutti i mezzi danneggiati |
+| TC-03 | GestioneFlotta (Controller) | `avviaManutenzione(idFlotta)` — nessun veicolo necessita intervento (FA-01) | Flotta con tutti i mezzi in stato `disponibile`; PA autenticata | `idFlotta = "FLT-001"` | `bool = false` | Nessuna segnalazione creata; nessun cambio stato; AppPA mostra `stringaFlottaOperativa` | Flotta con tutti i mezzi `in_uso` — comunque nessun intervento |
+| TC-04 | Segnalazione (Model) | `creaSegnalazione(idMezzo, statoS, data, ora, note)` crea segnalazione | Mezzo valido `idMezzo = "MZ-042"`; stato da aggiornare | `idMezzo = "MZ-042"`, `statoS = aperta`, `data = "2026-06-23"`, `ora = "14:30"`, `note = "Sostituzione freni"` | Segnalazione persistita con id univoco | `Segnalazione.stato = aperta`; segnalazione referenziabile da `idMezzo` | Note vuote; data futura; ID mezzo inesistente |
+| TC-05 | Mezzo (Model) | `setStato("manutenzione")` aggiorna stato del mezzo | Mezzo in stato `disponibile` con `idMezzo = "MZ-042"` | `stato = StatoMezzo.manutenzione` | `Mezzo.stato = manutenzione` | Mezzo non disponibile per prenotazioni; stato persistito | Mezzo già in `manutenzione` — operazione idempotente; mezzo in `bloccato` → transizione consentita |
+| TC-06 | Integrazione | Flusso completo manutenzione — richiesta, analisi, intervento | Flotta `FLT-001` con 2 mezzi; PA autenticata | PA esegue `richiedeStatoFlotta("FLT-001")` → `avviaIntervento("FLT-001")` | Dashboard mostrata; `avviaManutenzione → true`; segnalazioni create; stato mezzi aggiornato | PO-01 verificata: ogni mezzo in `manutenzione`; PO-02 verificata: segnalazioni create con stato `aperta` | Mezzo con condizioni borderline — sistema include nella selezione |
+| TC-07 | Integrazione | Flusso FA-01 — nessun veicolo necessita manutenzione | Flotta `FLT-001` con tutti i mezzi operativi; PA autenticata | PA esegue `richiedeStatoFlotta("FLT-001")` | `analisiStatoFlotta → false`; AppPA mostra `stringaFlottaOperativa` | PO-03 verificata: nessun cambio stato; flotta operativa | Tutti i mezzi in stato `sospeso` — sistema valuta condizioni non solo stato |
+| TC-08 | Integrazione | Mezzo non trovato durante recupero condizioni | Flotta con `idFlotta` inesistente o mezzo rimosso | `richiedeStatoFlotta("FLT-999")` | `getMezzibyFlotta → lista vuota` o eccezione; AppPA mostra messaggio di errore via `mostraErrore(msg)` | Nessuna modifica al sistema; PA informata dell'errore | `idFlotta = null`; flotta cancellata durante la richiesta (race condition) |
+
+## 16. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|--------|------------|-----------|-----------------|-----------------|----------|---------|
+| ERR-AP02-01 | Timeout comunicazione Mezzo:IoT | GestioneFlotta → Mezzo | `getCondizioniMezzi(idFlotta)` — risposta non ricevuta entro timeout | `analisiStatoFlotta` interrotto; AppPA mostra `mostraErrore("Impossibile recuperare condizioni mezzi")` | PA può riprovare; stato flotta non aggiornato | `[ERROR] UC.AP.02: Timeout getCondizioniMezzi for idFlotta={idFlotta} at {timestamp}` |
+| ERR-AP02-02 | Manutenzione già attiva per uno o più mezzi | GestioneFlotta | `avviaManutenzione(idFlotta)` — mezzo in `manutenzione` già esistente | Transizione skip per mezzi già in manutenzione; procede per gli altri mezzi; ritorna `true` | Manutenzione procede solo per mezzi non in manutenzione | `[WARN] UC.AP.02: Mezzi {ids} già in manutenzione, skip per idFlotta={idFlotta}` |
+| ERR-AP02-03 | Parametri segnalazione errati | Segnalazione (Model) | `creaSegnalazione(idMezzo, statoS, data, ora, note)` — data nulla o parametri mancanti | Segnalazione non creata; eccezione propagata a GestioneFlotta; AppPA mostra `mostraErrore("Parametri segnalazione non validi")` | Manutenzione annullata per il mezzo interessato; stato mezzo non modificato | `[ERROR] UC.AP.02: creaSegnalazione fallita — parametri non validi: {dettaglio}` |
+| ERR-AP02-04 | Mezzo non trovato | Mezzo (Model) | `getMezzibyFlotta(idFlotta)` — flotta inesistente o mezzo cancellato | `analisiStatoFlotta` ritorna lista vuota; AppPA mostra flotta non trovata | PA può selezionare altra flotta | `[WARN] UC.AP.02: Flotta {idFlotta} non trovata o senza mezzi` |
+| ERR-AP02-05 | Sessione PA scaduta o non valida | GestioneAutenticazione | Qualsiasi metodo — `idSessionePA == null` o token scaduto | Operazione bloccata; reindirizzamento a View Autenticazione | PA deve effettuare nuovamente il login | `[INFO] UC.AP.02: Tentativo operazione senza sessione valida — bloccato` |
+| ERR-AP02-06 | Flotta senza mezzi associati | GestioneFlotta | `getMezzibyFlotta(idFlotta)` restituisce lista vuota | `analisiStatoFlotta` ritorna false; AppPA mostra flotta vuota | Nessuna azione necessaria; flotta valida ma vuota | `[INFO] UC.AP.02: Flotta {idFlotta} senza mezzi associati` |
 
 ---
 

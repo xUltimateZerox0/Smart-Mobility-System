@@ -8,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
-document-sha256: c410ba9964acb27e5aebf3ce68d877ab84382bbd14c6de4f2b9591fad07777a2
+document-sha256: 13c2fdf9140808dae038d5ac93876f8d87e4463dbf4c18677c778b87ede16cce
 hitl-claims:
   - id: claim-ap03-a01
     text: "Il metodo XMI `aggiornaRestrizione` (singolare) — il diagramma delle classi è stato aggiornato per corrispondere. Il nome canonico è ora `aggiornaRestrizione` (singolare). Critical #3 da response2.md risolta 2026-06-23."
@@ -284,6 +284,32 @@ GestioneAree.analisiConflitti(zona)
 
 ### Point 9 — Externally Verifiable Claims
 **PASS.** Nessun claim che richieda verifica esterna. I 4 claim PENDING riguardano discrepanze XMI ↔ Master_Spec e richiedono solo conferma interna dal team Cofee Coders.
+
+---
+
+## 13. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|---------------|-------|-----------------|----------------|------------|
+| TC-01 | ZonaGeografica (Model) | `creaZonaGeografica(idArea, tipoRestrizione, noteRestrizione, zona)` crea nuova zona | Nessuna zona con `idArea` duplicato; PA sessione attiva | `idArea = "Z-001"`, `tipoRestrizione = divieto_parcheggio`, `noteRestrizione = "Divieto sosta Centro"`, `zona = LineString(...)` | Istanza `ZonaGeografica` creata e persistita | Zona registrata nel sistema; recuperabile via `getZoneGeografiche()` | `idArea = null`; zona con geometria complessa (multi-poligono) |
+| TC-02 | ZonaGeografica (Model) | `setTipoRestrizione(tipoRestrizione)` / `setNoteRestrizione(noteRestrizione)` / `setZona(zona)` | Zona esistente `Z-001` in stato modificabile | `tipoRestrizione = ZTL`, `noteRestrizione = "ZTL Centro Storico"`, `zona = LineString(aggiornata)` | Proprietà aggiornate in memoria | Modifiche non persistite fino a DBMS Update | `tipoRestrizione` non valido (non in enum); `noteRestrizione` vuota |
+| TC-03 | ZonaGeografica (Model) | `verificaSovrapposizioni(zona)` — nessun conflitto | Zona `Z-001` non sovrapposta ad altre zone | `zona = ZonaGeografica` (area distinta) | `bool = false` | Nessuna modifica al sistema | Zona tangente (condivide bordo ma non area) — non è sovrapposizione |
+| TC-04 | ZonaGeografica (Model) | `verificaSovrapposizioni(zona)` — conflitto rilevato | Zona `Z-001` e zona `Z-002` con aree sovrapposte | `zona = ZonaGeografica` (area sovrapposta a `Z-002`) | `bool = true` | Conflitto registrato; sistema notifica PA | Sovrapposizione parziale (< 10% area); sovrapposizione totale (stessa area) |
+| TC-05 | AppPA (View) | `mostraMappa(zone)` visualizza zone sulla mappa | Lista di 2 zone `[Z-001, Z-002]` con restrizioni attive | `zone = List<ZonaGeografica>` con 2 elementi | Mappa renderizzata; zone visualizzate con marker/colore per tipo restrizione | Vista mappa aggiornata; nessuna modifica ai dati | Lista vuota; zona senza restrizioni impostate |
+| TC-06 | Integrazione | Flusso principale — modifica restrizione senza conflitto | Zona `Z-001` esistente; nessuna sovrapposizione con altre zone | PA: `selezionaMappa()` → `modificaRestrizioni(Z-001)` → imposta `ZTL` + note → conferma | `mostraMappa(zone)` aggiornata; zona con `ZTL` persistita | PO-01: zona aggiornata con nuove restrizioni; PO-02: DBMS Update eseguito | Modifica con stessi valori della zona corrente — operazione no-op |
+| TC-07 | Integrazione | Flusso A1 — conflitto con sovrascrittura confermata | Zona `Z-001` sovrapposta a `Z-002`; `verificaSovrapposizioni → true` | PA: conferma sovrascrittura via `confermaSovrascrittura(idArea, ZTL, note)` | `setTipoRestrizione`, `setNoteRestrizione`, `setZona` eseguiti; `mostraMappa(zone)` aggiornata | Zona `Z-001` sovrascrive restrizioni su zona conflittuale | Sovrascrittura con `tipoRestrizione` uguale a quello esistente |
+| TC-08 | Integrazione | Flusso A2 — conflitto con annullamento | Zona `Z-001` sovrapposta a `Z-002`; `verificaSovrapposizioni → true` | PA: rifiuta sovrascrittura via `rifiutaSovrascrittura()` | Nessun setter eseguito; `mostraMappa(zone)` mostra stato precedente | PO-02: nessuna modifica persistita; zona invariata | Annullamento dopo parziale modifica UI — sistema garantisce rollback totale |
+
+## 14. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|--------|------------|-----------|-----------------|-----------------|----------|---------|
+| ERR-AP03-01 | Zona con conflitti non gestiti — utente non risponde alla richiesta di sovrascrittura | GestioneAree | `analisiConflitti(zona) → true` → attesa conferma PA su `confermaSovrascrittura()` / `rifiutaSovrascrittura()` | Timeout attesa risposta PA; operazione annullata; stato mappa invariato | PA può ripetere la modifica | `[WARN] UC.AP.03: Timeout conferma sovrascrittura per idArea={idArea} — operazione annullata` |
+| ERR-AP03-02 | TipoRestrizione non valido (non in enum: `divieto_parcheggio`, `ZTL`, `limite_velocita`) | ZonaGeografica (Model) | `setTipoRestrizione(tipoRestrizione)` — valore non riconosciuto | Eccezione validazione; AppPA mostra `mostraErrore("Tipo restrizione non valido")` | Restrizione non aggiornata; valore precedente mantenuto | `[ERROR] UC.AP.03: Tentativo impostazione tipoRestrizione non valido: {valore}` |
+| ERR-AP03-03 | Zona non trovata — `idArea` inesistente | GestioneAree | `aggiornaRestrizione(idArea, ...)` — `idArea` non corrisponde a zona registrata | Operazione abortita; AppPA mostra `mostraErrore("Zona non trovata")` | PA può selezionare zona valida dalla mappa | `[ERROR] UC.AP.03: idArea={idArea} non trovato — aggiornamento fallito` |
+| ERR-AP03-04 | Zona duplicata — `idArea` già esistente in sistema | ZonaGeografica (Model) | `creaZonaGeografica(idArea, ...)` — violazione unicità `idArea` | Eccezione duplicato; AppPA mostra `mostraErrore("Zona già esistente")` | Nuova zona non creata; zona esistente invariata | `[ERROR] UC.AP.03: Tentativo creazione zona con idArea duplicato: {idArea}` |
+| ERR-AP03-05 | Sessione PA scaduta durante modifica zona | GestioneAutenticazione | Qualsiasi step del flusso — `idSessionePA == null` | Modifica interrotta; reindirizzamento a View Autenticazione | PA deve riloggarsi; modifiche non salvate | `[INFO] UC.AP.03: Sessione PA scaduta durante modifica zona {idArea} — operazione persa` |
+| ERR-AP03-06 | Fallimento DBMS Update — persistenza non riuscita | DBMS (External) | `ZonaGeografica.set*()` → DBMS Update — errore scrittura | Transazione rollback; AppPA mostra `mostraErrore("Errore salvataggio zona")` | Stato sistema precedente alla modifica (nessuna persistenza) | `[ERROR] UC.AP.03: DBMS Update fallito per idArea={idArea} — rollback eseguito` |
 
 ---
 

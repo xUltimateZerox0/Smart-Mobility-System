@@ -8,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 points-failed:
-document-sha256: cc5d955f2074dadd5b2a51fa987ee09ba019c0a0111fddccb3687cc93d5e5079
+document-sha256: ff81519d246d8d12e0b2c506ac681ac26a56035f5ff1715ea1bf5db769affad6
 hitl-claims:
   - id: claim-uc02-001
     text: "inviaRichiestaPrenotazione() signature: Master_Spec mostra no-args (void), UML mostra (idMezzo, idUtente). Quale è la firma corretta?"
@@ -280,6 +280,35 @@ AppUtente → Utente:                  Notifica prenotazione annullata
 | QR Code | Codice generato dal sistema al termine della prenotazione, utilizzato in UC.UT.03 per avviare la corsa |
 | Prenotazione attiva | Prenotazione in stato `attiva`, entro i 15 minuti di validità |
 | Raggio base | Parametro di ricerca ereditato da UC.UT.01 (2 km default) |
+
+---
+
+## §1. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|--------------|-------|----------------|----------------|------------|
+| TC-UT02-01 | View (AppUtente) | Selezione mezzo e avvio prenotazione — happy path | Utente autenticato, mappa visibile (P1-P2), mezzo disponibile | `idMezzo` valido | `selezionaMezzo(idMezzo)` → `inviaRichiestaPrenotazione(idMezzo, idUtente)` | Richiesta prenotazione inviata al Controller | Utente seleziona mezzo già cliccato (doppio click) |
+| TC-UT02-02 | Controller (GestionePrenotazione) | Registrazione prenotazione con stato mezzo aggiornato | Richiesta ricevuta, idMezzo/idUtente validi | `idMezzo`, `idUtente`, `orarioInizio` = now | `creaPrenotazione(idMezzo, idUtente, orarioInizio)` → `Mezzo.setStato(prenotato)` | Prenotazione creata, mezzo bloccato (Q1-Q2) | Concorrenza: due utenti prenotano stesso mezzo |
+| TC-UT02-03 | Model (Prenotazione) | Creazione prenotazione con salvataggio DB | Controller ha invocato creaPrenotazione | `idMezzo`, `idUtente`, `orarioInizio` | `creaPrenotazione()` inserisce record `StatoPrenotazione.attiva` | Record prenotazione persistente | orarioInizio nel passato, idMezzo inesistente |
+| TC-UT02-04 | Model (Mezzo) | Aggiornamento stato mezzo a `prenotato` | Prenotazione creata con successo | `stato = StatoMezzo.prenotato` | `Mezzo.setStato(prenotato)` → DB aggiorna `mezzo.stato` | Mezzo non più disponibile per altre ricerche | Mezzo già in stato `prenotato` o `in_uso` |
+| TC-UT02-05 | View (AppUtente) | Visualizzazione QR Code al completamento prenotazione | Prenotazione registrata, QR_Code generato | `QR_Code` ricevuto da GestionePrenotazione | `mostraQRCode(QR_Code)` renderizza codice | Utente visualizza QR valido per sblocco in UC.UT.03 | QR_Code nullo/danneggiato, schermo troppo piccolo |
+| TC-UT02-IT01 | Integration View→Controller | Contratto `selezionaMezzo` → `inviaRichiestaPrenotazione` | Precondizioni P1-P2 verificate | `idMezzo` dalla selezione utente | `selezionaMezzo(idMezzo)` invoca `inviaRichiestaPrenotazione(idMezzo, idUtente)` | Parametri idMezzo e idUtente passati correttamente | idMezzo non presente nella lista visualizzata |
+| TC-UT02-IT02 | Integration Controller→Model | Contratto `inviaRichiestaPrenotazione` → `creaPrenotazione` + `setStato` | Richiesta valida ricevuta | `idMezzo`, `idUtente`, `orarioInizio` | `creaPrenotazione()` eseguita prima di `Mezzo.setStato(prenotato)` | Transazione atomica: creazione + aggiornamento entrambi completati | Fallimento `setStato` dopo `creaPrenotazione` riuscita |
+| TC-UT02-IT03 | Integration Timeout | Contratto `gestisciTimeout` → `setStato(disponibile)` + `setStato(scaduta)` + `notificaScadenzaTempo` | 15 minuti trascorsi da orario prenotato | `idPrenotazione` della prenotazione scaduta | `gestisciTimeout()` → `Mezzo.setStato(disponibile)` → `Prenotazione.setStato(scaduta)` → `notificaScadenzaTempo(idPrenotazione)` | Mezzo torna disponibile, prenotazione scaduta, utente notificato | Timeout a 14:59 vs 15:01, prenotazione già annullata manualmente |
+
+---
+
+## §2. Error Handling Matrix
+
+| ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|----|-----------|-----------|----------------|----------------|----------|---------|
+| ERR-UT02-01 | Business logic | GestionePrenotazione | `inviaRichiestaPrenotazione()` — `Mezzo.getStato() != disponibile` (già prenotato/in uso) | `mostraErrore("mezzo non disponibile")` | L'utente seleziona un altro mezzo dalla mappa | WARN |
+| ERR-UT02-02 | Business logic | GestionePrenotazione | `gestisciTimeout()` — 15 minuti trascorsi, timeout scattato | `notificaScadenzaTempo(idPrenotazione)` → `mostraSuccesso("Prenotazione annullata")` (Alt Flow) | Mezzo rilasciato (disponibile), utente può ri-prenotare | INFO |
+| ERR-UT02-03 | External | Prenotazione (DBMS) | `creaPrenotazione()` — errore DB (connessione, constraint violation, deadlock) | Rollback transazione, `mostraErrore("Errore prenotazione")` | L'utente riprova la prenotazione | ERROR |
+| ERR-UT02-04 | Input validation | GestionePrenotazione | `inviaRichiestaPrenotazione(idMezzo, idUtente)` — idMezzo o idUtente nulli/invalidi | `mostraErrore("Dati prenotazione non validi")` | L'utente verifica i dati e riprova | WARN |
+| ERR-UT02-05 | Security | GestionePrenotazione | `inviaRichiestaPrenotazione()` — sessione utente scaduta | Redirect a `UC.ATT.01` (Login) | L'utente si ri-autentica e ripete la prenotazione | WARN |
+| ERR-UT02-06 | Business logic | GestionePrenotazione | Tentativo prenotazione senza preventiva ricerca (UC.UT.01 non eseguito) | `mostraErrore("Selezionare un mezzo dalla mappa")` | Reindirizzamento a UC.UT.01 per la ricerca | ERROR |
+| ERR-UT02-07 | External | GestionePrenotazione | Generazione QR_Code fallisce dopo creazione prenotazione | `mostraErrore("Errore generazione QR Code")` | Prenotazione mantenuta, QR rigenerabile su richiesta | ERROR |
 
 ---
 

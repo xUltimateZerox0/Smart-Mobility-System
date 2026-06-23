@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 9b042c5a6d9eeba0e58e0bda5d30a3926f875572e772ebf450b96ad806b9e66a
+document-sha256: 94b99c515c1e6583f69e6fe5cf343a07c2818a414bf92c94f0e3fbb19fecc7c2
 hitl-claims:
   - id: claim-a3f1b2c0
     text: "La tariffa di sospensione è differenziata rispetto alla tariffa oraria standard e il calcolo del costo di sospensione è gestito da Corsa.aggiornaCosto() con logica interna non specificata nei requisiti attuali"
@@ -271,6 +271,42 @@ Utente          AppUtente       GestioneCorsa
 | 5 | `visualizza errore` | AppUtente | Utente | reply | `AppUtente.mostraErrore(msg)` → feedback |
 
 *I nomi dei messaggi reply nel diagramma XMI rappresentano il contenuto visualizzato (non i nomi dei metodi). I metodi corrispondenti sono identificati dalla traceability matrix §2.*
+
+---
+
+## 11. Test Case Specifications
+
+### 11.1 Component Tests
+
+| TC-ID | Test Case | Preconditions | Input | Expected Output | Verification |
+|-------|-----------|---------------|-------|-----------------|--------------|
+| TC-UT06-01 | Richiesta sospensione corsa | Corsa attiva, stato mezzo `in_uso` | `idCorsa` valido | `AppUtente.sospendiCorsa(idCorsa)` → `GestioneCorsa.sospensioneCorsa()` avviato | Verifica chiamata al Controller |
+| TC-UT06-02 | Blocco fisico mezzo via IoT | Sospensione autorizzata | `idMezzo` valido | `bloccoMezzoFisico(idMezzo)` restituisce `true` | Verifica risposta positiva dal sistema esterno |
+| TC-UT06-03 | Aggiornamento stato mezzo a sospeso | Blocco fisico riuscito | `stato: sospeso` | `Mezzo.setStato(sospeso)` eseguito, stato persistito | Verifica transizione stato `in_uso → sospeso` |
+| TC-UT06-04 | Generazione e visualizzazione QR Code | Stato mezzo impostato a sospeso | — | `AppUtente.mostraQRCode()` mostra QR code all'utente | Verifica rendering QR code |
+| TC-UT06-05 | Sblocco mezzo e aggiornamento costo | QR scansionato, sblocco riuscito | `qrCode` valido, `costoSospensione` calcolato | `sbloccoMezzoFisico()` → `true`, `setStato(in_uso)`, `aggiornaCosto()` eseguiti | Verifica sequenza sblocco + aggiornamento costo |
+
+### 11.2 Integration Tests
+
+| TC-ID | Test Case | Preconditions | Steps | Expected Result | Verification |
+|-------|-----------|---------------|-------|-----------------|--------------|
+| TC-UT06-06 | Flusso completo sospensione e ripresa | Corsa attiva, stato `in_uso` | 1. Utente richiede sospensione 2. Blocco fisico 3. Stato → sospeso 4. QR generato 5. QR scansionato 6. Sblocco fisico 7. Stato → in_uso 8. Costo aggiornato 9. Conferma | Ciclo completo suspend→resume con costo sospensione incluso | Verifica step 1-9 flusso principale |
+| TC-UT06-07 | Corsa non esistente (FA1) | Sessione attiva, idCorsa inesistente | 1. Utente richiede sospensione con `idCorsa` non valido 2. `sospensioneCorsa()` restituisce `false` | `AppUtente.mostraErrore("Corsa non trovata")` mostrato, sospensione annullata | Verifica flusso alternativo FA1 |
+| TC-UT06-08 | QR code scaduto o non valido | Corsa sospesa, QR generato in precedenza | 1. Utente scansiona QR code non valido/scaduto 2. `richiediSblocco()` fallisce | QR rifiutato, errore mostrato, sblocco non eseguito | Verifica gestione QR invalido con messaggio appropriato |
+
+---
+
+## 12. Error Handling Matrix
+
+| ERR-ID | Type | Component | Detection | Response | Fallback | Logging |
+|--------|------|-----------|-----------|----------|----------|---------|
+| ERR-UT06-01 | Business Logic | GestioneCorsa | `sospensioneCorsa()` restituisce `false` (corsa non trovata per idCorsa) | Mostra errore "Corsa non trovata. Verificare i dati." (FA1) | — | `WARN: Tentativo sospensione corsa inesistente — idCorsa {idCorsa}` |
+| ERR-UT06-02 | External/IoT | Mezzo:IoT | `bloccoMezzoFisico(idMezzo)` restituisce `false` (guasto IoT) | Mostra errore "Impossibile bloccare il mezzo. Contattare assistenza." | Riprova blocco dopo timeout; se persiste, escalation assistenza | `ERROR: Blocco fisico fallito per mezzo {idMezzo} — possibile guasto IoT` |
+| ERR-UT06-03 | External/IoT | Mezzo:IoT | `sbloccoMezzoFisico(idMezzo)` restituisce `false` (guasto IoT) | Mostra errore "Impossibile sbloccare il mezzo. Contattare assistenza." | Riprova sblocco dopo timeout; se persiste, escalation assistenza | `ERROR: Sblocco fisico fallito per mezzo {idMezzo} — possibile guasto IoT` |
+| ERR-UT06-04 | Validation | AppUtente | `richiediSblocco(qrCode)` rileva QR scaduto o non valido | Mostra errore "QR code non valido o scaduto. Richiedere un nuovo QR." | Rigenera QR code tramite nuova sospensione | `WARN: Tentativo sblocco con QR non valido — qrCode {qrCode}` |
+| ERR-UT06-05 | Precondition | Sistema | Sessione utente scaduta durante flusso sospensione/ripresa | Blocca operazione, reindirizza a login | — | `ERROR: Sessione scaduta durante operazione corsa {idCorsa}` |
+| ERR-UT06-06 | State | Mezzo | `setStato()` rileva stato attuale incompatibile con transizione richiesta | Rifiuta cambio stato, segnala inconsistenza | Ripristina stato da DB in lettura | `CRITICAL: Stato mezzo {idMezzo} inconsistente — transizione {statoCorrente} → {statoRichiesto} non valida` |
+| ERR-UT06-07 | Business Logic | Corsa | `aggiornaCosto(costoSospensione)` non può calcolare tariffa sospensione | Costo non aggiornato, segnala errore "Impossibile calcolare costo sospensione" | Applica tariffa standard oraria come fallback | `WARN: Calcolo tariffa sospensione fallito per corsa {idCorsa} — applicata tariffa standard` |
 
 ---
 

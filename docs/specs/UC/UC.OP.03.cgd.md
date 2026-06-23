@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: c754e9c83e1013849b32652a31c2dc24a4297dfc78f138314103e4293dcdd626
+document-sha256: f7517622da82cb858655d5c8e47ffab1f7b7eb8ff97c5f4f54758b6f976de0df
 hitl-claims:
   - id: claim-9a3e7c01
     text: "Il diagramma di sequenza usa 'getPrenotazioneByStato(valida)' ma StatoPrenotazione non ha un valore 'valida' — i 4 valori sono attiva, scaduta, annullata, completata. Il valore corretto dovrebbe essere 'attiva' (o StatoPrenotazione.attiva)"
@@ -423,6 +423,42 @@ UC.OP.03 (Amministrazione Prenotazioni)  — indipendente, non include né esten
 | SELECT su `prenotazione WHERE stato = 'attiva'` | Recupero lista prenotazioni attive |
 | UPDATE `prenotazione SET stato = 'annullata'` | Persistenza annullamento |
 | UPDATE `mezzo SET stato = 'disponibile'` | Persistenza liberazione mezzo |
+
+---
+
+## 16. Test Case Specifications
+
+### 16.1 Component Tests
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP03-C01 | AppOperatoreSC | richiediListaPrenotazioni triggers booking list request | P1-P2 satisfied; operator authenticated | None | Calls GestionePrenotazione.richiediLista() | GestionePrenotazione invoked; returns to view | Session expired; rapid repeated requests |
+| TC-OP03-C02 | GestionePrenotazione | richiediLista retrieves active bookings | At least one Prenotazione with stato=attiva in DB | None (filter implicit: stato=attiva) | Returns List\<Prenotazione\> filtered by attiva | Prenotazione.getPrenotazioneByStato(attiva) called internally | No active bookings (returns empty list); DB unavailable |
+| TC-OP03-C03 | Prenotazione | getPrenotazioneByStato filters by stato | Prenotazione records in DB | stato: StatoPrenotazione.attiva | Returns List\<Prenotazione\> matching stato | List returned to controller; no side effects | stato with zero matches; all 4 enum values mixed in DB |
+| TC-OP03-C04 | GestionePrenotazione | annullaPrenotazione completes cancellation | Prenotazione selected; idPrenotazione known | idPrenotazione (implicitly from context) | Prenotazione.setStato(annullata) + Mezzo.setStato(disponibile) → true | Both state changes persisted; booking cancelled; vehicle freed | Prenotazione already annullata; idPrenotazione invalid |
+| TC-OP03-C05 | AppOperatoreSC | mostraSuccesso confirms cancellation | annullaPrenotazione returned true | msg: String | Success message displayed to operator | UI updated; operator informed | Very long msg string; special characters in msg |
+
+### 16.2 Integration Tests
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP03-I01 | Full Main Flow | Complete cancellation cycle | P1-P2 satisfied; at least one attiva prenotazione | None (full flow from request to confirmation) | List shown → select → annulla → setStato ×2 → confirm | Prenotazione.stato=annullata; Mezzo.stato=disponibile; mostraSuccesso shown | Multiple prenotazioni for same Mezzo; booking about to expire |
+| TC-OP03-I02 | Alt Flow 5.1: Empty List | No active prenotazioni to display | All prenotazioni in stato ≠ attiva | None | richiediLista returns empty list → mostraErrore("lista prenotazioni vuota") | No state changes; UC terminates | All prenotazioni newly scadute; DB connection issue during query |
+| TC-OP03-I03 | GestionePrenotazione → DBMS | Dual state update consistency | Selected prenotazione with valid Mezzo FK | idPrenotazione | UPDATE prenotazione + UPDATE mezzo both succeed | DB in consistent state; both entities reflect new stato | mezzo UPDATE fails after prenotazione UPDATE succeeds; concurrency conflict |
+
+---
+
+## 17. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|---|---|---|---|---|---|---|
+| ERR-OP03-01 | Data | Prenotazione | getPrenotazioneByStato(attiva) returns empty list | GestionePrenotazione receives empty list | mostraErrore("lista prenotazioni vuota"); UC terminates | Log empty list retrieval with timestamp |
+| ERR-OP03-02 | State | Prenotazione | annullaPrenotazione on prenotazione with stato=annullata/completata | State transition invalid (terminal stato) | mostraErrore("Prenotazione già annullata/completata"); operation blocked | Log invalid state transition with idPrenotazione and current stato |
+| ERR-OP03-03 | Security | AppOperatoreSC | RBAC check fails — TipoOperatore ≠ OperatoreSC | GestioneAutenticazione blocks access | Access denied; mostraErrore("Operazione non autorizzata") | Log unauthorized access with TipoOperatore and idSessione |
+| ERR-OP03-04 | Data | Prenotazione | annullaPrenotazione with invalid idPrenotazione (not found) | Prenotazione returns null or DB FK violation | mostraErrore("Prenotazione non trovata"); operation aborted | Log invalid idPrenotazione with attempted operation |
+| ERR-OP03-05 | Consistency | DBMS | Mezzo.setStato(disponibile) fails after Prenotazione.setStato(annullata) succeeds | DB inconsistency: booking cancelled but vehicle remains prenotato | mostraErrore("Errore aggiornamento mezzo"); manual recovery required | Log inconsistency with idPrenotazione and idMezzo |
+| ERR-OP03-06 | Concurrency | GestionePrenotazione | Concurrent annullaPrenotazione on same idPrenotazione | Optimistic locking prevents double cancellation | One operation succeeds; second shows mostraErrore("Prenotazione già gestita") | Log concurrency conflict with idPrenotazione |
+| ERR-OP03-07 | System | AppOperatoreSC | Session expired during booking selection | RBAC check fails mid-flow | mostraErrore("Sessione scaduta"); redirect to UC.ATT.01 | Log session expiry with idOperatoreSC |
 
 ---
 

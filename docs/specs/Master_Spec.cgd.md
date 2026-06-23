@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: f62cfacd4f73d7c7ad66e4ae1d172229b4d7666bb64b506f40665eb5ee215dfa
+document-sha256: 2949054942244b9cc17e501d5188b3a99b7be38638b6b0ecc9713f5f4e4909cf
 hitl-claims:
   - id: claim-6d3b7c006
     text: "I valori enum per StatoSegnalazione sono: aperta, in_lavorazione, chiusa"
@@ -579,7 +579,7 @@ Orchestrazione del ciclo di vita della corsa: avvio, sospensione, terminazione, 
 | *(Formula)* | — | `stimaCosto = costoOrario × oreUtilizzo + costo_sospensione(eventuale)` *(clarified 2026-06-23)* |
 | `sospensioneCorsa()` | bool | — |
 | `richiediSblocco(qrCode)` | bool | qrCode: String |
-| `richiediCalcoloPercorso(coordinateUtente, destinazione)` | percorso | coordinateUtente: String, destinazione: String |
+| `richiediCalcoloPercorso(coordinateUtente, destinazione)` | percorso ⚠ Placeholder — struttura da definire con API mappe effettiva | coordinateUtente: String, destinazione: String |
 | `acquisisciSceltaMetodo(idMetodoPagamento)` | void | idMetodoPagamento |
 | `getIdGestioneCorsa()` | — | — |
 | `setIdGestioneCorsa(id)` | void | id |
@@ -867,7 +867,7 @@ Servizio di geolocalizzazione e routing esterno.
 
 | Metodo | Ritorno | Parametri |
 |--------|---------|-----------|
-| `getPercorso(coordinateIniziali, coordinateFinali, restrizioni)` | datiPercorso | coordinateIniziali: String, coordinateFinali: String, restrizioni: ZonaGeografica |
+| `getPercorso(coordinateIniziali, coordinateFinali, restrizioni)` | datiPercorso ⚠ Placeholder — struttura da definire con API mappe effettiva | coordinateIniziali: String, coordinateFinali: String, restrizioni: ZonaGeografica |
 | `getIdServizioMappa()` | — | — |
 | `setIdServizioMappa(id)` | void | id |
 
@@ -1106,6 +1106,75 @@ transito (id_corsa→corsa, id_area→zona_geografica)
 | Use Case Diagram | `docs/diagrams/use-case-diagram/UCdiagram-v1.1-clean.uml` | XMI 2.1 |
 | ER Diagram | `docs/diagrams/er-diagram/ERdiagram-clean.puml` | PlantUML |
 | Sequence Diagrams | `docs/diagrams/sequence-diagrams/UC.*/` | XMI 2.1 (19 UC) |
+
+---
+
+## 15. Test Strategy
+
+### 15.1 Approach
+- **Unit Testing (JUnit 5 + Mockito):** Test each controller, service, and model method in isolation. External systems (ServizioMappa, GatewayPagamento, DBMS, Mezzo:IoT) are mocked.
+- **Integration Testing (@SpringBootTest):** Test View→Controller→Model contracts. Use @DataJpaTest for repository layers.
+- **API Testing (MockMvc):** Test REST endpoints per controller with JSON request/response validation.
+- **Coverage Target:** Line coverage ≥ 80% per module, branch coverage ≥ 70%.
+
+### 15.2 Test Levels per Component
+
+| Component | Unit Tests | Integration Tests | Key Mock |
+|-----------|------------|-------------------|----------|
+| Controller (GestioneAutenticazione, RicercaMezzi, etc.) | 5+ per controller | 2 per endpoint | Repository layer |
+| Model (Mezzo, Utente, Corsa, etc.) | 3+ per entity | 2 per repository | DBMS |
+| View (AppUtente, AppPA, etc.) | 2+ per view | 1 per use case | Controller layer |
+| External (ServizioMappa, GatewayPagamento) | N/A (simulated) | 1 per external method | MockMvc |
+
+### 15.3 Test Data Strategy
+- Use in-memory H2 database for integration tests (MySQL dialect compatibility verified)
+- Pre-populate test data via data.sql or @BeforeEach fixtures
+- Test coordinates: use known test points (e.g., (12.4924, 41.8902) for Rome)
+- Spatial queries tested with JTS GeometryFactory
+
+### 15.4 Acceptance Criteria Validation
+Each UC's Acceptance Criteria (where defined) maps to at least 1 automated test:
+- **AC1 (functional):** End-to-end component test
+- **AC2 (security):** Security context test with/without valid session
+- **AC3 (integration):** Integration test verifying state changes
+- **AC4 (UI):** View rendering contract test
+- **AC5 (UX):** Behavioral consistency test
+
+---
+
+## 16. Error Handling Strategy
+
+### 16.1 Global Error Categories
+
+| Error ID | Error Type | Detection Point | System Response | Fallback | Logging |
+|----------|-----------|-----------------|----------------|----------|---------|
+| ERR-GL-001 | Input Validation | Controller (@Valid) | 400 Bad Request + ValidationError DTO | N/A (client error) | WARN |
+| ERR-GL-002 | Authentication Failure | GestioneAutenticazione | 401 Unauthorized | Redirect to Autenticazione view | INFO |
+| ERR-GL-003 | Authorization Failure | Controller (session check) | 403 Forbidden | mostraErrore("Accesso negato") | WARN |
+| ERR-GL-004 | Resource Not Found | Service/Repository | 404 Not Found | mostraErrore("Risorsa non trovata") | WARN |
+| ERR-GL-005 | Business Logic Violation | Service layer | 409 Conflict | mostraErrore(msg) + rollback | WARN |
+| ERR-GL-006 | External System Timeout | Integration layer | 502 Bad Gateway | Retry (3 attempts) then mostraErrore() | ERROR |
+| ERR-GL-007 | External System Unavailable | Integration layer | 503 Service Unavailable | mostraErrore("Servizio temporaneamente non disponibile") | ERROR |
+| ERR-GL-008 | Concurrent Access (Optimistic Lock) | JPA @Version | 409 Conflict | Retry with fresh data | WARN |
+| ERR-GL-009 | Database Constraint Violation | Repository | 500 Internal Server Error | Transaction rollback | ERROR |
+| ERR-GL-010 | Unexpected Runtime Exception | Global @ControllerAdvice | 500 Internal Server Error | mostraErrore("Errore imprevisto") | FATAL |
+
+### 16.2 Per-Layer Error Handling
+
+| Layer | Error Boundary | Handling Mechanism |
+|-------|---------------|--------------------|
+| View (App*) | User-facing errors | `mostraErrore(msg)` per tutte le View |
+| Controller | Business validation | `ResponseStatusException` con HttpStatus appropriato |
+| Service | Domain logic | `IllegalArgumentException`, custom domain exceptions |
+| Repository | Data access | `DataAccessException` → wrapped in service |
+| Integration | External calls | RetryTemplate + CircuitBreaker pattern |
+
+### 16.3 Logging Conventions
+- **FATAL:** System cannot continue (e.g., DB connection lost)
+- **ERROR:** Operation failed, user impacted (e.g., external system down)
+- **WARN:** Operation degraded, user may not notice (e.g., validation error)
+- **INFO:** Security-relevant events (login, logout, authorization failures)
+- **DEBUG:** Method entry/exit for troubleshooting (disabled in production)
 
 ---
 

@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 91fcf4f4a37d29b249a65e10c455a4d051c03278c693ee95e6d483c62d462da1
+document-sha256: a8601318ef5c611c4fbba0e10ed70216bba329bedd8d26069f5be360afbc13d4
 hitl-claims:
   - id: claim-4f2a1c08
     text: "Il diagramma di sequenza usa la lifeline 'Controller' (generica) anziché 'RicercaMezzi' (specifica), in contrasto con chiarimenti-vari.md punto 6 che richiede nomi corrispondenti ai componenti di sistema"
@@ -406,6 +406,35 @@ UC.UT.04 (Ottimizzazione Percorso)
 | 2 | claim-3b7d9e02 | Assenza metodo esplicito `rifiutaEspansione()` | A |
 | 3 | claim-9e2f5a11 | UT.05 coperta implicitamente via `tempoDisponibilita` | A |
 | 4 | claim-7c6a3d14 | Raggi di ricerca: "es." vs valori canonici fissi | A |
+
+---
+
+## §16. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|--------------|-------|----------------|----------------|------------|
+| TC-UT01-01 | View (AppUtente) | Avvio ricerca mezzi — happy path coordinate valide | Utente autenticato (P1), coordinate GPS presenti (P2) | `coordinateUtente` = "12.34,56.78,0.0", `raggiob` = 2.0 | `avviaRicercaMezzi()` invoca `visualizzaMezziVicini()` → `mostraMezzi(List<Mezzo>)` con lista non vuota | Q1: elenco mezzi recuperato | Coordinate al limite del raggio di copertura (2.0 km esatti) |
+| TC-UT01-02 | View (AppUtente) | Avvio ricerca con coordinate non valide | Utente autenticato | `coordinateUtente` = "999,999,999" (fuori copertura) | `mostraErrore("Coordinate non valide")` chiamato | Nessuna query inviata | Stringa vuota, formato errato ("abc,def"), coordinate nulle |
+| TC-UT01-03 | Controller (RicercaMezzi) | Ricerca base restituisce lista vuota → espansione accettata | Utente autenticato, nessun mezzo nel raggio 2km | `coordinateUtente` valide, `raggiob` = 2.0 → `getMezziInArea()` → [] | `confermaEspansione()` → `visualizzaMezziVicini(coordinateUtente, 5.0)` | Ricerca estesa a 5km eseguita | Raggio esteso = 5.0 km, utente annulla prima di confermare |
+| TC-UT01-04 | Model (Mezzo) | Query spaziale DBMS restituisce 3 mezzi disponibili | DBMS connesso, 3 mezzi con `stato = disponibile` nel raggio | `coordinateUtente` = "12.34,56.78,0.0", `raggio` = 2.0 | `getMezziInArea()` restituisce `List<Mezzo>` con 3 elementi | Mezzi filtrati per stato e distanza | Raggio = 0 km (solo coordinate esatte), raggio massimo, nessun mezzo nello stato `disponibile` |
+| TC-UT01-05 | View (AppUtente) | Selezione mezzo e visualizzazione dettagli | Mezzo selezionato disponibile nella lista | `idMezzo` valido | `selezionaMezzo(idMezzo)` → `visualizzaSpecifiche()` → `renderizzaDettagliVeicolo(Mezzo)` con tutti gli attributi popolati | Q2: specifiche recuperate | `idMezzo` inesistente/null, mezzo senza `tempoDisponibilita` valorizzato |
+| TC-UT01-IT01 | Integration View→Controller | Contratto `avviaRicercaMezzi` → `visualizzaMezziVicini` | Precondizioni P1-P2 verificate | `coordinateUtente` valide | `avviaRicercaMezzi()` delega a `visualizzaMezziVicini()` con stessi parametri | Parametri passati correttamente tra View e Controller | `raggiob` = 0.0, coordinata con separatori diversi |
+| TC-UT01-IT02 | Integration Controller→Model | Contratto `visualizzaMezziVicini` → `getMezziInArea` | Controller ha ricevuto richiesta valida | `coordinateUtente` valide, `raggio` = 2.0 | `getMezziInArea()` invocato con coordinate e raggio corretti | Model restituisce `List<Mezzo>` al Controller | Raggio esteso 5.0, conversione tipo String→coordinate |
+| TC-UT01-IT03 | Integration Model→DBMS | Query spaziale JTS Point per filtro geografico | Model ha ricevuto coordinate e raggio | Coordinate parsate in `Point` JTS, `stato='disponibile'` | DBMS esegue `SELECT * FROM mezzo WHERE stato='disponibile' AND ST_Distance(...) <= raggio` | Risultati filtrati correttamente per distanza e stato | Mezzo con coordinate nulle, indice spaziale non utilizzato |
+
+---
+
+## §17. Error Handling Matrix
+
+| ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|----|-----------|-----------|----------------|----------------|----------|---------|
+| ERR-UT01-01 | Input validation | AppUtente | `avviaRicercaMezzi(coordinateUtente)` — formato String non valido o coordinate fuori copertura | `mostraErrore("Coordinate non valide")` | L'utente reinserisce le coordinate | WARN |
+| ERR-UT01-02 | Business logic | RicercaMezzi | `visualizzaMezziVicini(coordinateUtente, 2.0)` — `getMezziInArea()` → lista vuota | Prompt: "Nessun mezzo trovato. Espandere a 5km?" (Alt 5.1) | Raggio esteso 5km (se utente accetta) | INFO |
+| ERR-UT01-03 | Business logic | RicercaMezzi | Dopo espansione, `visualizzaMezziVicini(coordinateUtente, 5.0)` → lista vuota | `mostraErrore("Nessun mezzo disponibile nell'area")` (Alt 5.2) | L'utente torna alla mappa | WARN |
+| ERR-UT01-04 | External | Mezzo (DBMS) | `getMezziInArea()` — query spaziale fallisce (timeout/errore connessione) | `mostraErrore("Errore caricamento mezzi")` | L'utente riprova la ricerca | ERROR |
+| ERR-UT01-05 | Business logic | AppUtente | Dopo prompt espansione — utente non invoca `confermaEspansione()` | `mostraErrore("Nessun mezzo disponibile")` (Alt 5.3) | Flusso terminato, utente torna alla home | INFO |
+| ERR-UT01-06 | Security | RicercaMezzi | `visualizzaMezziVicini()` — sessione utente scaduta o token non valido | Redirect a `UC.ATT.01` (Login) | L'utente si ri-autentica | WARN |
+| ERR-UT01-07 | Input validation | RicercaMezzi | `visualizzaSpecifiche(idMezzo)` — `idMezzo` inesistente o nullo | `mostraErrore("Mezzo non trovato")` | L'utente seleziona un altro mezzo | WARN |
 
 ---
 

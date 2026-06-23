@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 8d0e4af3db35537a54fb6092c6e68b7b7b3651f8761823a8b762f067151500a7
+document-sha256: b1be8ab53c518d138766e75b5ef0d9b77a8f931211008838313d7ea854ab5860
 hitl-claims:
   - id: claim-ap01-a1b2c3d4
     text: "GestioneStatistiche.analisiTratte(dataInizio, dataFine) restituisce un oggetto di tipo statistiche contenente i dati aggregati"
@@ -241,6 +241,32 @@ Ogni corsa può attraversare N zone geografiche. Ogni zona può essere attravers
 | View che interroga direttamente il Model | `AppPA` passa attraverso `GestioneStatistiche` (Controller) |
 | Saltare la verifica di autenticazione | PC-01 richiede sessione PA attiva |
 | Hardcodare l'intervallo temporale | `dataInizio` e `dataFine` sono parametri |
+
+## 14. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-AP01-01 | AppPA | Seleziona intervallo valido | Sessione PA attiva, AppPA inizializzata | `dataInizio`, `dataFine` validi (dataFine >= dataInizio) | Parametri validati e passati a GestioneStatistiche | AppPA in attesa di risposta | Data nel futuro, data uguale a inizio e fine |
+| TC-AP01-02 | GestioneStatistiche | Analisi tratte con dati presenti | Corsa e Transito popolati nel periodo | `analisiTratte(dataInizio, dataFine)` invocato | `getCorseByPeriodo` eseguito, dati aggregati restituiti | Report statistiche generato | Periodo con numero elevato di corse |
+| TC-AP01-03 | Corsa | Recupero corse per periodo | Database con corse storiche | `getCorseByPeriodo(dataInizio, dataFine)` | Lista di oggetti Corsa nel periodo | Set di corse pronto per elaborazione | Periodo con zero corse (FA-01) |
+| TC-AP01-04 | Transito | Recupero transiti per corsa | Corsa identificata con transiti associati | `getTransitiByCorsa(idCorsa)` per corsa esistente | Lista di oggetti Transito associati alla corsa | Dati transiti disponibili per analisi | Corsa senza transiti, corsa con molte zone |
+| TC-AP01-05 | AppPA | Visualizzazione statistiche e download | Report statistiche generato | `mostraStatistiche(statistiche)` invocato | Statistiche mostrate, opzione download disponibile | Utente puo scaricare il report | Report con grandi volumi di dati |
+| IT-AP01-01 | AppPA → GestioneStatistiche → Corsa | Integrazione catena completa | Sessione attiva, sistema inizializzato | Sequenza completa: selezionaIntervallo → analisiTratte → getCorseByPeriodo | Dati corsa fluiscono da AppPA a GestioneStatistiche a Corsa e ritorno | Flusso dati completo verificato | Test con diverse dimensioni di dataset |
+| IT-AP01-02 | GestioneStatistiche → Transito | Integrazione loop transiti | Set di corse ottenuto da getCorseByPeriodo | `getTransitiByCorsa(idCorsa)` in loop per ogni corsa | Ogni corsa restituisce i propri transiti; aggregazione completa | Tutti i transiti raccolti per il report | Numero variabile di transiti per corsa |
+| IT-AP01-03 | GestioneStatistiche → AppPA | Integrazione flusso errore FA-01 | Periodo selezionato senza dati | `getCorseByPeriodo` restituisce insieme vuoto | `mostraStatistiche` non invocata, messaggio "Mancanza dati, modificare le date" mostrato | Utente informato, nessun file generato | Transizione da errore a nuovo tentativo con date diverse |
+
+---
+
+## 15. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|---|---|---|---|---|---|---|
+| ERR-AP01-01 | GestioneStatistiche non disponibile | GestioneStatistiche | Invocazione `analisiTratte(dataInizio, dataFine)` senza risposta | Timeout — notifica errore all'utente tramite AppPA | Nuovo tentativo dopo timeout | Log di sistema: ServizioStatistiche non raggiungibile |
+| ERR-AP01-02 | Nessuna corsa nel periodo | Corsa | `getCorseByPeriodo(dataInizio, dataFine)` restituisce insieme vuoto | Attivazione FA-01: messaggio "Mancanza dati, modificare le date" (FA-01.3) | L'utente modifica l'intervallo e riprova | Nessun log errore (caso d'uso previsto) |
+| ERR-AP01-03 | Intervallo date non valido | AppPA | `selezionaIntervallo(dataInizio, dataFine)` con dataInizio > dataFine | Validazione lato AppPA: input rifiutato | L'utente corregge le date | Evento informativo: input non valido |
+| ERR-AP01-04 | Transito con ZonaGeografica non valida | Transito | `getTransitiByCorsa(idCorsa)` restituisce transito con idArea inesistente | Transito saltato nell'aggregazione, corsa parzialmente elaborata | Corsa elaborata con transiti validi rimanenti | Warning: riferimento ZonaGeografica non valido per transito |
+| ERR-AP01-05 | Corsa senza transiti | Transito | `getTransitiByCorsa(idCorsa)` restituisce lista vuota per corsa valida | Corsa inclusa nei dati aggregati ma senza tratte registrate | Corsa conteggiata ma marcata come "senza percorso" | Log informativo: corsa senza transiti |
+| ERR-AP01-06 | Fallimento generazione file | GestioneStatistiche | `generaFileStatistiche(corse)` fallisce durante l'elaborazione | Errore interno — `mostraErrore(msg)` su AppPA | L'utente puo riavviare l'analisi | Log errore con dettagli del fallimento |
 
 ---
 

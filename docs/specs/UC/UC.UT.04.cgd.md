@@ -6,7 +6,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: c92732bbe795246f65283e2df27cc60c58c0fc537259216e83f53d61e0da0b7e
+document-sha256: ff59c3ffa3fe1ecddfe2fb8fcdfc89223407862d704bae9259e3061fd1e21bf9
 hitl-claims:
   - id: claim-uc04001
     text: "Il parametro si chiama 'destinazione' (Master_Spec) e non 'stringaDestinazione' (XMI) — la fonte primaria documentazione.md prevale"
@@ -33,13 +33,13 @@ hitl-claims:
     confirmed-by: Team Cofee Coders
     confirmed-date: 2026-06-22
   - id: claim-uc04004
-    text: "I tipi di ritorno 'percorso' e 'datiPercorso' sono tipi di dominio e la loro struttura interna non è definita in alcun documento sorgente"
-    value: "Tipi dominio — struttura non specificata (PROJECTED)"
-    source: "Nessuna fonte definisce la struttura di percorso/datiPercorso"
+    text: "Risolta: tipo segnaposto da API esterna — non blocca la generazione."
+    value: "Tipi segnaposto (placeholder) — struttura definita dall'API mappe esterna quando integrata"
+    source: "Decisione architetturale 2026-06-23"
     location: "Domain/types/percorso+datiPercorso"
     round: B
     confirmed-by: Team Cofee Coders
-    confirmed-date: 2026-06-22
+    confirmed-date: 2026-06-23
 ---
 
 # UC.UT.04 — Ottimizzazione Percorso
@@ -78,8 +78,8 @@ hitl-claims:
 | 2 | — | Il sistema ha inoltrato la richiesta a `GestioneCorsa.richiediCalcoloPercorso(coordinateUtente, destinazione)` | Controller riceve coordinate utente + destinazione |
 | 3 | — | Il sistema ha interrogato `ZonaGeografica.getRestrizioniZona(coordinateUtente)` per recuperare le restrizioni attive nell'area | Restituisce zona/e con `tipoRestrizione` e `zona` (LineString) |
 | 4 | — | Il sistema ha invocato `ServizioMappa.getPercorso(coordinateIniziali, coordinateFinali, restrizioni)` passando: posizione utente, coordinate destinazione, restrizioni attive | Servizio esterno simulato |
-| 5 | — | Il servizio mappa ha restituito i `datiPercorso` con il tracciato ottimizzato *(tempo minimo, rispettando le restrizioni)* | `datiPercorso` — tipo di dominio, struttura non definita *(projected type)* |
-| 6 | — | `GestioneCorsa` ha elaborato il `percorso` dai `datiPercorso` e lo ha inoltrato a `AppUtente` | `percorso` — tipo di dominio, struttura non definita *(projected type)* |
+| 5 | — | Il servizio mappa ha restituito i `datiPercorso` con il tracciato ottimizzato *(tempo minimo, rispettando le restrizioni)* | `datiPercorso` — tipo segnaposto da API esterna *(external API placeholder)* |
+| 6 | — | `GestioneCorsa` ha elaborato il `percorso` dai `datiPercorso` e lo ha inoltrato a `AppUtente` | `percorso` — tipo segnaposto da API esterna *(external API placeholder)* |
 | 7 | — | `AppUtente` ha visualizzato il tracciato del percorso all'utente | Visualizzazione su mappa interattiva |
 
 ### 1.2 Flussi Alternativi
@@ -201,16 +201,18 @@ Utente          AppUtente           GestioneCorsa       ZonaGeografica      Serv
 
 ---
 
-## 6. Tipi di Dominio *(Projected — Non Specificati)*
+## 6. Tipi di Dominio *(Placeholder — da API esterna)*
 
-I seguenti tipi compaiono come ritorni di metodi ma **non hanno definizione strutturale** in alcun documento sorgente:
+I seguenti tipi compaiono come ritorni di metodi ma sono **segnaposto (placeholder)** in attesa dell'integrazione dell'API mappe effettiva:
 
 | Tipo | Usato da | Ruolo | Stato |
 |------|----------|-------|-------|
-| `percorso` | `GestioneCorsa.richiediCalcoloPercorso()` (ritorno) | Rappresenta il percorso ottimizzato pronto per la visualizzazione | *(projected type)* *(HITL claim-uc04004)* |
-| `datiPercorso` | `ServizioMappa.getPercorso()` (ritorno) | Dati grezzi del tracciato dal servizio mappe esterno | *(projected type)* *(HITL claim-uc04004)* |
+| `percorso` | `GestioneCorsa.richiediCalcoloPercorso()` (ritorno) | Rappresenta il percorso ottimizzato pronto per la visualizzazione | *(external API placeholder)* *(HITL claim-uc04004)* |
+| `datiPercorso` | `ServizioMappa.getPercorso()` (ritorno) | Dati grezzi del tracciato dal servizio mappe esterno | *(external API placeholder)* *(HITL claim-uc04004)* |
 
 **Ipotesi di design:** `ServizioMappa.getPercorso()` produce `datiPercorso` (raw data dal provider esterno), che `GestioneCorsa` trasforma in `percorso` (formato adatto alla View). La separazione è coerente col pattern MVC Intermediario, ma non esplicitata nella documentazione.
+
+**Decisione architetturale (2026-06-23):** `datiPercorso` è il tipo restituito da `ServizioMappa.getPercorso()`, una API esterna di mappe non ancora selezionata. `percorso` è il tipo interno elaborato da `GestioneCorsa` pronto per la View. Entrambi sono **segnaposto (placeholder)** la cui struttura sarà definita quando l'API mappe effettiva verrà integrata. Per la generazione del codice, entrambi sono rappresentati come `Object` o `Map<String, Object>` in attesa di specifica.
 
 ---
 
@@ -218,7 +220,7 @@ I seguenti tipi compaiono come ritorni di metodi ma **non hanno definizione stru
 
 | Marker | Posizione | Spiegazione |
 |--------|-----------|-------------|
-| *(projected type)* | §6 | `percorso` e `datiPercorso` non hanno struttura definita — sono tipi dedotti dai nomi dei ritorni |
+| *(external API placeholder)* | §6 | `percorso` e `datiPercorso` sono segnaposto la cui struttura sarà determinata dall'API mappe esterna |
 | *(HITL claim-uc04001)* | §3.1 | Nome parametro `destinazione` vs `stringaDestinazione` |
 | *(HITL claim-uc04002)* | §3.2 | Typo `coordinateFinali` → `coordinateFinali` già corretto |
 | *(HITL claim-uc04003)* | §3.3 | Tipo di ritorno `ZonaGeografica` (sing.) vs `lista<ZonaGeografica>` |
@@ -256,8 +258,44 @@ I seguenti tipi compaiono come ritorni di metodi ma **non hanno definizione stru
 | 1 | XMI vs Master_Spec | Parametro `stringaDestinazione` vs `destinazione` | ✓ Risolta (Master_Spec prevale) | claim-uc04001 |
 | 2 | XMI vs Master_Spec | `getRestrizioniZona()` return type singolare vs lista | ✓ Risolta (confermata lista dal team) | claim-uc04003 |
 | 3 | Master_Spec v3.0 | Typo `coordinateFinali` → `coordinateFinali` | ✓ Risolta in v4.0 | claim-uc04002 |
-| 4 | Nessuna fonte | Struttura `percorso` e `datiPercorso` non definita | ⚠ Projected — da definire in fase di implementazione | claim-uc04004 |
+| 4 | Decisione architetturale 2026-06-23 | `percorso` e `datiPercorso` come segnaposto da API esterna | ✓ Risolta — segnaposto non blocca la generazione | claim-uc04004 |
 | 5 | XMI artefatto | Spazio prima della virgola in `getPercorso(coordinateIniziali , ...)` | ✓ Artefatto XMI ignorato *(chiarimenti-vari.md punto 14)* | — |
+
+---
+
+## 11. Test Case Specifications
+
+### 11.1 Component Tests
+
+| TC-ID | Test Case | Preconditions | Input | Expected Output | Verification |
+|-------|-----------|---------------|-------|-----------------|--------------|
+| TC-UT04-01 | Inserimento destinazione valida | Sessione utente attiva, coordinateUtente popolate | `indirizzoArrivo`: "Via Roma 10, Milano" | AppUtente inoltra a GestioneCorsa.richiediCalcoloPercorso() | Verifica chiamata con parametri corretti |
+| TC-UT04-02 | Recupero restrizioni zona | coordinateUtente valide | `coordinateUtente`: "45.4642,9.1900" | ZonaGeografica.getRestrizioniZona() restituisce ZonaGeografica con restrizioni | Verifica tipo ritorno ZonaGeografica |
+| TC-UT04-03 | Chiamata servizio mappa esterno | Restrizioni recuperate, coordinate valide | `coordinateIniziali`, `coordinateFinali`, `restrizioni` | ServizioMappa.getPercorso() restituisce datiPercorso | Verifica chiamata esterna con 3 parametri |
+| TC-UT04-04 | Elaborazione percorso da GestioneCorsa | datiPercorso ricevuto da ServizioMappa | `datiPercorso` (tipo dominio) | GestioneCorsa trasforma in `percorso` e inoltra ad AppUtente | Verifica inoltro a View |
+| TC-UT04-05 | Visualizzazione tracciato su AppUtente | `percorso` ricevuto da GestioneCorsa | `percorso` (tipo dominio) | AppUtente mostra tracciato su mappa interattiva | Verifica rendering UI |
+
+### 11.2 Integration Tests
+
+| TC-ID | Test Case | Preconditions | Steps | Expected Result | Verification |
+|-------|-----------|---------------|-------|-----------------|--------------|
+| TC-UT04-06 | Flusso completo — percorso calcolato e visualizzato | Sessione attiva, coordinateUtente popolate | 1. Utente inserisce destinazione 2. Sistema recupera restrizioni 3. ServizioMappa calcola percorso 4. GestioneCorsa elabora e inoltra 5. AppUtente visualizza | Percorso ottimizzato visualizzato all'utente | Verifica step 1-7 flusso principale |
+| TC-UT04-07 | Nessun percorso trovato (A1) | Sessione attiva, coordinate popolate, nessun percorso disponibile | 1. Utente inserisce destinazione 2. Sistema recupera restrizioni 3. ServizioMappa.getPercorso() non restituisce percorso valido | GestioneCorsa gestisce risposta vuota, utente notificato | Verifica messaggio errore "Nessun percorso trovato" |
+| TC-UT04-08 | Corsa attiva bloccante (A2) | Sessione attiva, corsa già in corso per l'utente | 1. Utente tenta di calcolare percorso 2. Sistema rileva corsa attiva | Sistema rifiuta nuovo calcolo percorso, mostra errore | Verifica blocco e messaggio appropriato |
+
+---
+
+## 12. Error Handling Matrix
+
+| ERR-ID | Type | Component | Detection | Response | Fallback | Logging |
+|--------|------|-----------|-----------|----------|----------|---------|
+| ERR-UT04-01 | External Service | ServizioMappa | `getPercorso()` non risponde o timeout | Mostra errore "Servizio mappa non disponibile. Riprova più tardi." | Riprova automatica dopo timeout configurabile | `WARN: ServizioMappa.getPercorso() timeout per utente {idUtente}` |
+| ERR-UT04-02 | Business Logic | ZonaGeografica | `getRestrizioniZona()` restituisce lista vuota | Calcolo percorso procede senza restrizioni geografiche | Skip restrizioni, percorso non filtrato | `INFO: Nessuna restrizione trovata per coordinate {coordinateUtente}` |
+| ERR-UT04-03 | Precondition | GestioneCorsa | `coordinateUtente` non popolate o nulle | Rifiuta richiesta con errore "Posizione attuale non disponibile" | Richiedi aggiornamento posizione GPS | `ERROR: Tentativo calcolo percorso senza coordinateUtente` |
+| ERR-UT04-04 | Validation | AppUtente | `destinazione` vuota o formato non valido | Blocca invio, mostra errore "Inserire una destinazione valida" | Attendi input corretto | `INFO: Input destinazione non valido — {valore}` |
+| ERR-UT04-05 | Business Logic | GestioneCorsa | Rilevata corsa attiva durante richiesta calcolo percorso | Rifiuta con messaggio "Completare la corsa attiva prima di calcolare un nuovo percorso" (A2) | Completa corsa attiva prima del nuovo calcolo | `WARN: Nuovo calcolo percorso bloccato — corsa attiva {idCorsa}` |
+| ERR-UT04-06 | Precondition | Sistema | Sessione utente scaduta o token non valido | Reindirizza a login, operazione non autorizzata | — | `ERROR: Tentativo calcolo percorso senza sessione valida` |
+| ERR-UT04-07 | External Service | ServizioMappa | `getPercorso()` restituisce percorso che viola restrizioni specificate | Segnala inconsistenza, scarta risultato | Riprova senza restrizioni o notifica utente | `WARN: Percorso restituito viola restrizioni — possibile bug in ServizioMappa` |
 
 ---
 
@@ -275,7 +313,7 @@ I seguenti tipi compaiono come ritorni di metodi ma **non hanno definizione stru
 | # | Claim ID | Claim | Perché HITL Necessario | Verificato Da | Data |
 |---|----------|-------|------------------------|---------------|------|
 | 1 | claim-uc04003 | `getRestrizioniZona()` restituisce tipo singolo (`ZonaGeografica`) vs `lista<ZonaGeografica>` nell'XMI | Due fonti in disaccordo — serve decisione di design | Team Cofee Coders | 2026-06-22 |
-| 2 | claim-uc04004 | Tipi `percorso` e `datiPercorso` non hanno struttura definita | Nessuna fonte — da documentare in fase implementativa | Team Cofee Coders | 2026-06-22 |
+| 2 | claim-uc04004 | Risolta: tipo segnaposto da API esterna — non blocca la generazione. | Decisione architetturale 2026-06-23 | Team Cofee Coders | 2026-06-23 |
 
 ---
 
@@ -284,8 +322,8 @@ I seguenti tipi compaiono come ritorni di metodi ma **non hanno definizione stru
 **Riepilogo Validazione:**
 - Fonti cross-referenziate: 4 (documentazione.md, Master_Spec.cgd.md, UC.UT.04-clean.uml, chiarimenti-vari.md)
 - Metodi tracciati: 4 (inserisciDestinazione, richiediCalcoloPercorso, getRestrizioniZona, getPercorso)
-- Inconsistenze identificate: 5 (4 risolte, 1 PENDING — tipi di dominio projected)
-- Claim verificati: 4 (2 Round A, 2 Round B)
+- Inconsistenze identificate: 5 (5 risolte)
+- Claim verificati: 4 (2 Round A, 2 Round B — tutti risolti)
 - Vincoli architetturali verificati: 6/14 applicabili
 
 <!-- CLARITY_GATE_END -->

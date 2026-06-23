@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 00ecb17d3d432e6b309337007e5eaca9814b1f0c97e036331bd01ec37536b06e
+document-sha256: ddc500236187d4a4549806715c1c12de60337da6610e14371b05ef607d239589
 hitl-claims:
   - id: claim-3a9f1c02
     text: "Autenticazione View chiama GestioneAutenticazione.verificaValidita(nome,cognome,email,password,datanascita) e inoltra la risposta senza mai interpellare direttamente Utente Model"
@@ -250,6 +250,31 @@ Attore → Autenticazione → GestioneAutenticazione → Utente
 |---|---------------|-------|-------------|
 | 1 | XMI usa `verificaValidità` (accento) vs Master Spec `verificaValidita` | UC.UT.08-clean.uml | **Risolto:** Master Spec ha priorità (chiarimenti-vari.md punto 15). La versione senza accento è quella canonica. |
 | 2 | Sequenza `verificaValidita()` viene mostrata tra View e Controller nel diagramma, ma il metodo è sul Controller. Le due occorrenze (send/receive) sono su Attore e Autenticazione. | UC.UT.08-clean.uml | **Risolto:** Artefatto XMI di esportazione. La semantica corretta è: View chiama `GestioneAutenticazione.verificaValidita()`. Il diagramma mostra il flusso logico Actor→View→Controller, dove il messaggio "attraversa" la View. |
+
+---
+
+## 9. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|---------------|-------|-----------------|----------------|------------|
+| TC-UT.08-01 | Autenticazione (View) | Avvio registrazione utente | Utente non registrato, View Autenticazione attiva | Click "Registrati" | Autenticazione.registrazioneUtente() invocato | mostraFormRegistrazione() renderizzato | Utente già loggato, sessione scaduta |
+| TC-UT.08-02 | GestioneAutenticazione (Controller) | Validazione dati di registrazione corretti | Form compilato con dati validi | nome, cognome, email, password, datanascita validi | GestioneAutenticazione.verificaValidita() restituisce RuoloAttore.Utente | Utente.creaAccountUtente() invocato | Email con caratteri speciali, password al limite lunghezza |
+| TC-UT.08-03 | Utente (Model) | Creazione account utente nel sistema | Dati validati, email univoca | nome, cognome, email, password, datanascita | Utente.creaAccountUtente() crea istanza e chiama Attore.setPassword(), setEmail(), setRuolo() | Account persistito nel DBMS | Nome con spazi, data nascita futura |
+| TC-UT.08-04 | Attore (Model) | Cifratura password durante registrazione | Account in creazione, password in chiaro | password: String | Attore.setPassword() memorizza password in forma cifrata | Password non recuperabile in chiaro | Password vuota, password massima lunghezza |
+| TC-UT.08-05 | Autenticazione (View) | Visualizzazione form di registrazione | registrazioneUtente() invocato | — | Autenticazione.mostraFormRegistrazione() rende il form con tutti i campi | Utente può inserire credenziali | Schermo ridotto, accessibilità |
+| TC-UT.08-06 | Integrazione (FA1) | Formattazione dati non valida | Form compilato con campi vuoti o formato errato | nome vuoto, email senza @, password corta | GestioneAutenticazione.verificaValidita() rileva errore; mostraErrore(msg) | Flusso riprende dal passo 2 (mostraFormRegistrazione) | Tutti i campi vuoti, injection tentatives |
+| TC-UT.08-07 | Integrazione (FA2) | Email già in uso nel sistema | Email inserita già associata ad altro account | email duplicata | GestioneAutenticazione.verificaValidita() rileva duplicato; mostraErrore("Email già registrata. Effettua il login.") | Caso d'uso termina; account non creato | Stessa email con case diverso, email liberata dopo cancellazione |
+| TC-UT.08-08 | Integrazione | Registrazione completa end-to-end | Tutti i dati validi, email univoca | nome, cognome, email, password, datanascita validi | Sistema crea account, salva password cifrata, mostra notifica successo | Nuovo account presente in DBMS; utente può procedere con UC.ATT.01 | Concorrenza: stessa email inviata simultaneamente |
+
+## 10. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|--------|-----------|-----------|-----------------|----------------|----------|---------|
+| ERR-UT.08-01 | Validazione formato fallita | GestioneAutenticazione (Controller) | GestioneAutenticazione.verificaValidita() rileva campi vuoti o formato errato | Autenticazione.mostraErrore(msg) con dettaglio campo errato | Flusso riprende dal passo 2 — form ripresentato | Log info: errore validazione registrazione — campo X non valido |
+| ERR-UT.08-02 | Violazione vincolo unicità email | GestioneAutenticazione (Controller) | GestioneAutenticazione.verificaValidita() rileva email già presente in DBMS | Autenticazione.mostraErrore("Email già registrata. Effettua il login.") | Caso d'uso termina; nessun account creato | Log warning: tentativo registrazione con email duplicata |
+| ERR-UT.08-03 | Password non conforme a policy | GestioneAutenticazione (Controller) | GestioneAutenticazione.verificaValidita() rileva password < 8 caratteri o senza requisiti minimi | Autenticazione.mostraErrore("Password non conforme ai requisiti di sicurezza") | Flusso riprende dal passo 2 — form ripresentato | Log info: password rifiutata per policy |
+| ERR-UT.08-04 | DBMS non raggiungibile | Utente (Model) | Utente.creaAccountUtente() fallisce per errore di connessione DBMS | Autenticazione.mostraErrore("Errore di sistema. Riprovare più tardi.") | Caso d'uso termina; nessun dato persisto | Log critical: DBMS non raggiungibile durante registrazione |
+| ERR-UT.08-05 | Dati anagrafici incompleti | GestioneAutenticazione (Controller) | GestioneAutenticazione.verificaValidita() rileva uno o più campi obbligatori mancanti | Autenticazione.mostraErrore("Tutti i campi sono obbligatori") | Flusso riprende dal passo 2 — form ripresentato con campi vuoti evidenziati | Log info: tentativo registrazione con campi incompleti |
 
 ---
 

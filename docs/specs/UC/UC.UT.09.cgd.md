@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: df8f88fb8a8b57869b7ef2b689eb450afc6e069a6656a7748e3b21b55db1ab6d
+document-sha256: 181a8a3e193862e0634be6599ef88892fa12ac3848ba12e2bb51970f1cbf8f9d
 hitl-claims:
   - id: claim-333b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
@@ -277,6 +277,31 @@ I messaggi di destroy nei diagrammi di sequenza *(chiarimenti-vari.md punto 11)*
 | chiarimenti-vari.md | `docs/specs/chiarimenti-vari.md` | Punti 5, 10, 11, 13 |
 | UC.UT.09-clean.uml | `docs/diagrams/sequence-diagrams/UC.UT.09/UC.UT.09-clean.uml` | Diagramma di sequenza |
 | Clarity Gate Format Spec | *(v2.1)* | Struttura CGD |
+
+---
+
+## 10. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|---------------|-------|-----------------|----------------|------------|
+| TC-UT.09-01 | AppUtente (View) | Invocazione logout da interfaccia utente (AC1) | Utente autenticato, AppUtente attiva, sessione valida | Click logout (nessun parametro diretto) | AppUtente.richiestaLogout(email) invocato con email utente corrente | Richiesta inoltrata al Controller | Utente in schermata di registrazione, menu non raggiungibile |
+| TC-UT.09-02 | GestioneAutenticazione (Controller) | Elaborazione richiesta logout | Richiesta ricevuta da AppUtente, sessione associata all'email | email: String valida | GestioneAutenticazione.inviaRichiestaLogout(email) termina senza eccezioni; sessione invalidata | Controller restituisce void (successo) | email con spazi, email inesistente nel sistema |
+| TC-UT.09-03 | AppUtente (View) | Notifica successo logout | Logout elaborato con successo dal Controller | — | AppUtente.mostraSuccesso() mostra messaggio di conferma | Utente informato dell'avvenuto logout | Timeout UI, notifica non bloccante |
+| TC-UT.09-04 | AppUtente (View) | Notifica errore logout | Controller restituisce false | msg: String descrittivo | AppUtente.mostraErrore(msg) mostra messaggio di errore | Utente informato del fallimento | msg nullo o vuoto, caratteri speciali |
+| TC-UT.09-05 | GestioneAutenticazione (Controller) | Invalidazione sessione lato server (AC3) | Sessione attiva identificata per email | idSessioneUtente corrente | idSessioneUtente impostato a null/invalidato dopo inviaRichiestaLogout() | Sessione non più utilizzabile per operazioni riservate | Sessione già invalidata, sessione con timeout concomitante |
+| TC-UT.09-06 | Integrazione (AC2) | Accesso negato a operazioni riservate post-logout | Logout completato, sessione terminata | Richiesta a endpoint protetto | Sistema nega accesso; utente reindirizzato ad Autenticazione | Nessuna operazione riservata eseguibile | Token JWT scaduto, sessione di un altro utente ancora attiva |
+| TC-UT.09-07 | Integrazione (AC4) | Reindirizzamento alla View Autenticazione dopo logout | Logout completato con successo | — | View AppUtente distrutta; View Autenticazione (pre-auth) mostrata all'attore | Attore può solo interagire con form di login/registrazione | View Autenticazione non disponibile, cache UI |
+| TC-UT.09-08 | Integrazione (AC5) | Logout completato con singola azione (one-click) | Utente autenticato su qualsiasi schermata AppUtente | Singolo click su comando logout | Logout completato senza passaggi intermedi di conferma | Sessione terminata, utente reindirizzato | Doppio click rapido, click durante elaborazione |
+
+## 11. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|--------|-----------|-----------|-----------------|----------------|----------|---------|
+| ERR-UT.09-01 | Precondizione violata — logout senza sessione | AppUtente (View) | richiestaLogout() invocato ma nessuna sessione attiva | AppUtente non istanziata — comando logout non presente in UI; se invocato direttamente, mostraErrore("Nessuna sessione attiva") | Operazione ignorata | Log warning: tentativo logout senza sessione attiva |
+| ERR-UT.09-02 | Fallimento interno Controller | GestioneAutenticazione (Controller) | inviaRichiestaLogout(email) restituisce false | AppUtente.mostraErrore(msg); sessione potrebbe rimanere attiva | Nuovo tentativo; se persistente, sessione marcata per cleanup asincrono | Log error: logout fallito per email X — causa interna |
+| ERR-UT.09-03 | Sessione già terminata (race condition) | GestioneAutenticazione (Controller) | inviaRichiestaLogout() rileva sessione già invalidata (doppio logout o timeout concorrente) | GestioneAutenticazione gestisce idempotentemente: ritorna comunque successo | Nessuna azione necessaria — sessione già terminata | Log info: richiesta logout per sessione già terminata (idempotente) |
+| ERR-UT.09-04 | Email non corrispondente | GestioneAutenticazione (Controller) | inviaRichiestaLogout(email) rileva mismatch tra email e sessione corrente | AppUtente.mostraErrore("Email non corrispondente alla sessione attiva") | Richiesta rifiutata; sessione corrente non modificata | Log warning: tentativo logout con email non corrispondente alla sessione |
+| ERR-UT.09-05 | Distruzione View non completata | AppUtente (View) | Post-logout: istanza AppUtente non distrutta correttamente | Sistema forza destroy dell'istanza; utente reindirizzato ad Autenticazione | Cleanup forzato delle risorse View | Log error: cleanup View fallito post-logout — cleanup forzato eseguito |
 
 ---
 

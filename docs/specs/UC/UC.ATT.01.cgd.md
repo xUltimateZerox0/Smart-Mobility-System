@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 2564348eabc93c36011456d2c10497664b59dd2f1bb78049225b787d1a1593dc
+document-sha256: 8dca72266101abc621f33d29d2fda8ade80de6f58f5a9f45549fcd70f40b428f
 hitl-claims: []
 ---
 
@@ -252,6 +252,32 @@ Il diagramma `UC.ATT.01-clean.uml` modella il flusso di login condiviso tra Atto
 |---|---------------|-------|-------------|
 | 1 | Il file XMI è denominato `UC.ATT.01-clean.uml` ma il modello interno ha `name="UC.GEN.02"`. | UC.ATT.01-clean.uml | **Risolto:** XMI contiene sia flusso login che logout (UC.GEN.02 è l'ID del modello condiviso). Il nome file UC.ATT.01 è quello canonico per il Login (documentazione.md §2.2.2). |
 | 2 | `Autenticazione` (View) non ha metodi espliciti per login (`richiestaLogin()`, `mostraFormLogin()`) in Master_Spec.cgd.md §4 — solo metodi di registrazione. | Master_Spec.cgd.md | **Risolto:** Metodi login sono impliciti nel pattern MVC; `GestioneAutenticazione.invioCredenziali()` è il metodo controller documentato. I metodi View per login sono stati aggiunti in questa specifica per completezza. |
+
+---
+
+## 9. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|---------------|-------|-----------------|----------------|------------|
+| TC-ATT.01-01 | Autenticazione (View) | Avvio flusso di login | Attore non autenticato, View Autenticazione attiva | Click "Accedi" | Autenticazione.richiestaLogin() invocato | Autenticazione.mostraFormLogin() renderizzato | Doppio click rapido, accessibilità da tastiera |
+| TC-ATT.01-02 | GestioneAutenticazione (Controller) | Verifica credenziali valide | Form login compilato con email e password corrette | email, password validi | GestioneAutenticazione.invioCredenziali() restituisce RuoloAttore | Attore.verifica() chiamato; sessione creata | Email con case misto, password con caratteri speciali |
+| TC-ATT.01-03 | Attore (Model) | Verifica corrispondenza credenziali nel DBMS | Credenziali ricevute dal Controller | email, password | Attore.verifica(email, password) restituisce true | Attore.getRuolo() e getStatoUtente() invocati successivamente | Email inesistente, password errata, account disattivato |
+| TC-ATT.01-04 | Attore (Model) | Determinazione ruolo per RBAC post-auth | Credenziali verificate, account attivo | id dell'attore autenticato | Attore.getRuolo(id) restituisce RuoloAttore corretto (Utente/Operatore/PA) | View ruolo-specifica creata da Autenticazione | Ruolo non riconosciuto, ruolo nullo |
+| TC-ATT.01-05 | Autenticazione (View) | Creazione View ruolo-specifica dopo login | RuoloAttore determinato, sessione creata | id attore, RuoloAttore | Autenticazione.creaAppUtente(id) o creaAppOperatore*(id) invocato in base al ruolo | View corrispondente al ruolo istanziata e mostrata all'attore | Nuovo ruolo aggiunto senza View corrispondente |
+| TC-ATT.01-06 | Integrazione (FA1) | Email non valida — login negato | Email non registrata nel sistema | email inesistente, password qualsiasi | Attore.verifica() restituisce false; Autenticazione.mostraErrore("Email non valida") | Accesso negato; form login ripresentato | Email con formato valido ma non registrata, email cancellata |
+| TC-ATT.01-07 | Integrazione (FA2) | Password errata — login negato | Email valida ma password sbagliata | email valida, password errata | Attore.verifica() restituisce false; Autenticazione.mostraErrore("Password errata") | Accesso negato; form login ripresentato | Blocco account dopo N tentativi, reset password in corso |
+| TC-ATT.01-08 | Integrazione (FA3) | Account sospeso/disattivato — login negato | Email e password corrette ma stato account non attivo | email, password validi | Attore.getStatoUtente() restituisce 'sospeso' o 'disattivato'; mostraErrore("Account sospeso") | Accesso negato; nessuna sessione creata | Account sospeso temporaneamente, account disattivato definitivamente |
+
+## 10. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|--------|-----------|-----------|-----------------|----------------|----------|---------|
+| ERR-ATT.01-01 | Credenziali non valide — email errata | Attore (Model) / GestioneAutenticazione (Controller) | Attore.verifica(email, password) restituisce false — email non trovata | Autenticazione.mostraErrore("Email non valida"); accesso negato | Form login ripresentato; nessuna distinzione pubblica tra email e password errata | Log warning: tentativo login con email inesistente |
+| ERR-ATT.01-02 | Credenziali non valide — password errata | Attore (Model) / GestioneAutenticazione (Controller) | Attore.verifica(email, password) restituisce false — password non corrisponde | Autenticazione.mostraErrore("Password errata"); accesso negato | Form login ripresentato; contatore tentativi incrementato | Log warning: password errata per email X — tentativo N/5 |
+| ERR-ATT.01-03 | Account sospeso/disattivato | Attore (Model) / GestioneAutenticazione (Controller) | Attore.getStatoUtente() restituisce 'sospeso' o 'disattivato' | Autenticazione.mostraErrore("Account sospeso. Contattare l'assistenza."); accesso negato | Nessuna azione consentita — account bloccato | Log info: tentativo login su account sospeso — email X |
+| ERR-ATT.01-04 | Rate limiting — troppi tentativi falliti | GestioneAutenticazione (Controller) | Contatore tentativi > soglia massima (es. 5) per stessa email o IP | Autenticazione.mostraErrore("Troppi tentativi. Riprovare tra X minuti."); blocco temporaneo | Sblocco automatico dopo timeout; reset contatore | Log warning: rate limiting attivato per IP X / email Y — blocco N minuti |
+| ERR-ATT.01-05 | Sessione già attiva — violazione sessione singola | GestioneAutenticazione (Controller) | GestioneAutenticazione.invioCredenziali() rileva sessione attiva preesistente per l'attore | Sistema termina sessione precedente (vincolo §8.9); login prosegue | Sessione vecchia invalidata; nuova sessione creata | Log info: sessione precedente terminata per nuovo login — email X |
+| ERR-ATT.01-06 | DBMS non raggiungibile | Attore (Model) | Attore.verifica() fallisce per errore di connessione DBMS | Autenticazione.mostraErrore("Servizio non disponibile. Riprovare più tardi.") | Caso d'uso termina; nessuna modifica allo stato | Log critical: DBMS non raggiungibile durante login |
 
 ---
 

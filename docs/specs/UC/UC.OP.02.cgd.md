@@ -8,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
-document-sha256: 2ba7b085554bb4b1f9945422b9065e38a8d113463c38c7d9601b4ec0bd7bf454
+document-sha256: d26ea262ea658db86033e067f8e1a6ba6be8de1719970a63952cbe5007cfa517
 hitl-claims:
   - id: claim-70d7b247
     text: "GestioneUtenti.cercaReport(idUtente) firma: Master_Spec v4.0 §3 riporta ritorno String; UC.OP.02-clean.uml mostra synchCall con reply Utente.report; l'user si aspetta ritorno void. Quale è la firma corretta?"
@@ -368,6 +368,42 @@ AppOperatoreSC.mostraReport(idUtente)
 | `statoUtente` | StatoUtente | Sì — aggiornato dall'azione correttiva | `getStatoUtente()` / `setStatoUtente()` |
 | `coordinateUtente` | String | No — non pertinente alla moderazione | — |
 | `numMezziPrenotati` | int | No — non pertinente alla moderazione | — |
+
+---
+
+## 14. Test Case Specifications
+
+### 14.1 Component Tests
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP02-C01 | AppOperatoreSC | mostraReport triggers user search | P1-P2 satisfied; idUtente provided | idUtente: PK | Calls GestioneUtenti.cercaReport(idUtente) | GestioneUtenti.cercaReport invoked with correct idUtente | Empty idUtente; malformed idUtente |
+| TC-OP02-C02 | GestioneUtenti | cercaReport retrieves user data and report | Utente exists in DB with reportUtente | idUtente: PK | Returns String (report content) via Utente.ricercaUtente + getReportUtente | Utente.ricercaUtente called; report returned to view | Utente without reportUtente (null); idUtente not found (returns null) |
+| TC-OP02-C03 | Utente | ricercaUtente finds user by ID | DB contains Utente records | idUtente: PK | Returns Utente object with all attributes | Utente loaded into memory; no side effects | idUtente not found (returns null); multiple matches (should not occur per PK) |
+| TC-OP02-C04 | Utente | azioneCorrettiva applies state change | Utente in stato=attivo | azione: "sospensione" \| "disattivazione" | setStatoUtente called with StatoUtente.sospeso or .disattivato | StatoUtente updated; reportUtente may be updated | Invalid azione value; Utente already sospeso/disattivato |
+| TC-OP02-C05 | AppUtente | notificaAzione delivers notification to user | AppUtente instance active; user session alive | idUtente, azione: String | Notification delivered to user; returns void | AppUtente displays action notification; followed by destroy | AppUtente session already terminated; notification delivery failure |
+
+### 14.2 Integration Tests
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP02-I01 | Full Main Flow | Complete user moderation cycle | P1-P2 satisfied; Utente exists with report | idUtente, report update, azione | Search → display → update → correctiva → notify → destroy → success | Utente.statoUtente updated; report updated; AppUtente destroyed; success shown | Very long reportUtente string; rapid successive moderations |
+| TC-OP02-I02 | Alt Flow A1: User Not Found | ricercaUtente returns null | Utente does not exist in DB | idUtente: non-existent PK | mostraErrore("Utente non trovato") shown; UC terminates | No state changes; no notification sent; no destroy | Numeric idUtente format; SQL injection attempt in idUtente |
+| TC-OP02-I03 | GestioneUtenti → AppUtente | Notification and disconnect after moderation | OperatoreSC completed step 4; AppUtente reachable | idUtente, azione | notificaAzione sent → AppUtente destroyed → gestioneUtente returns true | AppUtente instance terminated; user logged out from all sessions | AppUtente with multiple active sessions; notificaAzione called but destroy fails |
+
+---
+
+## 15. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|---|---|---|---|---|---|---|
+| ERR-OP02-01 | Data | GestioneUtenti | cercaReport(idUtente) → Utente.ricercaUtente returns null | System returns null to AppOperatoreSC | mostraErrore("Utente non trovato"); UC terminates with no changes | Log failed search with idUtente and timestamp |
+| ERR-OP02-02 | State | Utente | azioneCorrettiva(azione) attempted on sospeso/disattivato | State transition invalid (already terminal) | mostraErrore indicates user already in target state; operation blocked | Log invalid transition attempt with current and target stato |
+| ERR-OP02-03 | Security | AppOperatoreSC | RBAC check fails — TipoOperatore ≠ OperatoreSC | GestioneAutenticazione blocks access | System denies access; mostraErrore("Operazione non autorizzata") | Log unauthorized access attempt with TipoOperatore |
+| ERR-OP02-04 | Data | GestioneUtenti | cercaReport returns empty String (no reportUtente) | Empty String returned to view layer | mostraReport displays "nessun report presente"; UC continues | Log empty report retrieval |
+| ERR-OP02-05 | System | Utente | azioneCorrettiva invoked with invalid azione value | Method receives unexpected String | System rejects; mostraErrore("Azione non valida"); no state change | Log invalid azione parameter value |
+| ERR-OP02-06 | Network | AppUtente | notificaAzione delivery failure (AppUtente unreachable) | Notification cannot be delivered | System logs failure; moderation proceeds; operator warned | Log notification failure with idUtente |
+| ERR-OP02-07 | Security | AppOperatoreSC | Session expired during multi-step moderation | RBAC check fails mid-operation | Operation aborted; mostraErrore("Sessione scaduta"); redirect to UC.ATT.01 | Log session expiry with idOperatoreSC |
 
 ---
 

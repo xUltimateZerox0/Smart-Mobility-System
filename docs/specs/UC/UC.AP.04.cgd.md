@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 182ee92fc4635d89983f7b22ced8e7806f665ba638119f0ee91bc4bdc3d00aa9
+document-sha256: a40471d4ad11d5ddb611897b91ef4cede807c9dd9a90a5b737bf543eb7355035
 hitl-claims:
   - id: claim-1a2b3c4d
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
@@ -297,6 +297,32 @@ AppPA e l'unica tra le 4 View di ruolo a non disporre del metodo `mostraSuccesso
 | UC.AP.04-clean.uml | `docs/diagrams/sequence-diagrams/UC.AP.04/UC.AP.04-clean.uml` | Diagramma di sequenza *(corretto il 2026-06-23: ora contiene Logout PA)* |
 | UC.UT.09.cgd.md | `docs/specs/UC/UC.UT.09.cgd.md` | Riferimento strutturale per pattern logout |
 | Clarity Gate Format Spec | *(v2.1)* | Struttura CGD |
+
+---
+
+## 10. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|---------------|-------|-----------------|----------------|------------|
+| TC-01 | AppPA (View) | `richiestaLogout(email)` — PA invoca logout (AC1) | PA autenticata; AppPA attiva; sessione valida | `email = "comune@esempio.it"` | Richiesta inoltrata a `GestioneAutenticazione.inviaRichiestaLogout(email)` | AppPA in attesa di risposta dal Controller | Logout da schermata statistiche; logout da schermata flotta; logout da schermata restrizioni |
+| TC-02 | AppPA (View) | Blocco accesso a operazioni riservate post-logout (AC2) | Sessione PA terminata; `idSessionePA == null` | Tentativo accesso a endpoint statistiche, flotta, restrizioni | Sistema rifiuta accesso; reindirizzamento a Autenticazione | PA visualizza solo View Autenticazione pre-auth | Accesso concorrente durante logout (richiesta in-flight) |
+| TC-03 | GestioneAutenticazione (Controller) | `inviaRichiestaLogout(email)` invalida sessione (AC3) | Sessione attiva associata a `email = "comune@esempio.it"` | `email = "comune@esempio.it"` | `idSessionePA` invalidato; risorse rilasciate; ritorno `void` | Sessione PA terminata; nessun token valido residuo | Doppia invocazione — idempotente; email senza sessione associata |
+| TC-04 | AppPA (View) → Autenticazione (View) | Reindirizzamento a Autenticazione post-logout (AC4) | Logout completato con successo; istanza AppPA distrutta | — | View Autenticazione mostrata all'attore PA | PA interagisce solo con Autenticazione; distruzione istanza AppPA confermata | Logout fallito → PA rimane su AppPA con `mostraErrore(msg)` |
+| TC-05 | AppPA (View) | Logout one-click senza conferma (AC5) | PA su qualsiasi schermata AppPA; sessione valida | Singola azione logout (click pulsante) | Logout avviato immediatamente; nessuna finestra di conferma | Flusso logout prosegue senza interruzioni | Doppio click rapido — seconda richiesta gestita idempotentemente |
+| TC-06 | Integrazione | Flusso completo logout con successo | PA autenticata; sessione valida; AppPA attiva | PA clicca logout → `richiestaLogout("comune@esempio.it")` → `inviaRichiestaLogout(email)` → `void` (reply) | Sessione invalidata; AppPA distrutta; reindirizzamento a Autenticazione | Postcondizione: sessione PA terminata; PA su schermata login | Email con spazi o caratteri speciali — validazione preventiva |
+| TC-07 | Integrazione | Fallimento Controller logout — `mostraErrore(msg)` | Sessione attiva ma errore interno su `inviaRichiestaLogout(email)` | `email = "comune@esempio.it"` → `inviaRichiestaLogout` ritorna `false` | AppPA mostra `mostraErrore(msg)`; PA informata del fallimento | Sessione potrebbe rimanere attiva; PA può riprovare | Sessione già terminata durante elaborazione (race condition) |
+| TC-08 | Integrazione | Sessione già terminata — richiesta logout successiva | PA senza sessione attiva; AppPA non istanziata (o sessione scaduta) | Tentativo `richiestaLogout(email)` da contesto non valido | GestioneAutenticazione gestisce idempotentemente; nessun errore propagato | Nessun cambiamento di stato; nessuna eccezione | Timeout sessione immediatamente prima del click logout |
+
+## 11. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|--------|------------|-----------|-----------------|-----------------|----------|---------|
+| ERR-AP04-01 | Logout senza sessione attiva — precondizione violata | AppPA (View) | Invocazione `richiestaLogout(email)` con `idSessionePA == null` | Operazione bloccata; reindirizzamento a View Autenticazione | PA deve effettuare login prima del logout (caso edge) | `[WARN] UC.AP.04: Tentativo logout senza sessione attiva — reindirizzato a Autenticazione` |
+| ERR-AP04-02 | Fallimento interno Controller logout | GestioneAutenticazione (Controller) | `inviaRichiestaLogout(email)` — errore server o eccezione non recuperabile | `return false`; AppPA mostra `mostraErrore(msg)` | PA può riprovare; sessione potrebbe rimanere attiva | `[ERROR] UC.AP.04: inviaRichiestaLogout fallito per {email} — {motivo}` |
+| ERR-AP04-03 | Sessione già terminata (doppio logout o timeout concorrente) | GestioneAutenticazione (Controller) | `inviaRichiestaLogout(email)` — sessione non trovata o già invalidata | Richiesta gestita idempotentemente — nessun errore; ritorno `void` | Nessuna azione necessaria; logout già effettuato | `[INFO] UC.AP.04: Richiesta logout per {email} — sessione già terminata (idempotente)` |
+| ERR-AP04-04 | AppPA non dispone di `mostraSuccesso()` per feedback logout riuscito | AppPA (View) | Completamento logout con successo — assenza metodo notifica | Nessuna notifica esplicita; logout comunicato tramite distruzione istanza AppPA e reindirizzamento | PA riceve feedback implicito (cambio schermata) | `[INFO] UC.AP.04: Logout completato per {email} — distruzione AppPA (feedback implicito)` |
+| ERR-AP04-05 | Parametro `email` non valido o malformato | AppPA (View) / GestioneAutenticazione | Ricezione `email = null` o formato non valido in `richiestaLogout()` o `inviaRichiestaLogout()` | Richiesta rigettata; AppPA mostra `mostraErrore("Email non valida")` | PA deve reinserire o contattare supporto | `[WARN] UC.AP.04: Parametro email non valido nella richiesta logout` |
+| ERR-AP04-06 | Timeout risposta da GestioneAutenticazione | GestioneAutenticazione | `inviaRichiestaLogout(email)` — elaborazione oltre timeout atteso | AppPA mostra `mostraErrore("Timeout richiesta logout — riprovare")`; PA può ritentare | Sessione presumibilmente ancora attiva; nuovo tentativo consigliato | `[ERROR] UC.AP.04: Timeout logout per {email} — operazione non completata` |
 
 ---
 

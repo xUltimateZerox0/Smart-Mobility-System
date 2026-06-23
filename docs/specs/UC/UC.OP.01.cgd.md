@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 526997592dcf123e479142b7908f8da256fdfb81d2dd701423a13bcad2c32daf
+document-sha256: 80659c4af1f5a9b3d9a330c09852845030a5f18d209a19a021ef909c87731556
 hitl-claims:
   - id: claim-op01-mezzo-dual-lifeline
     text: "Il diagramma di sequenza UC.OP.01-clean.uml ha due lifeline entrambi chiamate 'Mezzo', una per il Model Mezzo (JuzW) e una per il sistema esterno Mezzo:IoT (KFb6). Chiarimenti-vari.md punto 6 richiede che i nomi delle lifeline corrispondano ai componenti di sistema."
@@ -681,6 +681,42 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 | CRUD Read su `mezzo` | Recupero lista veicoli per `id_flotta` |
 | CRUD Update su `mezzo` | Aggiornamento `stato` a `bloccato` |
 | CRUD Create su `segnalazione` | Inserimento nuova segnalazione |
+
+---
+
+## 24. Test Case Specifications
+
+### 24.1 Component Tests
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP01-C01 | AppOperatoreTecnico | richiedeStatoFlotta triggers dashboard request | P1-P2 satisfied; idFlotta registered | idFlotta: String | Calls GestioneFlotta.getCondizioniMezzi(idFlotta) | GestioneFlotta invoked with correct idFlotta | Empty idFlotta string; non-existent idFlotta |
+| TC-OP01-C02 | GestioneFlotta | getCondizioniMezzi retrieves fleet vehicles | Fleet exists with associated Mezzi | idFlotta: String | Returns List\<Mezzo\> with all fleet vehicles | Mezzo.getMezzibyFlotta(idFlotta) called internally | idFlotta with no associated Mezzi; DB connection timeout |
+| TC-OP01-C03 | Mezzo | getMezzibyFlotta filters by fleet ID | Mezzo records in DB; idFlotta field populated | idFlotta: String | Returns Mezzo objects matching idFlotta | List\<Mezzo\> returned to caller; no side effects | Multiple Mezzi with same idFlotta; no matching Mezzi |
+| TC-OP01-C04 | Mezzo:IoT | bloccoMezzoFisico executes physical block | Mezzo online and reachable | idMezzo | Returns true; vehicle physically blocked | Vehicle locked; cannot be moved | Mezzo offline (returns false); Mezzo already blocked; network timeout |
+| TC-OP01-C05 | Segnalazione | creaSegnalazione creates fault report | Mezzo identified as unreachable | idMezzo, statoS=aperta, data, ora, note | Segnalazione persisted in DB; returns void | DB record created with stato=aperta; timestamped | Invalid idMezzo (FK violation); null note; duplicate submission |
+
+### 24.2 Integration Tests
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|---|---|---|---|---|---|---|---|
+| TC-OP01-I01 | Full Main Flow | Successful block all steps | P1-P3 satisfied; Mezzo online | idFlotta, idMezzo selection | Dashboard shown → vehicle selected → block succeeds → status updated → success message | Mezzo.stato=bloccato; bloccoMezzoFisico=true; mostraSuccesso invoked | Rapid double-click on vehicle; browser refresh mid-flow |
+| TC-OP01-I02 | Alt Flow: Connection Lost | IoT timeout triggers fault report | P1-P3 satisfied; Mezzo unreachable | idFlotta, idMezzo selection | bloccoMezzoFisico returns false → creaSegnalazione → mostraErrore | Segnalazione created; Mezzo.stato unchanged; error shown | Mezzo partially reachable (intermittent); extended IoT timeout |
+| TC-OP01-I03 | GestioneFlotta → DBMS | Fleet data retrieval and persistence | DBMS operational; Mezzo records present | None (triggered by richiedeStatoFlotta) | CRUD Read returns filtered list; CRUD Update persists new stato | DB state consistent with application state; no stale data | Concurrent DB writes; idFlotta with special characters |
+
+---
+
+## 25. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|---|---|---|---|---|---|---|
+| ERR-OP01-01 | Connectivity | Mezzo:IoT | bloccoMezzoFisico(idMezzo) → false/timeout | GestioneFlotta detects failure; invokes creaSegnalazione | Segnalazione created with stato=aperta; mostraErrore notifies operator | Log IoT timeout with idMezzo, timestamp |
+| ERR-OP01-02 | Data | GestioneFlotta | getCondizioniMezzi(idFlotta) returns empty list | System returns empty list to AppOperatoreTecnico | visualizzaMezzi shows empty dashboard or "nessun mezzo" message | Log empty fleet retrieval with idFlotta |
+| ERR-OP01-03 | System | Segnalazione | creaSegnalazione with invalid idMezzo (FK violation) | DBMS rejects INSERT; exception propagated to GestioneFlotta | mostraErrore with "segnalazione non creata" message; operation aborted | Log FK violation with parameters |
+| ERR-OP01-04 | System | GestioneFlotta | avviaManutenzione fails (if invoked in UC.AP.02 context) | Method returns false | System may retry or log error; no user notification in UC.OP.01 | Log avviaManutenzione failure |
+| ERR-OP01-05 | Security | AppOperatoreTecnico | Session expired during UC execution | RBAC check fails; system blocks operation | Redirect to UC.ATT.01; mostraErrore with "sessione scaduta" | Log session expiry with idOperatoreTecnico |
+| ERR-OP01-06 | Data | Mezzo | getMezzibyFlotta returns null/empty despite registered fleet | Empty collection passed to view layer | Dashboard renders with no vehicles; operator notified of empty fleet | Log empty result for registered idFlotta |
+| ERR-OP01-07 | Concurrency | DBMS | Concurrent block/update on same Mezzo | Optimistic locking or DB constraint prevents inconsistent state | Block operation fails; mostraErrore communicates conflict | Log concurrency conflict with idMezzo |
 
 ---
 

@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 986aca79148c9cf2504f80af4aebc2e3fce0c0222a099b63c52e1437e8699d6b
+document-sha256: aabd0169909d1d066184032f4f3b9dd4cbbb6e7b7442951a94b9bf7e199c4bd6
 hitl-claims:
   - id: claim-49739723
     text: "idMetodoPagamento is the surrogate PK of MetodoPagamento — not numCarta"
@@ -309,6 +309,42 @@ UC.UT.03 attiva UC.UT.05
 | Saltare `controllaMetodoEsistente()` prima di `creaMetodoPagamento()` | Sempre verificare duplicati prima dell'insert | Evita metodi duplicati per lo stesso utente *(flusso documentazione.md: controlla → se non esiste → crea)* |
 | Permettere avvio corsa senza metodo pagamento | Richiedere selezione metodo valida prima di `avviaCorsa()` | Vincolo architetturale C8 |
 | Gestire pagamento senza convalida Gateway | Delegare sempre a `convalidaCarta()` | Vincolo architetturale §9 anti-pattern #1 |
+
+---
+
+## 12. Test Case Specifications
+
+### 12.1 Component Tests
+
+| TC-ID | Test Case | Preconditions | Input | Expected Output | Verification |
+|-------|-----------|---------------|-------|-----------------|--------------|
+| TC-UT05-01 | Mostra scelta metodi | Sessione utente attiva | — | `AppUtente.mostraSceltaMetodi()` mostra opzione: seleziona esistente o inserisci nuovo | Verifica rendering UI con due opzioni |
+| TC-UT05-02 | Recupero metodi salvati | Sessione attiva, utente ha metodi salvati | `idUtente` valido | `GestorePagamento.recuperaMetodiSalvati()` → `getMetodoByUtente()` restituisce `lista<MetodoPagamento>` | Verifica propagazione dati da Model a View |
+| TC-UT05-03 | Selezione metodo esistente | Metodi salvati disponibili | `numCarta` valido | `fornisciMetodo()` risolve → `acquisisciSceltaMetodo(idMetodoPagamento)` associa alla sessione | Verifica notifica "metodo selezionato" |
+| TC-UT05-04 | Validazione carta via Gateway | Dati carta inseriti dall'utente | `numCarta`, `dsCarta`, `cvv`, `intestatarioCarta` | `convalidaCarta()` restituisce `true` | Verifica chiamata Gateway con parametri corretti |
+| TC-UT05-05 | Salvataggio nuovo metodo | Carta convalidata, non già esistente | `numCarta`, `intestatarioCarta` | `controllaMetodoEsistente()` → `false` → `creaMetodoPagamento()` salva | Verifica insert DB e conferma `mostraMetodoConvalidato()` |
+
+### 12.2 Integration Tests
+
+| TC-ID | Test Case | Preconditions | Steps | Expected Result | Verification |
+|-------|-----------|---------------|-------|-----------------|--------------|
+| TC-UT05-06 | Flusso completo — selezione metodo esistente | Sessione attiva, metodi salvati disponibili | 1. Utente sceglie di visualizzare metodi 2. Sistema recupera lista 3. Utente seleziona metodo 4. Sistema associa alla sessione | Metodo associato, notifica di successo mostrata | Verifica step 2-9 flusso principale |
+| TC-UT05-07 | Flusso completo — registrazione nuovo metodo convalidato | Sessione attiva, nessun metodo selezionato | 1. Utente sceglie nuovo metodo 2. Inserisce dati carta 3. Gateway convalida 4. Controlla duplicato 5. Crea e salva 6. Mostra lista aggiornata | Nuovo metodo salvato e selezionabile | Verifica flusso alternativo A completo (A1-A10) |
+| TC-UT05-08 | Carta non convalidata dal Gateway | Sessione attiva, utente inserisce nuovi dati | 1. Utente inserisce dati carta 2. Gateway.convalidaCarta() restituisce `false` | Sistema mostra errore "Metodo non convalidato", utente rimane in scelta metodo | Verifica sub-branch A5-A6: errore visualizzato, flusso non prosegue |
+
+---
+
+## 13. Error Handling Matrix
+
+| ERR-ID | Type | Component | Detection | Response | Fallback | Logging |
+|--------|------|-----------|-----------|----------|----------|---------|
+| ERR-UT05-01 | External Service | Gateway Pagamento | `convalidaCarta()` restituisce `false` (carta rifiutata) | Mostra errore "Metodo non convalidato. Verificare i dati della carta." | L'utente può reinserire dati o tornare alla lista metodi | `INFO: Carta rifiutata da Gateway per utente {idUtente}` |
+| ERR-UT05-02 | External Service | Gateway Pagamento | `convalidaCarta()` non risponde o timeout | Mostra errore "Servizio di pagamento non disponibile. Riprova più tardi." | Riprova automatica dopo timeout | `WARN: Gateway Pagamento.convalidaCarta() timeout per utente {idUtente}` |
+| ERR-UT05-03 | Data | GestorePagamento | `getMetodoByUtente(idUtente)` restituisce lista vuota | Proponi inserimento nuovo metodo come unica opzione | Attiva automaticamente flusso di registrazione (A) | `INFO: Nessun metodo salvato per utente {idUtente} — avvio registrazione` |
+| ERR-UT05-04 | Validation | AppUtente | Dati carta inseriti non validi (formato CVV, scadenza, numero carta) | Blocca invio, mostra errore specifico per campo non valido | Attendi correzione input | `INFO: Validazione fallita per campo {campo} — valore {valore}` |
+| ERR-UT05-05 | Precondition | Sistema | Sessione utente scaduta durante flusso pagamento | Reindirizza a login, operazione annullata | — | `ERROR: Sessione scaduta durante selezione metodo pagamento` |
+| ERR-UT05-06 | Data | MetodoPagamento | `controllaMetodoEsistente()` fallisce per errore crittografia (numCarta cifrato) | Mostra errore "Impossibile verificare metodo. Contatta assistenza." | — | `ERROR: controllaMetodoEsistente() fallito — possibile errore cifratura per utente {idUtente}` |
+| ERR-UT05-07 | Security | Sistema | Tentativo di persistenza di `dsCarta` o `cvv` rilevato | Blocca operazione, segnala violazione PCI-DSS | — | `CRITICAL: Tentativo violazione PCI-DSS — persistenza cvv/dsCarta bloccata` |
 
 ---
 

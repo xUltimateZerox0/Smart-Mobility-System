@@ -8,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
-document-sha256: 9d3026145a20d31843cab892c75870496d067d5cfc88e85ab17fc714ad8d5ed0
+document-sha256: 578b02d5365d0fb308195db08f0a06910b64d15471e73edfd99c1558778ce2d2
 hitl-claims:
   - id: claim-07-a01
     text: "Il metodo mostraInserimentoMetodoPagamento() nell'XMI del sequence diagram UC.UT.07 corrisponde a AppUtente.apriInserimentoMetodoPagamento(idUtente) nel Master_Spec v4.0"
@@ -237,6 +237,32 @@ GestioneCorsa.terminaCorsa()
 
 ### Point 9 — Externally Verifiable Claims
 **PASS.** Nessun claim che richieda verifica esterna (prezzi, statistiche di mercato, benchmark). I 3 claim PENDING sono per conferma interna dal team Cofee Coders.
+
+---
+
+## 10. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|---------------|-------|-----------------|----------------|------------|
+| TC-UT.07-01 | GestioneCorsa (Controller) | Verifica area consentita durante terminazione | Corsa attiva, mezzo in area consentita | idCorsa valido | ZonaGeografica.checkArea() restituisce true | Flusso prosegue al calcolo costo | Confine area geografica, coordinate al limite |
+| TC-UT.07-02 | GestioneCorsa (Controller) | Calcolo costo finale tramite aggiornaStima() | Corsa attiva, costoOrario e orari definiti | idCorsa valido | stimaCosto = costoOrario × oreUtilizzo + costo_sospensione restituito come float >= 0 | Corsa.aggiornaCosto() invocato con stimaCosto | Durata zero, sospensione multipla, arrotondamento |
+| TC-UT.07-03 | Corsa (Model) | Persistenza costo aggiornato | Corsa recuperata, stimaCosto calcolato | costo: float (es. 12.50) | Corsa.aggiornaCosto(costo) esegue senza eccezioni | Costo persistito e recuperabile | Costo = 0, costo massimo, valori negativi |
+| TC-UT.07-04 | GestorePagamento (Controller) | Elaborazione transazione pagamento | Utente, metodo pagamento, costo validi | idUtente, idMetodoPagamento, costo | GatewayPagamento.effettuaPagamento() restituisce true | Transazione completata, corsa termina | Timeout gateway, metodo scaduto, saldo insufficiente |
+| TC-UT.07-05 | Mezzo:IoT (External) | Blocco fisico del mezzo dopo pagamento | Pagamento riuscito, idMezzo valido | idMezzo | Mezzo:IoT.bloccoMezzoFisico(idMezzo) restituisce true | Mezzo.setStato(disponibile) eseguito | Mezzo già bloccato, connessione IoT assente |
+| TC-UT.07-06 | Integrazione (A1) | Corsa non trovata — flusso alternativo | Richiesta con idCorsa inesistente o corsa non attiva | idCorsa non valido/null | Corsa.ricercaCorsa() restituisce null; mostraErrore("Corsa non trovata") | Caso d'uso termina senza modifiche | idCorsa = null, corsa già terminata, corsa di altro utente |
+| TC-UT.07-07 | Integrazione (A2) | Area non consentita — BLOCK | Veicolo in area non designata | coordinateVeicolo fuori zona consentita | ZonaGeografica.checkArea() restituisce false; mostraErrore("Area non consentita") | Terminazione impedita, corsa resta attiva | Coordinate nulle, formato errato, area revocata durante corsa |
+| TC-UT.07-08 | Integrazione (A3) | Pagamento non riuscito — retry con nuovo metodo | Gateway rifiuta transazione corrente | idMetodoPagamento valido ma pagamento fallisce | GatewayPagamento.effettuaPagamento() restituisce false; apriInserimentoMetodoPagamento() invocato | Flusso riprende dal passo 4 con nuovo metodo | Tutti i metodi falliscono, annullamento inserimento |
+
+## 11. Error Handling Matrix
+
+| ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|--------|-----------|-----------|-----------------|----------------|----------|---------|
+| ERR-UT.07-01 | Dato non trovato | Corsa (Model) | Corsa.ricercaCorsa(idCorsa) restituisce null | AppUtente.mostraErrore("Corsa non trovata") | Caso d'uso termina senza modifiche | Log warning: corsa inesistente per id fornito |
+| ERR-UT.07-02 | Violazione vincolo geospaziale | ZonaGeografica (Model) | ZonaGeografica.checkArea() restituisce false | AppUtente.mostraErrore("Area non consentita"); BLOCK immediato | Caso d'uso termina; corsa resta attiva | Log error: veicolo in area non consentita — terminazione bloccata |
+| ERR-UT.07-03 | Transazione fallita | GatewayPagamento (External) | GatewayPagamento.effettuaPagamento() restituisce false | AppUtente.mostraErrore("Pagamento non riuscito"); apriInserimentoMetodoPagamento(idUtente) | Retry con nuovo metodo di pagamento | Log warning: pagamento fallito per idCorsa, tentativo retry |
+| ERR-UT.07-04 | Servizio esterno non raggiungibile | GatewayPagamento (External) | GatewayPagamento.effettuaPagamento() solleva eccezione di connessione | AppUtente.mostraErrore("Servizio pagamento non disponibile"); nuovo tentativo dopo timeout | Retry automatico (max 3 tentativi) | Log error: gateway pagamento non raggiungibile — retry n/N |
+| ERR-UT.07-05 | Comando IoT fallito | Mezzo:IoT (External) | Mezzo:IoT.bloccoMezzoFisico() restituisce false o eccezione | AppUtente.mostraErrore("Blocco mezzo fallito"); mezzo in stato errato | Corsa segnata come terminata, allarme operatore | Log critical: blocco fisico fallito per idMezzo — rischio sicurezza |
+| ERR-UT.07-06 | Doppia terminazione | GestioneCorsa (Controller) | Corsa.ricercaCorsa() trova corsa già terminata | AppUtente.mostraErrore("Corsa già terminata") | Caso d'uso termina; idempotenza garantita | Log info: tentativo di doppia terminazione ignorato |
 
 ---
 

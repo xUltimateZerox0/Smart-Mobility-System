@@ -12,7 +12,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: acafb1b534c1fb5c78a166136c6921696be21f8ce9f7360045635b0b675aab07
+document-sha256: 5418226c426907ee172da640dcad9810724fc0b4ea9b8afb844312c9d36cd851
 hitl-claims:
   - id: claim-uc03-avviacorsa-params
     text: "avviaCorsa() nel Controller non ha parametri in Master_Spec.cgd ma il SD usa avviaCorsa(idMezzo, idUtente)"
@@ -511,6 +511,35 @@ hitl-claims:
 | Discrepanze SD identificate | 6 (3 naming lifeline, 1 firma parametri, 2 messaggi descrittivi) |
 | Claim HITL pending | 3 (Round A) |
 | Vincoli architetturali applicabili | 6 |
+
+---
+
+## §18. Test Case Specifications
+
+| ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
+|----|-----------|----------|--------------|-------|----------------|----------------|------------|
+| TC-UT03-01 | View (AppUtente) | Scansione QR e avvio corsa — happy path completo | Utente autenticato (P1), mezzo prenotato (P3), nessuna corsa attiva (P4) | `qrCode` valido da prenotazione attiva | `scansionaQRCode(qrCode)` → `controllaDisponibilita(qrCode)` → ... → `mostraSuccesso()` | Corsa avviata, Q1-Q5 verificate | QR code danneggiato, QR di prenotazione scaduta |
+| TC-UT03-02 | Controller (GestioneCorsa) | Verifica disponibilità mezzo e selezione metodo pagamento | QR valido, mezzo bloccato (P2) | `qrCode` → verifica → `idMetodoPagamento` selezionato | `controllaDisponibilita(qrCode)` → true → `acquisisciSceltaMetodo(idMetodoPagamento)` | Metodo pagamento associato alla corsa | Mezzo con autonomia residua 0%, metodo pagamento scaduto |
+| TC-UT03-03 | Model (Corsa) | Creazione corsa con registrazione DB | Controller autorizzato, metodo pagamento selezionato | `orarioInizio` = now, `coordinatePartenza` = GPS, `idUtente`, `idMezzo` | `creaCorsa(...)` → record `Corsa` inserito con `orarioFine = null` | Q2: corsa attiva nel DB | orarioInizio nullo, coordinatePartenza formato errato |
+| TC-UT03-04 | External (Mezzo:IoT) | Sblocco fisico del mezzo dopo creazione corsa | Corsa creata, mezzo pronto per sblocco | `idMezzo` valido | `richiediSblocco(qrCode)` → `sbloccoMezzoFisico(idMezzo)` → `return true` | Q1: mezzo sbloccato fisicamente, Q3: stato = in_uso | IoT offline, sblocco ritornato false (FA-03) |
+| TC-UT03-05 | Controller (GestioneCorsa) | Monitoraggio costo in tempo reale (Step 10) | Corsa attiva, aggiornamento periodico avviato | `idCorsa` della corsa attiva | `aggiornaStima(idCorsa)` → `float` → `mostraStima(idCorsa)` | Q4: costo in aggiornamento periodico | Costo massimo raggiunto, corsa sospesa (UC.UT.06) |
+| TC-UT03-IT01 | Integration View→Controller→Model | Contratto `scansionaQRCode` → `controllaDisponibilita` → `creaCorsa` | P1-P4 tutte verificate | `qrCode` valido | `scansionaQRCode()` → `controllaDisponibilita()` true → `creaCorsa()` → record creato | Flusso end-to-end: QR a corsa attiva | QR code di mezzo diverso da quello prenotato |
+| TC-UT03-IT02 | Integration Controller→External | Contratto `richiediSblocco` → `sbloccoMezzoFisico` IoT | Corsa creata, mezzo in stato prenotato | `qrCode` → `richiediSblocco(qrCode)` → `sbloccoMezzoFisico(idMezzo)` | `sbloccoMezzoFisico()` → true → `setStato(in_uso)` | Sblocco fisico + aggiornamento logico atomici | Timeout comunicazione IoT, sblocco parziale |
+| TC-UT03-IT03 | Integration Cost Flow | Contratto `aggiornaStima` → `aggiornaCosto` → `mostraStima` | Corsa attiva, timer avviato | `idCorsa`, `costo` calcolato | `aggiornaStima(idCorsa)` → `float` → `Corsa.aggiornaCosto(costo)` → `AppUtente.mostraStima(idCorsa)` | Display utente aggiornato con costo corrente | Frequenza aggiornamento, costo negativo, overflow |
+
+---
+
+## §19. Error Handling Matrix
+
+| ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
+|----|-----------|-----------|----------------|----------------|----------|---------|
+| ERR-UT03-01 | Business logic | GestioneCorsa | `controllaDisponibilita(qrCode)` — `getStato() != prenotato` o `getStato() == in_uso` (FA-01) | `mostraErrore("mezzo non disponibile")` | L'utente torna a UC.UT.01 per selezionare altro mezzo | WARN |
+| ERR-UT03-02 | External | GestorePagamento | `convalidaCarta()` via UC.UT.05 — Gateway non risponde o carta non valida (FA-02) | `mostraErrore("metodo non convalidato")` | L'utente reinserisce dati o sceglie metodo esistente | ERROR |
+| ERR-UT03-03 | External | Mezzo:IoT | `sbloccoMezzoFisico(idMezzo)` — IoT fallisce, restituisce `false` (FA-03) | Rollback `Corsa.creaCorsa()`, `mostraErrore("cannot unlock vehicle")` | Corsa annullata, mezzo resta prenotato, utente contatta supporto | ERROR |
+| ERR-UT03-04 | Input validation | GestioneCorsa | `controllaDisponibilita(qrCode)` — QR code non valido, scaduto o malformato | `mostraErrore("QR code non valido")` | L'utente rigenera QR da UC.UT.02 | WARN |
+| ERR-UT03-05 | Security | GestioneCorsa | `avviaCorsa()` — sessione utente scaduta o token non valido | Redirect a `UC.ATT.01` (Login) | L'utente si ri-autentica e ripete la scansione | ERROR |
+| ERR-UT03-06 | Business logic | GestioneCorsa | `acquisisciSceltaMetodo()` — nessun metodo pagamento selezionato (UC.UT.05 non completato) | Loop: mostra scelta metodi finché metodo valido selezionato | L'utente seleziona/aggiunge metodo pagamento | WARN |
+| ERR-UT03-07 | Business logic | GestioneCorsa | `avviaCorsa()` — P4 violata: utente già in corsa attiva (`orarioFine == null`) | `mostraErrore("Corsa già in corso")` | Reindirizzamento alla corsa attiva in corso | ERROR |
 
 ---
 
