@@ -1,3 +1,5 @@
+> **Type:** Reference
+
 1) Le pre/post condizioni vanno scritte preferibilmente in passato prossimo. (riferimento esempio del professore (Postcondizione: Un nuovo account è stato creato per il Cliente)
 2) La corsa risulta terminata è verificabile (perchè al termine della corsa il campo orario fine dell'oggetto Corsa verrà compilato, quindi la condizione è verificabile)
 3) Utilizzare un metodo di autenticazione per sbloccare il mezzo lo consideriamo un vincolo e non una funzionalità di sistema perchè alternativamente la funzionalità di prenotazione non funzionerebbe (perchè se lo sblocco del mezzo avvenisse con la prenotazione o se il mezzo fosse sempre sbloccato, chiunque potrebbe usarlo in qualsiasi momento)

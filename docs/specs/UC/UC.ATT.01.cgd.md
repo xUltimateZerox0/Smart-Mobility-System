@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.ATT.01-clean.uml, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: 2564348eabc93c36011456d2c10497664b59dd2f1bb78049225b787d1a1593dc
 hitl-claims: []
 ---
 

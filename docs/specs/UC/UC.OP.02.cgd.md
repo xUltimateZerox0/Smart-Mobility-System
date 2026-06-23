@@ -1,5 +1,6 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.OP.02 (primary), Master_Spec.cgd.md v4.0 §3-4, UC.OP.02-clean.uml (XMI 2.1), chiarimenti-vari.md punto 11, response2.md
 clarity-status: CLEAR
@@ -7,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
-document-sha256: 844c2feed31d514e2098de179096e90eb4e247b123078dbe4703fc88463ea1b8
+document-sha256: 2ba7b085554bb4b1f9945422b9065e38a8d113463c38c7d9601b4ec0bd7bf454
 hitl-claims:
   - id: claim-70d7b247
     text: "GestioneUtenti.cercaReport(idUtente) firma: Master_Spec v4.0 §3 riporta ritorno String; UC.OP.02-clean.uml mostra synchCall con reply Utente.report; l'user si aspetta ritorno void. Quale è la firma corretta?"

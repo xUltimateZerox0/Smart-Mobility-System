@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.cgd.md §2-3, UC.AP.02-clean.uml, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: 18fe5cedc81ee190628c046e13c8a1a178801f8c75a5a45a27d87018c9c7d92c
 hitl-claims:
   - id: claim-ap02-e5f6g7h8
     text: "GestioneFlotta.avviaManutenzione(idFlotta) restituisce bool (true = intervento avviato, false = nessun intervento necessario)"

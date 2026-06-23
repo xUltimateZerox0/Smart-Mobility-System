@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.OP.04-clean.uml, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 38ccd0481db7ef3192adfb522231b85af611eb03214d246c624cd26b12c4f534
+document-sha256: 3e81e4de55a4571d5d04aa58934d01164040248fc945d0e9f30ab4ee4e845e8a
 hitl-claims:
   - id: claim-111b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
@@ -303,16 +304,16 @@ Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. I 10
 
 | # | Claim ID | Claim | Fonte | Stato |
 |---|----------|-------|-------|-------|
-| 1 | claim-111b42a7 | `inviaRichiestaLogout(email)` accepts `email:String` and returns `void` | Master_Spec.cgd.md:524 | PENDING |
-| 2 | claim-117ac2cb | `richiestaLogout(email)` exists in AppOperatoreTecnico with `email:String` returning `void` | Master_Spec.cgd.md:740 | PENDING |
-| 3 | claim-117e12d7 | Sessione singola: Login termina sessione precedente | Master_Spec.cgd.md §8 vincolo 9 | PENDING |
-| 4 | claim-113e57cf | UC.OP.04, UC.OP.05, UC.AP.04 structurally identical to UC.UT.09 by intentional design | chiarimenti-vari.md punto 13 | PENDING |
-| 5 | claim-11091055 | UC.OP.04 main flow: 2-step process | documentazione.md §2.2.2 | PENDING |
-| 6 | claim-11b3a4cb | UC.OP.04 has no alternative flows | documentazione.md §2.2.2 | PENDING |
-| 7 | claim-11a3b4a5 | Postcondition: sessione Operatore Tecnico terminata | documentazione.md §2.2.2 | PENDING |
-| 8 | claim-11ae145c | Destroy messages indicate view instance destruction for logout | chiarimenti-vari.md punto 11 | PENDING |
-| 9 | claim-11751ae5 | AppOperatoreTecnico depends on GestioneFlotta + GestioneAutenticazione; Autenticazione is pre-auth | Master_Spec.cgd.md §4 + §6 dep.table | PENDING |
-| 10 | claim-11be0e2d | All 4 View classes have richiestaLogout(email) | Master_Spec.cgd.md §4 | PENDING |
+| 1 | claim-111b42a7 | `inviaRichiestaLogout(email)` accepts `email:String` and returns `void` | Master_Spec.cgd.md:524 | REVIEWED |
+| 2 | claim-117ac2cb | `richiestaLogout(email)` exists in AppOperatoreTecnico with `email:String` returning `void` | Master_Spec.cgd.md:740 | REVIEWED |
+| 3 | claim-117e12d7 | Sessione singola: Login termina sessione precedente | Master_Spec.cgd.md §8 vincolo 9 | REVIEWED |
+| 4 | claim-113e57cf | UC.OP.04, UC.OP.05, UC.AP.04 structurally identical to UC.UT.09 by intentional design | chiarimenti-vari.md punto 13 | REVIEWED |
+| 5 | claim-11091055 | UC.OP.04 main flow: 2-step process | documentazione.md §2.2.2 | REVIEWED |
+| 6 | claim-11b3a4cb | UC.OP.04 has no alternative flows | documentazione.md §2.2.2 | REVIEWED |
+| 7 | claim-11a3b4a5 | Postcondition: sessione Operatore Tecnico terminata | documentazione.md §2.2.2 | REVIEWED |
+| 8 | claim-11ae145c | Destroy messages indicate view instance destruction for logout | chiarimenti-vari.md punto 11 | REVIEWED |
+| 9 | claim-11751ae5 | AppOperatoreTecnico depends on GestioneFlotta + GestioneAutenticazione; Autenticazione is pre-auth | Master_Spec.cgd.md §4 + §6 dep.table | REVIEWED |
+| 10 | claim-11be0e2d | All 4 View classes have richiestaLogout(email) | Master_Spec.cgd.md §4 | REVIEWED |
 
 ### Round B: True HITL Verification
 *Nessun claim richiede Round B — tutti i claim derivano da fonti documentali verificate nella sessione corrente.*
@@ -320,4 +321,4 @@ Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. I 10
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

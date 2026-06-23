@@ -1,5 +1,6 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: AI Cross-Reference Engine, response2.md
 sources:
@@ -11,7 +12,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: acafb1b534c1fb5c78a166136c6921696be21f8ce9f7360045635b0b675aab07
 hitl-claims:
   - id: claim-uc03-avviacorsa-params
     text: "avviaCorsa() nel Controller non ha parametri in Master_Spec.cgd ma il SD usa avviaCorsa(idMezzo, idUtente)"

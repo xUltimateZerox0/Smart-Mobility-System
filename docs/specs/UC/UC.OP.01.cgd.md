@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: AI Cross-Reference Engine — documentazione.md v3.0 §2.2.2 (primary), Master_Spec.cgd.md v4.0, UC.OP.01-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: 526997592dcf123e479142b7908f8da256fdfb81d2dd701423a13bcad2c32daf
 hitl-claims:
   - id: claim-op01-mezzo-dual-lifeline
     text: "Il diagramma di sequenza UC.OP.01-clean.uml ha due lifeline entrambi chiamate 'Mezzo', una per il Model Mezzo (JuzW) e una per il sistema esterno Mezzo:IoT (KFb6). Chiarimenti-vari.md punto 6 richiede che i nomi delle lifeline corrispondano ai componenti di sistema."

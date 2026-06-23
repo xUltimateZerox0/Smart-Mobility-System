@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md v3.0 §2.2.2, Master_Spec.cgd.md v4.0, UC.OP.03-clean.uml (XMI fixed: 'attiva' ✅), chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 23497d767a6319aafb7c58315e34caf4f5da6b6ab4cfe98c840ebf87d2ee96d1
+document-sha256: c754e9c83e1013849b32652a31c2dc24a4297dfc78f138314103e4293dcdd626
 hitl-claims:
   - id: claim-9a3e7c01
     text: "Il diagramma di sequenza usa 'getPrenotazioneByStato(valida)' ma StatoPrenotazione non ha un valore 'valida' — i 4 valori sono attiva, scaduta, annullata, completata. Il valore corretto dovrebbe essere 'attiva' (o StatoPrenotazione.attiva)"

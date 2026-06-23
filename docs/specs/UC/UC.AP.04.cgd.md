@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.AP.04-clean.uml, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 93b948019aeae4d567daa80460545035ac5018737814ca1ff84e3aee42029a47
+document-sha256: 182ee92fc4635d89983f7b22ced8e7806f665ba638119f0ee91bc4bdc3d00aa9
 hitl-claims:
   - id: claim-1a2b3c4d
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
@@ -307,17 +308,17 @@ Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. Gli 
 
 | # | Claim ID | Claim | Fonte | Stato |
 |---|----------|-------|-------|-------|
-| 1 | claim-f4a72c1e | `inviaRichiestaLogout(email)` accepts `email:String` and returns `void` | Master_Spec.cgd.md:524 | PENDING |
-| 2 | claim-8b3d91f6 | `richiestaLogout(email)` exists in AppPA with `email:String` returning `void` | Master_Spec.cgd.md:794 | PENDING |
-| 3 | claim-3e57cf92 | UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04 structurally identical by design | chiarimenti-vari.md punto 13 | PENDING |
-| 4 | claim-d17e4a2b | UC.AP.04 main flow: 2-step process | documentazione.md §2.2.2 | PENDING |
-| 5 | claim-9f2c8b55 | UC.AP.04 has no alternative flows | documentazione.md §2.2.2 | PENDING |
-| 6 | claim-c84a1d3e | Postcondition: sessione PA terminata | documentazione.md §2.2.2 | PENDING |
-| 7 | claim-ae145c4c | Destroy messages indicate view instance destruction for logout | chiarimenti-vari.md punto 11 | PENDING |
-| 8 | claim-751ae573 | Autenticazione view is pre-auth interface, shown after logout | Master_Spec.cgd.md §4 | PENDING |
-| 9 | claim-be0e2d93 | All 4 View classes have richiestaLogout(email) | Master_Spec.cgd.md §4 | PENDING |
-| 10 | claim-6a1f2d8c | UC.AP.04-clean.uml contains UC.AP.03 content (XMI export error) | UC.AP.04-clean.uml + grep | PENDING |
-| 11 | claim-3d7e9b1a | AppPA non dispone di mostraSuccesso() — asimmetria con le altre View | Master_Spec.cgd.md:783 vs 694/735/760 | PENDING |
+| 1 | claim-f4a72c1e | `inviaRichiestaLogout(email)` accepts `email:String` and returns `void` | Master_Spec.cgd.md:524 | REVIEWED |
+| 2 | claim-8b3d91f6 | `richiestaLogout(email)` exists in AppPA with `email:String` returning `void` | Master_Spec.cgd.md:794 | REVIEWED |
+| 3 | claim-3e57cf92 | UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04 structurally identical by design | chiarimenti-vari.md punto 13 | REVIEWED |
+| 4 | claim-d17e4a2b | UC.AP.04 main flow: 2-step process | documentazione.md §2.2.2 | REVIEWED |
+| 5 | claim-9f2c8b55 | UC.AP.04 has no alternative flows | documentazione.md §2.2.2 | REVIEWED |
+| 6 | claim-c84a1d3e | Postcondition: sessione PA terminata | documentazione.md §2.2.2 | REVIEWED |
+| 7 | claim-ae145c4c | Destroy messages indicate view instance destruction for logout | chiarimenti-vari.md punto 11 | REVIEWED |
+| 8 | claim-751ae573 | Autenticazione view is pre-auth interface, shown after logout | Master_Spec.cgd.md §4 | REVIEWED |
+| 9 | claim-be0e2d93 | All 4 View classes have richiestaLogout(email) | Master_Spec.cgd.md §4 | REVIEWED |
+| 10 | claim-6a1f2d8c | UC.AP.04-clean.uml contains UC.AP.03 content (XMI export error) | UC.AP.04-clean.uml + grep | REVIEWED |
+| 11 | claim-3d7e9b1a | AppPA non dispone di mostraSuccesso() — asimmetria con le altre View | Master_Spec.cgd.md:783 vs 694/735/760 | REVIEWED |
 
 ### Round B: True HITL Verification
 *Nessun claim richiede Round B — tutti i claim derivano da fonti documentali verificate nella sessione corrente.*
@@ -325,4 +326,4 @@ Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. Gli 
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

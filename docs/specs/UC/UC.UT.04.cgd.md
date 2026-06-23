@@ -6,7 +6,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: ea533926cf1dc59b2d6763a9c9c908bbf94024754de6150db290e2e1afcd29b4
+document-sha256: c92732bbe795246f65283e2df27cc60c58c0fc537259216e83f53d61e0da0b7e
 hitl-claims:
   - id: claim-uc04001
     text: "Il parametro si chiama 'destinazione' (Master_Spec) e non 'stringaDestinazione' (XMI) — la fonte primaria documentazione.md prevale"

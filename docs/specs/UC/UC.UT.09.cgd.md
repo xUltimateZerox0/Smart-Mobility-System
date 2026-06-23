@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.UT.09-clean.uml, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: df8f88fb8a8b57869b7ef2b689eb450afc6e069a6656a7748e3b21b55db1ab6d
 hitl-claims:
   - id: claim-333b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
@@ -287,16 +288,16 @@ Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. I 10
 
 | # | Claim ID | Claim | Fonte | Stato |
 |---|----------|-------|-------|-------|
-| 1 | claim-333b42a7 | `inviaRichiestaLogout(email)` accepts `email:String` and returns `void` | Master_Spec.cgd.md:524 | PENDING |
-| 2 | claim-37ac2cbc | `richiestaLogout(email)` exists in AppUtente with `email:String` returning `void` | Master_Spec.cgd.md:717 | PENDING |
-| 3 | claim-7e12d7ac | Sessione singola: Login termina sessione precedente | Master_Spec.cgd.md §8 vincolo 9 | PENDING |
-| 4 | claim-3e57cf92 | UC.OP.04, UC.OP.05, UC.AP.04 structurally identical to UC.UT.09 by design | chiarimenti-vari.md punto 13 | PENDING |
-| 5 | claim-09100558 | UC.UT.09 main flow: 2-step process | documentazione.md §2.2.2 | PENDING |
-| 6 | claim-b3a4cb86 | UC.UT.09 has no alternative flows | documentazione.md §2.2.2 | PENDING |
-| 7 | claim-a3b4a527 | Postcondition: sessione terminata | documentazione.md §2.2.2 | PENDING |
-| 8 | claim-ae145c4c | Destroy messages indicate view instance destruction for logout | chiarimenti-vari.md punto 11 | PENDING |
-| 9 | claim-751ae573 | Autenticazione view is pre-auth interface, shown after logout | Master_Spec.cgd.md §4 | PENDING |
-| 10 | claim-be0e2d93 | All 4 View classes have richiestaLogout(email) | Master_Spec.cgd.md §4 | PENDING |
+| 1 | claim-333b42a7 | `inviaRichiestaLogout(email)` accepts `email:String` and returns `void` | Master_Spec.cgd.md:524 | REVIEWED |
+| 2 | claim-37ac2cbc | `richiestaLogout(email)` exists in AppUtente with `email:String` returning `void` | Master_Spec.cgd.md:717 | REVIEWED |
+| 3 | claim-7e12d7ac | Sessione singola: Login termina sessione precedente | Master_Spec.cgd.md §8 vincolo 9 | REVIEWED |
+| 4 | claim-3e57cf92 | UC.OP.04, UC.OP.05, UC.AP.04 structurally identical to UC.UT.09 by design | chiarimenti-vari.md punto 13 | REVIEWED |
+| 5 | claim-09100558 | UC.UT.09 main flow: 2-step process | documentazione.md §2.2.2 | REVIEWED |
+| 6 | claim-b3a4cb86 | UC.UT.09 has no alternative flows | documentazione.md §2.2.2 | REVIEWED |
+| 7 | claim-a3b4a527 | Postcondition: sessione terminata | documentazione.md §2.2.2 | REVIEWED |
+| 8 | claim-ae145c4c | Destroy messages indicate view instance destruction for logout | chiarimenti-vari.md punto 11 | REVIEWED |
+| 9 | claim-751ae573 | Autenticazione view is pre-auth interface, shown after logout | Master_Spec.cgd.md §4 | REVIEWED |
+| 10 | claim-be0e2d93 | All 4 View classes have richiestaLogout(email) | Master_Spec.cgd.md §4 | REVIEWED |
 
 ### Round B: True HITL Verification
 *Nessun claim richiede Round B — tutti i claim derivano da fonti documentali verificate nella sessione corrente.*
@@ -304,4 +305,4 @@ Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. I 10
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: AI (Cross-Reference Engine) — Master_Spec.cgd.md v4.0, documentazione.md v3.0, classDiagram-v1.8-clean.uml, UC.UT.08-clean.uml, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 7024b2cd77c194f1409db989b575c83d011332110374ee14f156e9333f3433e0
+document-sha256: 00ecb17d3d432e6b309337007e5eaca9814b1f0c97e036331bd01ec37536b06e
 hitl-claims:
   - id: claim-3a9f1c02
     text: "Autenticazione View chiama GestioneAutenticazione.verificaValidita(nome,cognome,email,password,datanascita) e inoltra la risposta senza mai interpellare direttamente Utente Model"

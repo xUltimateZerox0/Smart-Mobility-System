@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md v3.0, Master_Spec.cgd.md v4.0, UC.UT.05-clean.uml sequence diagram, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: dd63bf652f033388dd10c3c9093e5722fee7d65864e375f9bcc008d9ca9d7541
+document-sha256: 986aca79148c9cf2504f80af4aebc2e3fce0c0222a099b63c52e1437e8699d6b
 hitl-claims:
   - id: claim-49739723
     text: "idMetodoPagamento is the surrogate PK of MetodoPagamento — not numCarta"

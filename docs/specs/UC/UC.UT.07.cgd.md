@@ -1,5 +1,6 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.UT.07 (primary), Master_Spec.cgd.md v4.0, UC.UT.07-clean.uml (XMI 2.1), chiarimenti-vari.md punti 2,4, response2.md
 clarity-status: CLEAR
@@ -7,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
-document-sha256: cd7effd339f9dac4676d15306cbfdb249ff8dffd4864284f7d4d3db098e71a51
+document-sha256: 9d3026145a20d31843cab892c75870496d067d5cfc88e85ab17fc714ad8d5ed0
 hitl-claims:
   - id: claim-07-a01
     text: "Il metodo mostraInserimentoMetodoPagamento() nell'XMI del sequence diagram UC.UT.07 corrisponde a AppUtente.apriInserimentoMetodoPagamento(idUtente) nel Master_Spec v4.0"

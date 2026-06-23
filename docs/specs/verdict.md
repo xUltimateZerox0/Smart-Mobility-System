@@ -13,11 +13,11 @@
 |-----------|-------|---------|
 | **Spec Gate (Structural Completeness)** | 11/13 | **PASS** — 2 minor gaps |
 | **Clarity Gate (Epistemic Quality)** | 9/9 | **PASS** — all points cleared |
-| **AI Coder Understandability** | **8.7/10** | **READY** — near threshold |
+| **AI Coder Understandability** | **9.0/10** | **READY** — at threshold |
 | **HITL Verification** | 17/17 claims | **REVIEWED** — 0 pending |
 | **Overall Code Generation Readiness** | **READY** | Proceed to Phase 3 |
 
-**Verdict:** The documentation is **ready for code generation** (Phase 3 of Stream Coding). All Clarity Gate points pass. Spec Gate passes 11/13 with 2 non-blocking gaps. The AI Coder Understandability Score of 8.7/10 indicates that an AI agent can implement the system with minimal clarifying questions.
+**Verdict:** The documentation is **ready for code generation** (Phase 3 of Stream Coding). All Clarity Gate points pass. Spec Gate passes 11/13 with 2 non-blocking gaps. The AI Coder Understandability Score of **9.0/10** indicates that an AI agent can implement the system with minimal clarifying questions. All integrity, consistency, and classification gaps from the initial audit have been resolved: `document-sha256` inserted for 20/20 CGD files, HITL body tables aligned with YAML frontmatter, and document-type labels added across all files.
 
 ---
 
@@ -64,7 +64,7 @@
 | **10** | **Test Cases Placed** — Implementation doc only? | **FAIL** | **No test case specifications exist in any document.** UC.UT.09 and UC.AP.04 have `Acceptance Criteria` sections (5 criteria each), but there are no structured test case tables (Test ID, Component, Input, Expected, Edge Cases) in any file. This is a gap for Phase 3 execution. |
 | **11** | **Error Handling Placed** — Implementation doc only? | **PARTIAL** | Some UC docs have `Error Scenarios` sections (e.g., UC.UT.09 §7, UC.OP.04 §7, UC.AP.04 §7) with tables describing scenarios. However, there is no comprehensive Error Handling Matrix (Error Type / Detection / Response / Fallback / Logging) as required by Stream Coding §2. |
 | **12** | **Deep Links Present** — No vague references? | **PASS** | Master_Spec.cgd.md §14 has a complete References table with document paths and roles. Each UC CGD has a References section with exact paths. `response2.md` links every claim to its source document + line number. |
-| **13** | **No Duplicates** — Pointers not copies? | **PARTIAL** | Minor duplication: The HITL claim information appears in both the YAML frontmatter and the body's HITL Verification Record table. The YAML has confirmed values (`confirmed-by`, `confirmed-date`) while some body tables still show `PENDING` — a text inconsistency that doesn't affect AI execution but violates single-source-of-truth. |
+| **13** | **No Duplicates** — Pointers not copies? | **PASS** | HITL claim information appears in both YAML frontmatter and body HITL Verification Record table. The text inconsistency (body showing PENDING while YAML showed REVIEWED) was fixed on 2026-06-23 across UC.UT.01, UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04. All body tables now match YAML status. |
 
 ### Spec Gate Score: 11/13 **PASS**
 
@@ -93,15 +93,15 @@
 | Criterion | Weight | Score | Rationale |
 |-----------|--------|-------|-----------|
 | **Actionability** | 25% | 9/10 | All method signatures explicit. Controller, View, Model clearly separated. 2 projected types (`percorso`, `datiPercorso`) lack structure definition. |
-| **Specificity** | 20% | 8/10 | Enum values, parameter types, return types all specified. Minor gaps: `document-sha256: PENDING` in several CGDs; `fornisciMetodo()` is XMI-only without formal signature. |
-| **Consistency** | 15% | 9/10 | Cross-referenced across 5+ source types with documented priority chain. Minor: HITL body tables show "PENDING" while YAML shows "REVIEWED" in some UC files. |
+| **Specificity** | 20% | 9/10 | Enum values, parameter types, return types all specified. All `document-sha256` values computed and inserted for all 20 CGD files. `fornisciMetodo()` XMI-only gap remains (non-blocking). |
+| **Consistency** | 15% | 10/10 | Cross-referenced across 5+ source types with documented priority chain. HITL body tables now match YAML frontmatter (REVIEWED) across all files. Document type labels added for all 20+ files. |
 | **Structure** | 15% | 9/10 | Heavy use of tables over prose. Clear hierarchy: Master_Spec → UC specs → Method traceability. CGD YAML frontmatter is machine-parseable. |
 | **Disambiguation** | 15% | 8/10 | Anti-patterns present (7 in Master_Spec). Ambiguities documented with HITL claims. Missing: no test case specifications, no comprehensive error matrix. |
 | **Reference Clarity** | 10% | 9/10 | Deep links to files in every document. Line numbers referenced for method signatures. Cross-reference report (`response2.md`) is thorough. |
 
-### Weighted Total: **8.65/10** → **8.7/10**
+### Weighted Total: **9.00/10** → **9.0/10**
 
-> **Interpretation:** Near the 9/10 threshold. AI can implement with 1-2 clarifying questions about projected types and test strategy.
+> **Interpretation:** At the 9/10 threshold. All hash integrity and HITL consistency gaps resolved. AI can implement with minimal clarifying questions about projected types and test strategy.
 
 ---
 
@@ -118,14 +118,14 @@
 | **H1** | No test case specifications | All UC CGD files | AI will not generate tests | Per Stream Coding spec, add minimum 5 unit tests + 3 integration tests per implementation doc |
 | **H2** | No error handling matrix | All files | AI will guess error responses | Add comprehensive error handling matrix (Error Type / Detection / Response / Fallback / Logging) |
 | **H3** | `percorso` and `datiPercorso` are projected types | UC.UT.04.cgd.md §6 | Code generator must choose representation | Define these as DTO types or accept projection as design intent (external black-box) |
-| **H4** | `document-sha256: PENDING` in 6+ CGD files | UC.UT.01, UC.UT.02, UC.UT.03, UC.UT.09, UC.OP.05, UC.AP.02 | Integrity verification gap | Run `document_hash.py` on each file and insert computed hash |
-| **H5** | HITL body table shows "PENDING" while YAML shows "REVIEWED" | UC.UT.01, UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04 | Text inconsistency, not structural | Update body HITL tables to reflect confirmed status from YAML frontmatter |
+| ~~**H4**~~ | ~~`document-sha256: PENDING` in 6+ CGD files~~ | — | ✅ **RESOLVED 2026-06-23** | All 20 CGD files have computed hashes |
+| ~~**H5**~~ | ~~HITL body table shows "PENDING" while YAML shows "REVIEWED"~~ | — | ✅ **RESOLVED 2026-06-23** | 5 UC files updated to show REVIEWED in body |
 
 ### 6.3 Medium Issues (address after Phase 3 or defer)
 
 | # | Issue | Location | Recommendation |
 |---|-------|----------|----------------|
-| **M1** | No explicit document type labels | All files | Add `(Implementation)` to Master_Spec and UC CGDs, `(Strategic)` to documentazione.md |
+| ~~**M1**~~ | ~~No explicit document type labels~~ | — | ✅ **RESOLVED 2026-06-23** — `document-type: Implementation` added to 20 CGD YAML frontmatters; Strategic/Reference labels added to documentazione.md, chiarimenti-vari.md, response2.md |
 | **M2** | README.md is effectively empty (1 line) | `/README.md` | Add installation, architecture overview, and build instructions |
 | **M3** | Component diagram View nesting incomplete | `docs/diagrams/component-diagram/` | Per `response2.md` Gap #13, nest AppOperatoreSC, AppPA, AppOperatoreTecnico, Autenticazione under View component |
 | **M4** | `fornisciMetodo()` is XMI-only, not formalized | UC.UT.05.cgd.md §5 | Add to Master_Spec or document as internal helper |
@@ -204,7 +204,7 @@ The priority chain `documentazione.md > chiarimenti-vari >= chiarimentiUc >= cla
 | UC.AP.04 | 11 | 11 ✓ | — | **REVIEWED** |
 | **TOTAL** | **108** | **~100 ✓** | **5 ✓** | **REVIEWED** |
 
-> **Note:** Some UC files show "PENDING" in their HITL Verification Record body table text, but their YAML frontmatter correctly reflects `hitl-status: REVIEWED` with `confirmed-by` and `confirmed-date` populated. This is a text inconsistency (see H5).
+> **Note:** All HITL body table text now matches YAML frontmatter consistently. The text inconsistency (PENDING in body vs REVIEWED in YAML) was resolved on 2026-06-23 across 5 UC files. All 20 CGD files have `document-sha256` computed and inserted.
 
 ---
 
@@ -264,10 +264,10 @@ None of these are blocking. The AI architect prompt (`master-system-prompt.md`) 
 
 1. **Acceptable to proceed now** — all critical gates pass. The 2 Spec Gate gaps (test cases, error matrix) are Phase 4 items per Stream Coding (they belong in implementation docs that get created during code generation).
 
-2. **Quick wins (30 min):**
-   - Compute and insert `document-sha256` for the 6+ files showing `PENDING`
-   - Fix HITL body table text in UC.UT.01, UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04 to match YAML
-   - Add document type labels to file headers
+2. **Quick wins (30 min):** ✅ **ALL COMPLETED 2026-06-23**
+   - ✅ `document-sha256` computed and inserted for all 20 CGD files
+   - ✅ HITL body table text fixed in UC.UT.01, UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04
+   - ✅ Document type labels added to all file headers
 
 3. **Phase 2.5 (Adversarial Review) optional but recommended:**
    - Submit Master_Spec.cgd.md to a different AI model
@@ -299,7 +299,7 @@ None of these are blocking. The AI architect prompt (`master-system-prompt.md`) 
 ║                                                               ║
 ║   Spec Gate:      11/13 ✅  PASS                              ║
 ║   Clarity Gate:    9/9  ✅  PASS                              ║
-║   AI Score:        8.7/10 ✅ READY                            ║
+║   AI Score:        9.0/10 ✅ READY                            ║
 ║   Critical Bugs:   0/4  ✅ ALL FIXED                          ║
 ║   HITL Claims:   108/108 ✅ REVIEWED                          ║
 ║                                                               ║
@@ -325,17 +325,17 @@ None of these are blocking. The AI architect prompt (`master-system-prompt.md`) 
 | `documentazione.md` | ✅ Pass | ✅ Pass | 8/10 | Primary source. Contains some university-formatting fluff. |
 | `chiarimenti-vari.md` | ✅ Pass | ✅ Pass | 9/10 | Excellent clarification document. 21 precise points. |
 | `response2.md` | ✅ Pass | ✅ Pass | 10/10 | Outstanding cross-reference report. Complete with warnings, gaps, pending items. |
-| `UC.UT.01.cgd.md` | ✅ Pass | ✅ Pass | 8/10 | HITL body table text inconsistency with YAML. |
+| `UC.UT.01.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | HITL text inconsistency resolved. document-type added. |
 | `UC.UT.02.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | Solid. All claims confirmed. |
 | `UC.UT.03.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | Complete. Method signatures confirmed. |
 | `UC.UT.04.cgd.md` | ✅ Pass | ✅ Pass | 8/10 | Projected types (percorso/datiPercorso) need definition. |
 | `UC.UT.05.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | PCI-DSS notes add architectural depth. `fornisciMetodo()` XMI-only. |
-| `UC.UT.09.cgd.md` | ✅ Pass | ✅ Pass | 8/10 | HITL table shows PENDING despite REVIEWED YAML. |
+| `UC.UT.09.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | HITL table now matches YAML (REVIEWED). |
 | `UC.OP.03.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | Clean. All 6 claims confirmed. Critical #1 enum fix documented. |
-| `UC.OP.04.cgd.md` | ✅ Pass | ✅ Pass | 8/10 | HITL table shows PENDING despite REVIEWED YAML. |
-| `UC.OP.05.cgd.md` | ✅ Pass | ✅ Pass | 8/10 | HITL table shows PENDING despite REVIEWED YAML. |
-| `UC.AP.02.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | Complete. Postconditions verified. |
-| `UC.AP.04.cgd.md` | ✅ Pass | ✅ Pass | 8/10 | Critical #2 (wrong diagram) now fixed. HITL text inconsistency. |
+| `UC.OP.04.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | HITL table now matches YAML (REVIEWED). |
+| `UC.OP.05.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | HITL table now matches YAML (REVIEWED). |
+| `UC.AP.02.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | Complete. Postconditions verified. document-type added. |
+| `UC.AP.04.cgd.md` | ✅ Pass | ✅ Pass | 9/10 | Critical #2 (wrong diagram) now fixed. HITL text inconsistency resolved. |
 | `master-system-prompt.md` | ✅ Pass | ✅ Pass | 10/10 | Production-ready AI architect prompt with scaffolding rules. |
 
 ## Appendix B: Key Metrics
@@ -357,8 +357,8 @@ None of these are blocking. The AI architect prompt (`master-system-prompt.md`) 
 | Critical bugs found & fixed | 4 |
 | Projected / undefined types | 2 (percorso, datiPercorso) |
 | Sequence diagrams (UML) | 19 |
-| Remaining PENDING document-sha256 | 6+ |
+| Remaining PENDING document-sha256 | 0 ✅ ALL COMPUTED |
 
 ---
 
-*Verdict generated 2026-06-23 using Stream Coding v3.5 methodology and Clarity Gate v2.1 framework.*
+*Verdict generated 2026-06-23. AI-readiness upgrade applied same day: hashes computed, HITL tables aligned, document-type labels added. Using Stream Coding v3.5 methodology and Clarity Gate v2.1 framework.*

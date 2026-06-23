@@ -1,5 +1,6 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.AP.03 (primary), Master_Spec.cgd.md v4.0, UC.AP.03-clean.uml (XMI 2.1), chiarimenti-vari.md punto 4, response2.md
 clarity-status: CLEAR
@@ -7,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
-document-sha256: e494ba73a1009ff30340b917bdeea28502d0b9574bb276415bb700edf0115f21
+document-sha256: c410ba9964acb27e5aebf3ce68d877ab84382bbd14c6de4f2b9591fad07777a2
 hitl-claims:
   - id: claim-ap03-a01
     text: "Il metodo XMI `aggiornaRestrizione` (singolare) — il diagramma delle classi è stato aggiornato per corrispondere. Il nome canonico è ora `aggiornaRestrizione` (singolare). Critical #3 da response2.md risolta 2026-06-23."

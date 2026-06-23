@@ -1,5 +1,6 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Clarity Gate (AI) — Cross-Reference: documentazione.md §2.2.2, Master_Spec.cgd.md §3 §7, UC.UT.02-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
@@ -7,7 +8,7 @@ hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
 points-failed:
-document-sha256: PENDING
+document-sha256: cc5d955f2074dadd5b2a51fa987ee09ba019c0a0111fddccb3687cc93d5e5079
 hitl-claims:
   - id: claim-uc02-001
     text: "inviaRichiestaPrenotazione() signature: Master_Spec mostra no-args (void), UML mostra (idMezzo, idUtente). Quale è la firma corretta?"

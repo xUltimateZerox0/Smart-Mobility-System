@@ -2,6 +2,7 @@
 **Cofee Coders**
 
 **Smart Mobility System**
+**Type:** Strategic
 
 Versione 3.0
 

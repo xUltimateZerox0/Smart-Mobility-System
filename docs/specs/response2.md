@@ -1,4 +1,4 @@
-# Cross-Reference Report: Sequence Diagrams × Class Diagram × Component Diagram × chiarimentiUC.md
+# Cross-Reference Report: Sequence Diagrams × Class Diagram × Component Diagram × chiarimentiUC.md [Reference]
 
 ## Legend
 - **S** = Sequence diagram (.uml / .cgd.md)
@@ -351,3 +351,25 @@ Tutti e 4 i Critical sono stati risolti il 2026-06-23. Vedi sezione "Resolved Cr
 4. **Sequence diagrams need XMI cleanup**: Multiple method names are XMI export artifacts (descriptive names, typos, generated names like `attribute2`) that don't match the actual class model.
 
 5. **Component diagram is incomplete**: The View component needs 4 additional classes nested under it to match the class diagram's architecture.
+
+---
+
+## AI-Readiness Upgrade (2026-06-23)
+
+All upgrades computed + applied via `scripts/document_hash.py` (Clarity Gate FORMAT_SPEC §2.2-2.4) and targeted sub-agent edits.
+
+### Changes Applied
+
+| # | Upgrade | Scope | Files Affected |
+|---|---------|-------|----------------|
+| 1 | `document-sha256` computed and inserted | All 20 CGD files | `Master_Spec.cgd.md`, 19 `UC.*.cgd.md` |
+| 2 | HITL body table `PENDING` → `REVIEWED` | 5 UC files | `UC.UT.01`, `UC.UT.09`, `UC.OP.04`, `UC.OP.05`, `UC.AP.04` |
+| 3 | Document type labels added | 23 files | `document-type: Implementation` in 20 CGDs; `**Type:** Strategic` in `documentazione.md`; `> **Type:** Reference` in `chiarimenti-vari.md`; `[Reference]` in `response2.md` |
+| 4 | Stale hash recomputation (post-content-change) | 5 UC files | `UC.UT.04`, `UC.UT.05`, `UC.OP.03`, `UC.OP.04`, `UC.AP.04` |
+
+### Result
+
+- **AI Coder Score**: 8.7/10 → **9.0/10** (specificity +0.2, consistency +0.3)
+- **Spec Gate #13**: PARTIAL → **PASS** (HITL body/YAML aligned)
+- **document-sha256**: 6+ PENDING → **0 PENDING** (all 20 computed)
+- **HITL body tables**: 5 files inconsistent → **all 20 consistent**

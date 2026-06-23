@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.md v3.0, classDiagram-v1.8-clean.uml, chiarimenti-vari.md punti 19-21
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: f62cfacd4f73d7c7ad66e4ae1d172229b4d7666bb64b506f40665eb5ee215dfa
 hitl-claims:
   - id: claim-6d3b7c006
     text: "I valori enum per StatoSegnalazione sono: aperta, in_lavorazione, chiusa"

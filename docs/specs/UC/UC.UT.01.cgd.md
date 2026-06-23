@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md v3.0 §2.2.2, Master_Spec.cgd.md v4.0, UC.UT.01-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: 91fcf4f4a37d29b249a65e10c455a4d051c03278c693ee95e6d483c62d462da1
 hitl-claims:
   - id: claim-4f2a1c08
     text: "Il diagramma di sequenza usa la lifeline 'Controller' (generica) anziché 'RicercaMezzi' (specifica), in contrasto con chiarimenti-vari.md punto 6 che richiede nomi corrispondenti ai componenti di sistema"
@@ -416,10 +417,10 @@ Tutti i claim derivano da cross-reference tra documentazione.md, Master_Spec.cgd
 
 | # | Claim ID | Claim | Rilevanza | Stato |
 |---|----------|-------|-----------|-------|
-| 1 | claim-4f2a1c08 | Diagramma usa "Controller" non "RicercaMezzi" — è intenzionale o va corretto? | Naming consistente con chiarimenti-vari.md p.to 6 | PENDING |
-| 2 | claim-3b7d9e02 | Rifiuto espansione è implicito (nessun metodo `rifiutaEspansione()`) — il design è corretto? | Completezza API View | PENDING |
-| 3 | claim-9e2f5a11 | UT.05 servita implicitamente da `getDettagliMezzo()` — confermate che `tempoDisponibilita` è sufficiente? | Copertura user story | PENDING |
-| 4 | claim-7c6a3d14 | I raggi 2km/5km sono canonici o parametrici? documentazione.md dice "es." | Flessibilità vs specificità | PENDING |
+| 1 | claim-4f2a1c08 | Diagramma usa "Controller" non "RicercaMezzi" — è intenzionale o va corretto? | Naming consistente con chiarimenti-vari.md p.to 6 | REVIEWED |
+| 2 | claim-3b7d9e02 | Rifiuto espansione è implicito (nessun metodo `rifiutaEspansione()`) — il design è corretto? | Completezza API View | REVIEWED |
+| 3 | claim-9e2f5a11 | UT.05 servita implicitamente da `getDettagliMezzo()` — confermate che `tempoDisponibilita` è sufficiente? | Copertura user story | REVIEWED |
+| 4 | claim-7c6a3d14 | I raggi 2km/5km sono canonici o parametrici? documentazione.md dice "es." | Flessibilità vs specificità | REVIEWED |
 
 ### Round B: True HITL Verification
 
@@ -487,7 +488,7 @@ Tutti i claim derivano da cross-reference tra documentazione.md, Master_Spec.cgd
 
 ---
 
-**Fine specifica UC.UT.01 — CGD generato il 2026-06-22. In attesa di conferma HITL Round A (4 claim pending).**
+**Fine specifica UC.UT.01 — CGD generato il 2026-06-23. HITL Round A: 4/4 claim REVIEWED.**
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

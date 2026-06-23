@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.UT.06 (primary), Master_Spec.cgd.md v4.0, UC.UT.06-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: PENDING
+document-sha256: 9b042c5a6d9eeba0e58e0bda5d30a3926f875572e772ebf450b96ad806b9e66a
 hitl-claims:
   - id: claim-a3f1b2c0
     text: "La tariffa di sospensione è differenziata rispetto alla tariffa oraria standard e il calcolo del costo di sospensione è gestito da Corsa.aggiornaCosto() con logica interna non specificata nei requisiti attuali"

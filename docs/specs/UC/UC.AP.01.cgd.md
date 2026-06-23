@@ -1,12 +1,13 @@
 ---
 clarity-gate-version: 2.1
+document-type: Implementation
 processed-date: 2026-06-23
 processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.cgd.md §2-3, UC.AP.01-clean.uml, response2.md
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 84676bddfaccf115c9bb6bba870866f64a7ac1fd5199c798f76f553e6847675c
+document-sha256: 8d0e4af3db35537a54fb6092c6e68b7b7b3651f8761823a8b762f067151500a7
 hitl-claims:
   - id: claim-ap01-a1b2c3d4
     text: "GestioneStatistiche.analisiTratte(dataInizio, dataFine) restituisce un oggetto di tipo statistiche contenente i dati aggregati"
