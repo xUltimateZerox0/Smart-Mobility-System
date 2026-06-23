@@ -334,7 +334,7 @@ Il file `UC.UT.01-clean.uml` contiene **due interazioni** XMI:
 
 | # | Inconsistenza | Severità | Dettaglio |
 |---|---------------|----------|-----------|
-| I1 | Lifeline "Controller" anziché "RicercaMezzi" | Media | Il diagramma usa il nome generico "Controller" invece del nome specifico del componente "RicercaMezzi". Chiarimenti-vari.md punto 6 richiede che i nomi delle lifeline corrispondano ai componenti di sistema. La 1ª interazione include anche "Utente" come lifeline (modello), ma la 2ª la rimuove correttamente. *(Vedi HITL claim-4f2a1c08)* |
+| I1 | Lifeline "Controller" anziché "RicercaMezzi" | Media | Il diagramma usa il nome generico "Controller" invece d6 richiede che i nomi delle lifeline corrispondano ai componenti di siel nome specifico del componente "RicercaMezzi". Chiarimenti-vari.md punto stema. La 1ª interazione include anche "Utente" come lifeline (modello), ma la 2ª la rimuove correttamente. *(Vedi HITL claim-4f2a1c08)* |
 | I2 | Nomi messaggi informali nella 1ª interazione | Bassa | La 1ª interazione ha messaggi come "richiede ricerca mezzi raggio 2km" che non corrispondono a nomi di metodo reali. La 2ª interazione corregge usando nomi metodo precisi. *(Artefatto XMI — chiarimenti-vari.md punto 14)* |
 | I3 | `selezionaMezzo()` vs "utente seleziona mezzo" | Bassa | Il diagramma mostra sia `selezionaMezzo(idMezzo)` (chiamata esplicita) che "utente seleziona mezzo" (azione attore). Sono coerenti: la prima è la chiamata al metodo, la seconda è l'azione utente che la innesca. |
 
