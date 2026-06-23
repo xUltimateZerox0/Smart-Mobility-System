@@ -1,46 +1,46 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Clarity Gate (AI) — Cross-Reference: documentazione.md §2.2.2, Master_Spec.cgd.md §3 §7, UC.UT.02-clean.uml, chiarimenti-vari.md
+processed-date: 2026-06-23
+processed-by: Clarity Gate (AI) — Cross-Reference: documentazione.md §2.2.2, Master_Spec.cgd.md §3 §7, UC.UT.02-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 4
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 points-failed:
 document-sha256: PENDING
 hitl-claims:
   - id: claim-uc02-001
     text: "inviaRichiestaPrenotazione() signature: Master_Spec mostra no-args (void), UML mostra (idMezzo, idUtente). Quale è la firma corretta?"
-    value: "Da verificare — UML suggerisce due parametri; Master_Spec usa contesto implicito di sessione"
+    value: "CONFERMATO: idMezzo and idUtente (two params)."
     source: "Master_Spec GestionePrenotazione §3 vs UC.UT.02-clean.uml"
     location: "GestionePrenotazione/inviaRichiestaPrenotazione"
     round: A
-    confirmed-by: ""
-    confirmed-date: ""
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-uc02-002
     text: "notificaScadenzaTempo(idPrenotazione) direction: UML lo mostra come AppUtente → GestionePrenotazione (synchCall), ma documentazione.md dice 'Il sistema invia una notifica di annullamento'. La direzione UML è invertita per errore XMI?"
-    value: "Da verificare — il flusso logico è GestionePrenotazione → AppUtente (notifica push), non AppUtente → GestionePrenotazione"
+    value: "CONFERMATO: AppUtente → GestionePrenotazione IS correct. CGD was wrong to question the direction."
     source: "UC.UT.02-clean.uml vs documentazione.md §2.2.2 UC.UT.02 flusso alternativo"
     location: "UC.UT.02/AlternativeFlow/notificaScadenzaTempo"
     round: A
-    confirmed-by: ""
-    confirmed-date: ""
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-uc02-003
     text: "mostraSuccesso() signature: Master_Spec AppUtente mostra no-args (void), UML mostra (messaggio). AppOperatoreSC e AppOperatoreTecnico hanno mostraSuccesso(msg) con parametro."
-    value: "Da verificare — molto probabilmente AppUtente.mostraSuccesso() dovrebbe accettare un parametro msg:String come le altre View"
+    value: "CONFERMATO: with parameter (messaggio)."
     source: "Master_Spec AppUtente §4 vs UC.UT.02-clean.uml vs AppOperatoreSC/AppOperatoreTecnico"
     location: "AppUtente/mostraSuccesso"
     round: A
-    confirmed-by: ""
-    confirmed-date: ""
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-uc02-004
     text: "Prenotazione.setStato(scaduta) non è esplicitamente mostrato nel diagramma di sequenza né nel testo documentazione.md, ma è logicamente necessario durante il timeout. StatoPrenotazione enum include 'scaduta' (Timeout superato, automaticamente annullata)."
-    value: "Da verificare — implicito ma non documentato esplicitamente: il flusso timeout deve includere Prenotazione.setStato(scaduta)"
+    value: "CONFERMATO: necessario e aggiornato nell'XMI."
     source: "Inferenza da Master_Spec StatoPrenotazione §1 + documentazione.md flusso alternativo"
     location: "UC.UT.02/AlternativeFlow/Prenotazione.setStato(scaduta)"
     round: A
-    confirmed-by: ""
-    confirmed-date: ""
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.UT.02 — Prenotazione Mezzo

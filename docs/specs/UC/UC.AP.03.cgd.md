@@ -1,38 +1,46 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.AP.03 (primary), Master_Spec.cgd.md v4.0, UC.AP.03-clean.uml (XMI 2.1), chiarimenti-vari.md punto 4
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.AP.03 (primary), Master_Spec.cgd.md v4.0, UC.AP.03-clean.uml (XMI 2.1), chiarimenti-vari.md punto 4, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 4
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
 document-sha256: e494ba73a1009ff30340b917bdeea28502d0b9574bb276415bb700edf0115f21
 hitl-claims:
   - id: claim-ap03-a01
     text: "Il metodo XMI `aggiornaRestrizione` (singolare) è typo — il nome corretto è `aggiornaRestrizioni` (plurale) come da Master_Spec.cgd.md §3 GestioneAree"
-    value: "aggiornaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona) — confermato da Master_Spec"
+    value: "CONFERMATO: plural is correct. aggiornaRestrizione → aggiornaRestrizioni (see Critical #3 from response2.md)."
     source: "UC.AP.03-clean.uml (XMI: aggiornaRestrizione) vs Master_Spec.cgd.md §3 (aggiornaRestrizioni)"
     location: "GestioneAree/methods"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-ap03-a02
     text: "Il metodo XMI `salvaRestrizioni(idArea, tipoRestrizione, noteRestrizione, zona)` su ZonaGeografica non esiste nel Master_Spec — è un artefatto XMI; la persistenza avviene tramite setter di ZonaGeografica + DBMS CRUD orchestrati da GestioneAree.aggiornaRestrizioni()"
-    value: "Rimosso — mappato a GestioneAree.aggiornaRestrizioni() + ZonaGeografica setTipoRestrizione/setNoteRestrizione/setZona + DBMS Update"
+    value: "CONFERMATO: salvaRestrizioni is XMI artifact — remove."
     source: "UC.AP.03-clean.uml (XMI: salvaRestrizioni) vs Master_Spec.cgd.md §2 ZonaGeografica (no salvaRestrizioni)"
     location: "UC.AP.03/flusso-principale/step-5"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-ap03-a03
     text: "Il metodo XMI `reindirizzaMappa()` / `reindirizzaMappa(Lista<ZonaGeografica>)` su AppPA non esiste nel Master_Spec — il nome corretto è `mostraMappa(zone)`"
-    value: "mostraMappa(zone) — nome canonico da Master_Spec.cgd.md §4 AppPA"
+    value: "CONFERMATO: mostraMappa(zone) is canonical (see Warning #9 from response2.md). reindirizzaMappa → mostraMappa(zone)."
     source: "UC.AP.03-clean.uml (XMI: reindirizzaMappa) vs Master_Spec.cgd.md §4 (mostraMappa)"
     location: "AppPA/methods"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-ap03-a04
-    text: "Il metodo XMI `AnalisiConflitti` (A maiuscola) è typo di camelCase — il nome corretto è `analisiConflitti` (a minuscola) come da Master_Spec.cgd.md §3 GestioneAree"
-    value: "analisiConflitti(zona) — camelCase corretto"
-    source: "UC.AP.03-clean.uml (XMI: AnalisiConflitti) vs Master_Spec.cgd.md §3 (analisiConflitti)"
+    text: "Il metodo XMI `ricalcolaPercorso` è confermato — nessun typo rilevato"
+    value: "CONFERMATO: ricalcolaPercorso confirmed."
+    source: "UC.AP.03-clean.uml (XMI: ricalcolaPercorso)"
     location: "GestioneAree/methods"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.AP.03 — Restrizioni Geografiche

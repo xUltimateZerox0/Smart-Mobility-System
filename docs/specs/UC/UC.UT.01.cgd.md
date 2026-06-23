@@ -1,37 +1,45 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md v3.0 §2.2.2, Master_Spec.cgd.md v4.0, UC.UT.01-clean.uml, chiarimenti-vari.md
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md v3.0 §2.2.2, Master_Spec.cgd.md v4.0, UC.UT.01-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 4
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PENDING
 hitl-claims:
   - id: claim-4f2a1c08
     text: "Il diagramma di sequenza usa la lifeline 'Controller' (generica) anziché 'RicercaMezzi' (specifica), in contrasto con chiarimenti-vari.md punto 6 che richiede nomi corrispondenti ai componenti di sistema"
-    value: "Lifeline generica 'Controller' nel diagramma; dovrebbe essere 'RicercaMezzi'"
+    value: "CONFERMATO: Controller generico è RicercaMezzi (correzione). Names aligned."
     source: "UC.UT.01-clean.uml (seconda interazione) + chiarimenti-vari.md punto 6"
     location: "sequence-diagram/UC.UT.01/lifeline-naming"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-3b7d9e02
     text: "AppUtente non ha un metodo esplicito 'rifiutaEspansione()' — il flusso alternativo di rifiuto espansione è gestito implicitamente (l'utente non invoca confermaEspansione e il sistema mostra errore)"
-    value: "Rifiuto espansione gestito per default (non-azione utente), senza metodo dedicato"
+    value: "CONFERMATO: implicit. No method needed."
     source: "Master_Spec.cgd.md §4 AppUtente + documentazione.md §2.2.2 UC.UT.01 flussi alternativi"
     location: "AppUtente/rifiutaEspansione-implicit"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-9e2f5a11
     text: "UT.05 (conoscere orario stimato disponibilità mezzo) è servita implicitamente tramite getDettagliMezzo() che restituisce l'attributo tempoDisponibilita — non esplicitata nel flusso testuale di UC.UT.01"
-    value: "tempoDisponibilita restituito come parte dei dettagli mezzo; UT.05 coperta implicitamente"
+    value: "CONFERMATO: si riferisce a UT.05."
     source: "Master_Spec.cgd.md §2 Mezzo.tempoDisponibilita + documentazione.md §1 UT.05"
     location: "UC.UT.01/UT.05-coverage"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-7c6a3d14
     text: "I raggi di ricerca (2km base, 5km esteso) sono trattati come 'es.' (esempio) in documentazione.md ma come valori canonici fissi in Master_Spec.cgd.md e nel diagramma di sequenza"
-    value: "2km e 5km sono i valori di riferimento; documentazione.md usa 'es.' per flessibilità futura ma la specifica li tratta come fissi"
+    value: "CONFERMATO: non fissi (parametric)."
     source: "documentazione.md §2.2.2 (es. 2km/es. 5km) + Master_Spec.cgd.md §3 RicercaMezzi (2km/5km) + chiarimenti-vari.md punto 7 (raggiob/raggioe)"
     location: "UC.UT.01/search-radii"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.UT.01 — Ricerca Mezzi (Clarity-Gated Specification)

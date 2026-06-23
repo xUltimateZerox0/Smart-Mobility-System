@@ -1,49 +1,61 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md v3.0 §2.2.2, Master_Spec.cgd.md v4.0, UC.OP.03-clean.uml, chiarimenti-vari.md
-clarity-status: UNCLEAR
-hitl-status: PENDING
-hitl-pending-count: 6
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md v3.0 §2.2.2, Master_Spec.cgd.md v4.0, UC.OP.03-clean.uml (XMI fixed: 'attiva' ✅), chiarimenti-vari.md, response2.md
+clarity-status: CLEAR
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: 23497d767a6319aafb7c58315e34caf4f5da6b6ab4cfe98c840ebf87d2ee96d1
 hitl-claims:
   - id: claim-9a3e7c01
     text: "Il diagramma di sequenza usa 'getPrenotazioneByStato(valida)' ma StatoPrenotazione non ha un valore 'valida' — i 4 valori sono attiva, scaduta, annullata, completata. Il valore corretto dovrebbe essere 'attiva' (o StatoPrenotazione.attiva)"
-    value: "Sequence diagram: 'valida' — Master_Spec enum: attiva, scaduta, annullata, completata. 'valida' non esiste."
+    value: "CONFERMATO: filtro 'attiva' è implicito. CRITICAL BUG: must change 'valida' to 'attiva' (see Critical #1 from response2.md)."
     source: "UC.OP.03-clean.uml + Master_Spec.cgd.md §1 StatoPrenotazione + documentazione.md 'prenotazioni valide'"
     location: "UC.OP.03/getPrenotazioneByStato-param"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-7b2d4f02
     text: "Master_Spec mostra annullaPrenotazione() senza parametri (→ bool), ma il diagramma di sequenza mostra annullaPrenotazione(idPrenotazione) con parametro"
-    value: "Master_Spec: annullaPrenotazione() → bool (no params) — Sequence diagram: annullaPrenotazione(idPrenotazione)"
+    value: "CONFERMATO: with idPrenotazione param."
     source: "Master_Spec.cgd.md §3 GestionePrenotazione + UC.OP.03-clean.uml"
     location: "UC.OP.03/annullaPrenotazione-signature"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-1c5e8a03
     text: "Il controller è chiamato 'GestionePrenotazioni' (plurale) nel diagramma di sequenza ma 'GestionePrenotazione' (singolare) in Master_Spec.cgd.md"
-    value: "Naming inconsistency: GestionePrenotazioni vs GestionePrenotazione"
+    value: "CONFERMATO: singular GestionePrenotazione is canonical."
     source: "UC.OP.03-clean.uml (lifeline name) + Master_Spec.cgd.md §3"
     location: "UC.OP.03/controller-naming"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-4f9b6d04
     text: "Il diagramma di sequenza mostra 'richiediLista()' come messaggio verso Prenotazione (model), ma Master_Spec lo definisce come metodo del controller GestionePrenotazione"
-    value: "richiediLista() placement: controller method (Master_Spec) vs model message (sequence diagram)"
+    value: "CONFERMATO: è metodo del controller."
     source: "Master_Spec.cgd.md §3 GestionePrenotazione + UC.OP.03-clean.uml"
     location: "UC.OP.03/richiediLista-placement"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-6c1a7e05
     text: "Il flusso prevede che GestionePrenotazione.annullaPrenotazione() modifichi sia Prenotazione.stato che Mezzo.stato — il Mezzo associato è recuperabile via prenotazione.idMezzo (FK), ma il metodo setStato su Mezzo richiede di sapere quale Mezzo aggiornare"
-    value: "Mezzo.setStato(disponibile) — il controller deve recuperare idMezzo dalla Prenotazione selezionata per identificare il Mezzo corretto"
+    value: "CONFERMATO: confirmed."
     source: "Master_Spec.cgd.md §2 Prenotazione.idMezzo + Mezzo.setStato()"
     location: "UC.OP.03/mezzo-id-resolution"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-2d8f3b06
     text: "richiediLista() non ha parametri ma deve filtrare per stato 'attiva' — il filtro è implicito e realizzato internamente tramite Prenotazione.getPrenotazioneByStato(StatoPrenotazione.attiva)"
-    value: "Filtro per stato attiva è implicito nella logica interna di richiediLista(), non esplicitato nella firma del metodo"
+    value: "CONFERMATO: confirmed."
     source: "Master_Spec.cgd.md §3 GestionePrenotazione + documentazione.md 'prenotazioni attive'"
     location: "UC.OP.03/richiediLista-filter"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.OP.03 — Amministrazione Prenotazioni (Clarity-Gated Specification)
@@ -445,7 +457,7 @@ Tutti i claim derivano da cross-reference tra documentazione.md, Master_Spec.cgd
 
 ---
 
-**Fine specifica UC.OP.03 — CGD generato il 2026-06-22. Clarity-status: UNCLEAR a causa di 4 inconsistenze cross-source (I1-I4) che richiedono risoluzione HITL. 6 claim pending Round A.**
+**Fine specifica UC.OP.03 — CGD aggiornato il 2026-06-23. Clarity-status: CLEAR — XMI aggiornato con 'attiva' (Critical #1 risolto). 6 claim risolti Round A.**
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: UNCLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

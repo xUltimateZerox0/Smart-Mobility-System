@@ -1,37 +1,45 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: AI Cross-Reference Engine — documentazione.md v3.0 §2.2.2 (primary), Master_Spec.cgd.md v4.0, UC.OP.01-clean.uml, chiarimenti-vari.md
+processed-date: 2026-06-23
+processed-by: AI Cross-Reference Engine — documentazione.md v3.0 §2.2.2 (primary), Master_Spec.cgd.md v4.0, UC.OP.01-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 4
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PENDING
 hitl-claims:
   - id: claim-op01-mezzo-dual-lifeline
     text: "Il diagramma di sequenza UC.OP.01-clean.uml ha due lifeline entrambi chiamate 'Mezzo', una per il Model Mezzo (JuzW) e una per il sistema esterno Mezzo:IoT (KFb6). Chiarimenti-vari.md punto 6 richiede che i nomi delle lifeline corrispondano ai componenti di sistema."
-    value: "La lifeline Mezzo (KFb6) che riceve bloccoMezzoFisico() dovrebbe chiamarsi 'Mezzo:IoT' per distinguerla dal Model Mezzo (JuzW) che riceve getMezzibyFlotta()."
+    value: "CONFIRMED by chUC. Sequence diagram must distinguish with :IoT stereotype."
     source: "UC.OP.01-clean.uml + chiarimenti-vari.md punto 6 + Master_Spec.cgd.md §5 Mezzo:IoT"
     location: "sequence-diagram/UC.OP.01/lifeline-naming-dual-Mezzo"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-op01-analisistatoflotta
-    text: "GestioneFlotta.analisiStatoFlotta(idFlotta) → bool esiste nel Master_Spec ma non appare esplicitamente nel diagramma di sequenza UC.OP.01 né nel flusso testuale di documentazione.md. Il suo ruolo rispetto a getCondizioniMezzi() potrebbe essere di pre-validazione (check booleano prima del recupero dati)."
-    value: "analisiStatoFlotta sembra essere un metodo di validazione/pre-check distinto da getCondizioniMezzi (che recupera effettivamente la lista). Potrebbe appartenere al flusso UC.AP.02 (Analisi Stato Flotta) più che a UC.OP.01."
-    source: "Master_Spec.cgd.md §3 GestioneFlotta:617 vs documentazione.md §2.2.2 UC.OP.01 flusso"
-    location: "GestioneFlotta/analisiStatoFlotta-role"
-    round: A
+     text: "GestioneFlotta.analisiStatoFlotta(idFlotta) → bool esiste nel Master_Spec ma non appare esplicitamente nel diagramma di sequenza UC.OP.01 né nel flusso testuale di documentazione.md. Il suo ruolo rispetto a getCondizioniMezzi() potrebbe essere di pre-validazione (check booleano prima del recupero dati)."
+     value: "RESOLVED: analisiStatoFlotta(idFlotta) detects Mezzo needing maintenance, creates Segnalazione, sets Mezzo.stato='manutenzione'. Distinct from getCondizioniMezzi(idFlotta) which returns lista<Mezzo> for dashboard display (AppPA→GestioneFlotta)."
+     source: "Master_Spec.cgd.md §3 GestioneFlotta:617 vs documentazione.md §2.2.2 UC.OP.01 flusso + chiarimenti team 2026-06-23"
+     location: "GestioneFlotta/analisiStatoFlotta-role"
+     round: A
+     confirmed-by: Team Cofee Coders (via pending design decisions response)
+     confirmed-date: 2026-06-23
   - id: claim-op01-creasegnalazione-sd-typo
     text: "Il diagramma di sequenza ha 'creaSegnalazione (idMezzo, statoS data, ora, note)' con una virgola mancante tra 'statoS' e 'data'. La firma canonica in Master_Spec.cgd.md §2 Segnalazione:460 è 'creaSegnalazione(idMezzo, statoS, data, ora, note)' con 5 parametri separati da virgola."
-    value: "Artefatto XMI di esportazione — chiarimenti-vari.md punto 14. Firma corretta: creaSegnalazione(idMezzo, statoS, data, ora, note)."
+    value: "CONFIRMED — XMI artifact. reenvisibilita → verificaVisibilita (see Critical #4 from response2.md)."
     source: "UC.OP.01-clean.uml message IYiFQXmD.AACAQ5Y vs Master_Spec.cgd.md:460"
     location: "sequence-diagram/UC.OP.01/creaSegnalazione-typo"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-op01-getcondizionimezzi-return-type
     text: "GestioneFlotta.getCondizioniMezzi(idFlotta) ha tipo di ritorno 'Mezzo' (singolare) in Master_Spec.cgd.md:620, ma il diagramma di sequenza mostra 'lista<Mezzo>' come valore di ritorno. Un metodo che interroga per idFlotta dovrebbe restituire una collezione di mezzi, non un singolo Mezzo."
     value: "Il tipo di ritorno 'Mezzo' nel Master_Spec è probabilmente una semplificazione — il metodo restituisce una lista/collezione di Mezzo filtrata per idFlotta. Stesso pattern di Mezzo.getMezzibyFlotta(idFlotta) → Mezzo."
     source: "Master_Spec.cgd.md:620 vs UC.OP.01-clean.uml message 'lista<Mezzo>'"
     location: "GestioneFlotta/getCondizioniMezzi-return-type"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.OP.01 — Gestione Flotta (Clarity-Gated Specification)
@@ -313,10 +321,10 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 
 | Metodo | Ritorno | Parametri | Probabile UC |
 |--------|---------|-----------|-------------|
-| `analisiStatoFlotta(idFlotta)` | `bool` | `idFlotta: String` | UC.AP.02 (Analisi Stato Flotta — PA) *(inferred)* |
+| `analisiStatoFlotta(idFlotta)` | `bool` | `idFlotta: String` | Rileva Mezzo da manutenere → crea Segnalazione + setta `Mezzo.stato = 'manutenzione'` *(clarified 2026-06-23)* |
 | `avviaManutenzione(idFlotta)` | `bool` | `idFlotta: String` | UC.AP.02 (Avvio intervento manutenzione — PA) *(inferred)* |
 
-> **Nota su `analisiStatoFlotta`:** Questo metodo restituisce `bool` e non appare nel diagramma di sequenza UC.OP.01 né nel flusso testuale. Il suo ruolo più probabile è in UC.AP.02, dove la PA richiede un'analisi della flotta. In UC.OP.01 il recupero dati è gestito da `getCondizioniMezzi()`. *(Vedi HITL claim-op01-analisistatoflotta)* *(inferred)*
+> **Nota su `analisiStatoFlotta`:** Rileva veicoli che necessitano manutenzione. Per ogni veicolo trovato, crea `Segnalazione` e imposta `Mezzo.stato = StatoMezzo.manutenzione`. Restituisce `true` se almeno un veicolo è stato marcato. Distinto da `getCondizioniMezzi(idFlotta)` che restituisce `lista<Mezzo>` per visualizzazione dashboard. *(Vedi HITL claim-op01-analisistatoflotta — RESOLVED)*
 
 ### 9.3 Attributi GestioneFlotta
 
@@ -516,7 +524,7 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 | 3 | Messaggio `mostraSuccesso(msg)` | "Blocco veicolo [idMezzo] riuscito" | Stringa informativa per l'operatore. Contenuto esatto non specificato in documentazione.md. |
 | 4 | Messaggio `mostraErrore(msg)` | "Blocco remoto fallito — segnalazione [#id] creata" | Stringa di alert per l'operatore. Contenuto esatto non specificato. |
 | 5 | `getCondizioniMezzi()` tipo di ritorno effettivo | Lista/collezione di Mezzo (non singolo) | Il SD mostra `lista<Mezzo>`. Il tipo `Mezzo` singolare nel Master_Spec è una semplificazione. |
-| 6 | Ruolo di `analisiStatoFlotta()` | Pre-validazione o appartenenza a UC.AP.02 | Non presente nel SD UC.OP.01. Il metodo restituisce bool, suggerendo un check piuttosto che un recupero dati. |
+| 6 | Ruolo di `analisiStatoFlotta()` | Rileva Mezzo da manutenere → crea Segnalazione + setta `Mezzo.stato = 'manutenzione'` *(clarified 2026-06-23)* | Metodo non presente nel SD UC.OP.01. Appartiene al dominio PA (UC.AP.02). Restituisce `bool` (true se almeno un veicolo marcato). |
 | 7 | Valore `idFlotta` | Identificativo stringa della flotta | `Mezzo.idFlotta` è `String`. Non esiste entità Flotta separata — raggruppamento logico (Master_Spec §11 punto 7). |
 
 ---
@@ -615,7 +623,7 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 | # | Tipo | Descrizione | Fonti coinvolte | Impatto | HITL |
 |---|------|-------------|-----------------|---------|------|
 | I1 | Naming | Due lifeline "Mezzo" nel SD — una Model, una IoT. Dovrebbero essere distinte ("Mezzo" e "Mezzo:IoT") | UC.OP.01-clean.uml vs chiarimenti-vari.md punto 6 | Medio — ambiguità su quale componente esegue l'operazione | claim-op01-mezzo-dual-lifeline |
-| I2 | Ruolo | `analisiStatoFlotta(idFlotta)` → bool esiste ma non in UC.OP.01 flow | Master_Spec vs documentazione.md UC.OP.01 | Basso — probabile appartenenza a UC.AP.02 | claim-op01-analisistatoflotta |
+| I2 | Ruolo | `analisiStatoFlotta(idFlotta)` → bool: rileva Mezzo da manutenere, crea Segnalazione, setta stato='manutenzione' | Master_Spec vs documentazione.md UC.OP.01 | Basso — non in UC.OP.01 flow; dominio PA (UC.AP.02) *(RESOLVED 2026-06-23)* | claim-op01-analisistatoflotta |
 | I3 | Sintassi SD | `creaSegnalazione (idMezzo, statoS data, ora, note)` — virgola mancante tra `statoS` e `data` | UC.OP.01-clean.uml vs Master_Spec:460 | Basso — typo XMI, non altera la semantica | claim-op01-creasegnalazione-sd-typo |
 | I4 | Tipo | `getCondizioniMezzi()` dichiarato `→ Mezzo` ma semanticamente restituisce lista | Master_Spec:620 vs UC.OP.01-clean.uml `lista<Mezzo>` | Basso — il comportamento è chiaro, è la dichiarazione formale a essere imprecisa | claim-op01-getcondizionimezzi-return-type |
 | I5 | Naming SD | `bloccoMezzoFisico (idMezzo)` con spazio prima della parentesi | UC.OP.01-clean.uml | Basso — artefatto XMI (chiarimenti-vari.md punto 14) | — *(non richiede HITL)* |
@@ -641,7 +649,7 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 |--------|-------------------|
 | `getCondizioniMezzi(idFlotta)` | Recupero lista veicoli (Step 2) |
 | `bloccaMezzo(idMezzo)` | Orchestratore blocco remoto (Step 4-6) |
-| `analisiStatoFlotta(idFlotta)` | *(non utilizzato in UC.OP.01)* |
+| `analisiStatoFlotta(idFlotta)` | *(dominio PA — UC.AP.02)* Rileva Mezzo da manutenere: crea Segnalazione + setta `Mezzo.stato = StatoMezzo.manutenzione` |
 | `avviaManutenzione(idFlotta)` | *(non utilizzato in UC.OP.01)* |
 
 ### Model: Mezzo
@@ -682,7 +690,7 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 | # | Claim ID | Claim | Rilevanza | Stato |
 |---|----------|-------|-----------|-------|
 | 1 | claim-op01-mezzo-dual-lifeline | Due lifeline "Mezzo" nel SD — la IoT dovrebbe chiamarsi "Mezzo:IoT" | Naming consistente con chiarimenti-vari.md punto 6 | **PENDING** |
-| 2 | claim-op01-analisistatoflotta | `analisiStatoFlotta()` non in UC.OP.01 — confermare appartenenza a UC.AP.02 | Chiarezza API Controller | **PENDING** |
+| 2 | claim-op01-analisistatoflotta | `analisiStatoFlotta()` non in UC.OP.01 — dominio PA (UC.AP.02). Rileva Mezzo da manutenere: crea Segnalazione + setta `Mezzo.stato = 'manutenzione'` | Chiarezza API Controller | **RESOLVED** |
 | 3 | claim-op01-creasegnalazione-sd-typo | Typo XMI virgola mancante in `creaSegnalazione` — confermare firma 5-parametri | Fedeltà documentazione | **PENDING** |
 | 4 | claim-op01-getcondizionimezzi-return-type | `getCondizioniMezzi()` → `Mezzo` singolare ma restituisce lista | Tipo di ritorno formale | **PENDING** |
 

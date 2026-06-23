@@ -1,32 +1,38 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.OP.02 (primary), Master_Spec.cgd.md v4.0 §3-4, UC.OP.02-clean.uml (XMI 2.1), chiarimenti-vari.md punto 11
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.OP.02 (primary), Master_Spec.cgd.md v4.0 §3-4, UC.OP.02-clean.uml (XMI 2.1), chiarimenti-vari.md punto 11, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 3
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
 document-sha256: 844c2feed31d514e2098de179096e90eb4e247b123078dbe4703fc88463ea1b8
 hitl-claims:
   - id: claim-70d7b247
     text: "GestioneUtenti.cercaReport(idUtente) firma: Master_Spec v4.0 §3 riporta ritorno String; UC.OP.02-clean.uml mostra synchCall con reply Utente.report; l'user si aspetta ritorno void. Quale è la firma corretta?"
-    value: "Da verificare — Master_Spec e UML supportano String (il report viene propagato come reply); l'user expectation void potrebbe essere un refuso o una scelta progettuale deliberata"
+    value: "CONFERMATO: cercaReport returns String (not void)."
     source: "Master_Spec.cgd.md §3 GestioneUtenti vs UC.OP.02-clean.uml vs user expectation"
     location: "GestioneUtenti/cercaReport"
     round: A
-  - id: claim-4274e7b4
-    text: "Il messaggio di destroy sulla lifeline AppUtente nel sequence diagram rappresenta la disconnessione forzata di tutte le sessioni dell'utente moderato, come da chiarimenti-vari.md punto 11: 'i messaggi di destroy nei diagrammi indicano la distruzione dell'istanza... in caso di moderazione utente'"
-    value: "Da verificare — il destroy message è semanticamente corretto (distruzione istanza AppUtente → disconnessione sessioni) ma non ha una controparte esplicita come metodo. Va confermato che il meccanismo sia la terminazione della sessione utente"
-    source: "UC.OP.02-clean.uml (destroy message) + chiarimenti-vari.md punto 11"
-    location: "UC.OP.02/sequence-diagram/AppUtente-destroy"
-    round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+   - id: claim-4274e7b4
+     text: "Il messaggio di destroy sulla lifeline AppUtente nel sequence diagram rappresenta la disconnessione forzata di tutte le sessioni dell'utente moderato, come da chiarimenti-vari.md punto 11: 'i messaggi di destroy nei diagrammi indicano la distruzione dell'istanza... in caso di moderazione utente'"
+     value: "RESOLVED: la distruzione della view (destroy message) è il meccanismo di logout. Non serve un metodo disconnetti() esplicito — il destroy message UML è sufficiente per la semantica di disconnessione (chiarito dal team 2026-06-23)."
+     source: "UC.OP.02-clean.uml (destroy message) + chiarimenti-vari.md punto 11 + chiarimenti team 2026-06-23"
+     location: "UC.OP.02/sequence-diagram/AppUtente-destroy"
+     round: A
+     confirmed-by: Team Cofee Coders (via pending design decisions response)
+     confirmed-date: 2026-06-23
   - id: claim-b5e04f8a
     text: "Utente.azioneCorrettiva(azione) — il parametro azione: String accetta valori 'sospendi' e 'disattiva' mappati rispettivamente a StatoUtente.sospeso e StatoUtente.disattivato. La mappatura esatta dei valori stringa → enum non è documentata esplicitamente"
-    value: "Da verificare — valori proposti: 'sospendi' → StatoUtente.sospeso, 'disattiva' → StatoUtente.disattivato; alternativamente potrebbero essere 'sospensione'/'disattivazione' come da documentazione.md"
+    value: "CONFERMATO: values are 'sospensione' and 'disattivazione' (see Warning #8 from response2.md)."
     source: "Master_Spec.cgd.md Utente.azioneCorrettiva(azione: String) §2 + StatoUtente enum §1 + documentazione.md UC.OP.02"
     location: "UC.OP.02/flusso-principale/step-4"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.OP.02 — Moderazione Utenti
@@ -79,7 +85,7 @@ hitl-claims:
 | 4a | Aggiorna stato utente | Utente *(Model)* | `setStatoUtente(statoUtente)` | `void` | `statoUtente: StatoUtente` | — | Master_Spec §2 |
 | 4b | Orchestratore moderazione | GestioneUtenti *(Controller)* | `gestioneUtente(idUtente)` | `bool` | `idUtente` | `true \| false` | Master_Spec §3 |
 | 5 | Notifica azione all'utente | AppUtente *(View)* | `notificaAzione(idUtente, azione)` | `void` | `idUtente, azione: String` | — | Master_Spec §4 |
-| 6 | Disconnette sessioni utente | AppUtente *(View)* | `destroy` *(distruzione istanza)* | — | — | — | UC.OP.02-clean.uml + chiarimenti-vari.md p.11 — *HITL claim-4274e7b4* |
+| 6 | Disconnette sessioni utente | AppUtente *(View)* | `destroy` *(distruzione istanza)* | — | — | — | UC.OP.02-clean.uml + chiarimenti-vari.md p.11 — *HITL claim-4274e7b4 RESOLVED: destroy = logout* |
 | 7 | Conferma esito all'operatore | AppOperatoreSC *(View)* | `mostraSuccesso(msg)` | `void` | `msg: String` | — | Master_Spec §4 |
 
 ### 2.2 Flusso Alternativo — Tracciamento Metodo
@@ -288,7 +294,7 @@ AppOperatoreSC.mostraReport(idUtente)
 ## 10. Clarity Gate — 9-Point Verification
 
 ### Point 1 — Hypothesis vs Fact Labeling
-**PASS.** Il documento è una specifica di use case. Tutte le affermazioni sono requisiti architetturali o descrizioni di comportamento atteso. Nessun claim fattuale mascherato da certezza. I 3 claim HITL sono marcati come `PENDING`.
+**PASS.** Il documento è una specifica di use case. Tutte le affermazioni sono requisiti architetturali o descrizioni di comportamento atteso. Nessun claim fattuale mascherato da certezza. I 3 claim HITL sono marcati come `RESOLVED`.
 
 ### Point 2 — Uncertainty Marker Enforcement
 **PASS.** L'unica incertezza è sulla firma di `cercaReport()` (String vs void) ed è esplicitamente marcata come `⚠️ DISCREPANCY` con HITL claim-70d7b247. I valori dei parametri di `azioneCorrettiva()` sono marcati come "da verificare" con HITL claim-b5e04f8a.
@@ -327,9 +333,9 @@ AppOperatoreSC.mostraReport(idUtente)
 
 | # | Claim ID | Claim | Fonte | Stato |
 |:--|:---------|:------|:------|:------|
-| 1 | claim-70d7b247 | `cercaReport(idUtente)` firma: String (Master_Spec) vs void (user expectation) | Master_Spec §3 + UC.OP.02-clean.uml + user | PENDING |
-| 2 | claim-4274e7b4 | Il messaggio destroy su AppUtente rappresenta la disconnessione forzata delle sessioni dell'utente moderato | UC.OP.02-clean.uml + chiarimenti-vari.md p.11 | PENDING |
-| 3 | claim-b5e04f8a | I valori String del parametro `azione` di `azioneCorrettiva()`: `"sospendi"` → `StatoUtente.sospeso`, `"disattiva"` → `StatoUtente.disattivato` | Master_Spec Utente.azioneCorrettiva(azione: String) §2 + StatoUtente §1 | PENDING |
+| 1 | claim-70d7b247 | `cercaReport(idUtente)` firma: String (Master_Spec) vs void (user expectation) | Master_Spec §3 + UC.OP.02-clean.uml + user | **RESOLVED** |
+| 2 | claim-4274e7b4 | Il messaggio destroy su AppUtente rappresenta la disconnessione forzata delle sessioni dell'utente moderato | UC.OP.02-clean.uml + chiarimenti-vari.md p.11 + chiarimento team 2026-06-23 | **RESOLVED** |
+| 3 | claim-b5e04f8a | I valori String del parametro `azione` di `azioneCorrettiva()`: `"sospensione"` → `StatoUtente.sospeso`, `"disattivazione"` → `StatoUtente.disattivato` | Master_Spec Utente.azioneCorrettiva(azione: String) §2 + StatoUtente §1 + response2.md Warning #8 | **RESOLVED** |
 
 ### Round B: True HITL Verification
 *Nessun claim richiede Round B — tutti i claim sono verificabili in Round A dal team Cofee Coders.*
@@ -340,8 +346,8 @@ AppOperatoreSC.mostraReport(idUtente)
 
 | # | Tipo | Descrizione | Fonte A | Fonte B | Impatto | Risoluzione |
 |:--|:-----|:------------|:--------|:--------|:--------|:------------|
-| 1 | **DISCREPANCY** | `GestioneUtenti.cercaReport(idUtente)` return type: `String` (Master_Spec) vs `void` (atteso dall'user) | Master_Spec §3 line 541 | User expectation | Medio — cambia la firma del metodo e il contratto dell'interfaccia | PENDING HITL claim-70d7b247. UML supporta String (reply `Utente.report`). |
-| 2 | **AMBIGUITY** | Valori esatti del parametro `azione` in `Utente.azioneCorrettiva(azione: String)` non documentati esplicitamente | Master_Spec §2 line 257 | documentazione.md ("sospensione/disattivazione") | Basso — sono stringhe libere interpretate a runtime | PENDING HITL claim-b5e04f8a. Proposti: `"sospendi"`, `"disattiva"`. |
+| 1 | **DISCREPANCY** | `GestioneUtenti.cercaReport(idUtente)` return type: `String` (Master_Spec) vs `void` (atteso dall'user) | Master_Spec §3 line 541 | User expectation | Medio — cambia la firma del metodo e il contratto dell'interfaccia | **RESOLVED**: ritorno `String` confermato (response2.md). UML supporta String (reply `Utente.report`). |
+| 2 | **AMBIGUITY** | Valori esatti del parametro `azione` in `Utente.azioneCorrettiva(azione: String)` non documentati esplicitamente | Master_Spec §2 line 257 | documentazione.md ("sospensione/disattivazione") | Basso — sono stringhe libere interpretate a runtime | **RESOLVED**: valori sono `'sospensione'` e `'disattivazione'` (response2.md Warning #8). |
 | 3 | **ARTIFACT XMI** | Spazi nei nomi dei messaggi (`cercaReport (idUtente)`, `Utente.ricercaUtente (idUtente)`) | UC.OP.02-clean.uml | Convenzione camelCase | Basso — errore di formattazione XMI, nessun impatto funzionale | Correzione applicata nella sezione 3.4 — rimozione spazi. |
 | 4 | **NOTE** | `AppOperatoreSC.richiediListaPrenotazioni()` e `selezionaPrenotazione()` sono metodi della View ma appartengono a UC.OP.03, non UC.OP.02 | Master_Spec §4 | documentazione.md UC.OP.03 | Basso — cross-reference corretto, metodi verificati come presenti | Documentato nella sezione 5 (Metodi Non Utilizzati). |
 | 5 | **NOTE** | `Utente.creaAccountUtente()` è un metodo del Model Utente ma non è utilizzato in UC.OP.02 (appartiene a UC.UT.08) | Master_Spec §2 line 258 | — | Nessuno — verifica richiesta completata | Metodo verificato come presente ma non pertinente a questo UC. |
@@ -365,4 +371,4 @@ AppOperatoreSC.mostraReport(idUtente)
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING — 3 HITL claims da verificare (Round A), 0 punti falliti, tutti i 9 punti epistemici e strutturali passano. 1 discrepanza identificata (`cercaReport` return type), 1 ambiguità (`azioneCorrettiva` valori parametro), 2 note cross-UC. Documento strutturalmente completo e internamente consistente.
+Clarity Gate: CLEAR | REVIEWED — 3 HITL claims risolti (Round A), 0 punti falliti, tutti i 9 punti epistemici e strutturali passano. 1 discrepanza risolta (`cercaReport` return type), 1 ambiguità risolta (`azioneCorrettiva` valori parametro), 2 note cross-UC. Documento strutturalmente completo e internamente consistente.

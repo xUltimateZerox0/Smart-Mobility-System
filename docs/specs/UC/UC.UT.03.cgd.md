@@ -1,36 +1,42 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: AI Cross-Reference Engine
+processed-date: 2026-06-23
+processed-by: AI Cross-Reference Engine, response2.md
 sources:
   primary: documentazione.md §2.2.2 — UC.UT.03 specifica tabellare
   master-spec: Master_Spec.cgd.md v4.0 — GestioneCorsa, Corsa, Mezzo, AppUtente, External Systems
   sequence-diagram: docs/diagrams/sequence-diagrams/UC.UT.03/UC.UT.03-clean.uml
   chiarimenti: chiarimenti-vari.md — punti 2 (orarioFine) e 3 (auth=constraint)
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 3
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PENDING
 hitl-claims:
   - id: claim-uc03-avviacorsa-params
     text: "avviaCorsa() nel Controller non ha parametri in Master_Spec.cgd ma il SD usa avviaCorsa(idMezzo, idUtente)"
-    value: "Discrepanza XMI — priorità a Master_Spec.cgd (no-args). Il Controller recupera gli ID internamente dalla sessione."
+    value: "CONFERMATO: con parametri (idMezzo, idUtente). MS needs updating."
     source: "Verificare nel Master_Spec.cgd linea 573 e confrontare con il sequence diagram UC.UT.03-clean.uml"
     location: "GestioneCorsa/avviaCorsa"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-uc03-lifeline-naming
     text: "Il SD usa lifeline 'Vehicle' e 'User' (in inglese) alternati a 'Mezzo' e 'Utente' — artefatti XMI"
-    value: "Artefatti di esportazione XMI — chiarimenti-vari.md punto 14. I nomi canonici sono Mezzo e Utente."
+    value: "CONFERMATO: Italian names (Mezzo/Utente) are correct."
     source: "Confrontare le lifeline nel SD UC.UT.03-clean.uml con i nomi entità in Master_Spec.cgd §2-4"
     location: "Sequence Diagram/lifelines"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-uc03-descriptive-msgs
     text: "I messaggi 'stimaCosto', 'calculate partial cost', 'start ride timer', 'activate cost update cycle' nel SD non corrispondono a metodi nominali del Master_Spec"
-    value: "Messaggi descrittivi/logici generati dall'esportazione XMI. I metodi reali sono aggiornaStima(idCorsa) e aggiornaCosto(costo)."
+    value: "CONFERMATO: stimaCosto is reply data from `aggiornaStima(idCorsa)`. Descriptive msgs are XMI artifacts."
     source: "Confrontare messaggi SD UC.UT.03-clean.uml con metodi GestioneCorsa e Corsa in Master_Spec.cgd §2-3"
     location: "Sequence Diagram/descriptive messages"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.UT.03 — Gestione Corsa

@@ -1,43 +1,53 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.cgd.md §2-3, UC.AP.02-clean.uml
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.cgd.md §2-3, UC.AP.02-clean.uml, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 5
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PENDING
 hitl-claims:
-  - id: claim-ap02-a1b2c3d4
-    text: "GestioneFlotta.getCondizioniMezzi(idFlotta) restituisce Mezzo (collezione di mezzi con le loro condizioni operative)"
-    value: "Mezzo — tipo di ritorno confermato da Master_Spec §3 (GestioneFlotta)"
-    source: "Master_Spec.cgd.md §3 Controller Layer / GestioneFlotta"
-    location: "Master_Spec/GestioneFlotta/getCondizioniMezzi"
-    round: A
   - id: claim-ap02-e5f6g7h8
     text: "GestioneFlotta.avviaManutenzione(idFlotta) restituisce bool (true = intervento avviato, false = nessun intervento necessario)"
-    value: "bool — tipo di ritorno confermato da Master_Spec §3 (GestioneFlotta)"
+    value: "CONFERMATO: avviaManutenzione(idFlotta) returns bool."
     source: "Master_Spec.cgd.md §3 Controller Layer / GestioneFlotta"
     location: "Master_Spec/GestioneFlotta/avviaManutenzione"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-ap02-f6g7h8i9
+    text: "Lifelines del flusso manutenzione (PA, AppPA, GestioneFlotta, Mezzo, Segnalazione) confermate"
+    value: "CONFERMATO: Maintenance flow lifelines."
+    source: "documentazione.md §2.2.2 UC.AP.02 + UC.AP.02-clean.uml"
+    location: "UC.AP.02/lifelines"
+    round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-ap02-g7h8i9j0
+    text: "Post-condizioni manutenzione: mezzi in stato manutenzione e segnalazioni create"
+    value: "CONFERMATO: Post-condizioni manutenzione."
+    source: "documentazione.md §2.2.2 UC.AP.02"
+    location: "UC.AP.02/postconditions"
+    round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-ap02-h8i9j0k1
+    text: "Notifica fine manutenzione tramite stringaManutenzione alla PA"
+    value: "CONFERMATO: Notifica fine manutenzione."
+    source: "UC.AP.02-clean.uml + documentazione.md §2.2.2"
+    location: "UC.AP.02/notifications"
+    round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-ap02-i9j0k1l2
     text: "Segnalazione.creaSegnalazione(idMezzo, statoS, data, ora, note) ha esattamente 5 parametri (idMezzo, statoS, data, ora, note)"
-    value: "5 parametri — confermato da Master_Spec §2 (Segnalazione) e UC.AP.02-clean.uml"
+    value: "CONFERMATO: creaSegnalazione 5 params: idMezzo, statoS, data, ora, note."
     source: "Master_Spec.cgd.md §2 Model Layer / Segnalazione + UC.AP.02-clean.uml"
     location: "Master_Spec/Segnalazione/creaSegnalazione"
     round: A
-  - id: claim-ap02-m3n4o5p6
-    text: "UC.AP.02 copre la user story AP.02 (analizzare condizioni fisiche dei mezzi) — mapping 1:1 use case / user story"
-    value: "AP.02 → UC.AP.02 — confermato da documentazione.md §2.2.2 e tabella riepilogativa Sprint"
-    source: "documentazione.md §2.2.2 Specifiche dei Casi d'uso (UC.AP.02) + tabella riepilogativa Sprint Report"
-    location: "UseCases/UC.AP.02/mapping"
-    round: A
-  - id: claim-ap02-q7r8s9t0
-    text: "Il flusso alternativo 'nessun veicolo necessita manutenzione' restituisce il messaggio 'stringaFlottaOperativa' alla PA"
-    value: "stringaFlottaOperativa — messaggio di reply confermato da UC.AP.02-clean.uml"
-    source: "UC.AP.02-clean.uml sequence diagram + documentazione.md §2.2.2"
-    location: "Flows/Alternative/no-maintenance-needed"
-    round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.AP.02 — Analisi Stato Flotta

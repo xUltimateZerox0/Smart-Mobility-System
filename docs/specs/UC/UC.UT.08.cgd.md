@@ -1,25 +1,29 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: AI (Cross-Reference Engine) — Master_Spec.cgd.md v4.0, documentazione.md v3.0, classDiagram-v1.8-clean.uml, UC.UT.08-clean.uml
+processed-date: 2026-06-23
+processed-by: AI (Cross-Reference Engine) — Master_Spec.cgd.md v4.0, documentazione.md v3.0, classDiagram-v1.8-clean.uml, UC.UT.08-clean.uml, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 2
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: 7024b2cd77c194f1409db989b575c83d011332110374ee14f156e9333f3433e0
 hitl-claims:
   - id: claim-3a9f1c02
     text: "Autenticazione View chiama GestioneAutenticazione.verificaValidita(nome,cognome,email,password,datanascita) e inoltra la risposta senza mai interpellare direttamente Utente Model"
-    value: "Disaccoppiamento View-Model — solo Controller interroga il Model"
+    value: "CONFERMATO: MVC disaccoppiamento View-Model confermato."
     source: "Master_Spec.cgd.md §4 (Autenticazione) + §6 (View→Controller dipendenze) + documentazione.md §2.3 (MVC Controller Intermediario)"
     location: "UC.UT.08/sequential-flow"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-7b2d5e09
     text: "GestioneAutenticazione.verificaValidita() restituisce RuoloAttore.Utente in caso di registrazione riuscita — il valore di ritorno RuoloAttore è semanticamente valido anche in contesto pre-login (indica il ruolo dell'account creato)"
-    value: "Registrazione riuscita → RuoloAttore.Utente; email duplicata o formato errato → errore notificato senza return value significativo"
+    value: "CONFERMATO: verificaValidita restituisce RuoloAttore confermato."
     source: "Master_Spec.cgd.md §3 (GestioneAutenticazione.verificaValidita) + documentazione.md UC.UT.08 flusso principale passo 4"
     location: "UC.UT.08/controller-flow"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.UT.08 — Registrazione Utente
