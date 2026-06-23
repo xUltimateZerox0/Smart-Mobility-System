@@ -1,73 +1,93 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.OP.04-clean.uml
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.OP.04-clean.uml, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 10
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: 38ccd0481db7ef3192adfb522231b85af611eb03214d246c624cd26b12c4f534
 hitl-claims:
   - id: claim-111b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
-    value: "Confirmed in Master_Spec.cgd.md §3 GestioneAutenticazione table"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md line 524"
     location: "Master_Spec/GestioneAutenticazione"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-117ac2cb
     text: "richiestaLogout(email) exists in AppOperatoreTecnico with email:String parameter returning void"
-    value: "Confirmed in Master_Spec.cgd.md §4 AppOperatoreTecnico table"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md line 740"
     location: "Master_Spec/AppOperatoreTecnico"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-117e12d7
     text: "Sessione singola: Login termina sessione precedente"
-    value: "Confirmed as architectural constraint #9"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md §8 constraint 9"
     location: "Master_Spec/ArchitecturalConstraints/9"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-113e57cf
     text: "UC.OP.04, UC.OP.05, UC.AP.04 are structurally identical to UC.UT.09 by intentional design"
-    value: "Confirmed as intentional project choice"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "chiarimenti-vari.md point 13"
     location: "chiarimenti-vari/point13"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-11091055
     text: "UC.OP.04 main flow: 1. OperatoreTecnico requests disconnect, 2. system terminates session"
-    value: "Confirmed two-step flow in documentazione.md"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "documentazione.md §2.2.2 UC.OP.04"
     location: "documentazione/UC.OP.04"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-11b3a4cb
     text: "UC.OP.04 has no alternative flows"
-    value: "Confirmed in documentazione.md — flussi alternativi field is empty"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "documentazione.md §2.2.2 UC.OP.04"
     location: "documentazione/UC.OP.04/alt-flows"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-11a3b4a5
     text: "Postcondition: La sessione dell'Operatore Tecnico e terminata"
-    value: "Confirmed in documentazione.md"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "documentazione.md §2.2.2 UC.OP.04"
     location: "documentazione/UC.OP.04/postconditions"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-11ae145c
     text: "I messaggi di destroy nei diagrammi indicano la distruzione dell'istanza view per disconnessione"
-    value: "Confirmed as general mechanism for all logout/logged-out scenarios"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "chiarimenti-vari.md point 11"
     location: "chiarimenti-vari/point11"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-11751ae5
     text: "Autenticazione view is the pre-auth interface displayed after logout; AppOperatoreTecnico depends on GestioneFlotta and GestioneAutenticazione"
-    value: "Confirmed — Autenticazione handles pre-auth flow; AppOperatoreTecnico routing per Master_Spec §4 dep.table"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md §4 Autenticazione + View→Controller dep.table (line 919)"
     location: "Master_Spec/View/Autenticazione + View-Controller-deps"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-11be0e2d
     text: "All 4 View classes (AppUtente, AppOperatoreTecnico, AppOperatoreSC, AppPA) have richiestaLogout(email) method"
-    value: "Confirmed in Master_Spec.cgd.md §4 tables for all 4 views"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md lines 717, 740, 765, 794"
     location: "Master_Spec/View"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.OP.04 — Logout Operatore Tecnico

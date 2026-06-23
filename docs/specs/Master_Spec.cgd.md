@@ -1,7 +1,7 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.md v3.0, classDiagram-v1.8-clean.uml
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.md v3.0, classDiagram-v1.8-clean.uml, chiarimenti-vari.md punti 19-21
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
@@ -575,6 +575,7 @@ Orchestrazione del ciclo di vita della corsa: avvio, sospensione, terminazione, 
 | `controllaDisponibilita()` | bool | — |
 | `controllaDisponibilita(info)` | bool | info: String |
 | `aggiornaStima(idCorsa)` | float | idCorsa |
+| *(Formula)* | — | `stimaCosto = costoOrario × oreUtilizzo + costo_sospensione(eventuale)` *(clarified 2026-06-23)* |
 | `sospensioneCorsa()` | bool | — |
 | `richiediSblocco(qrCode)` | bool | qrCode: String |
 | `richiediCalcoloPercorso(coordinateUtente, destinazione)` | percorso | coordinateUtente: String, destinazione: String |
@@ -615,6 +616,7 @@ Monitoraggio e controllo remoto della flotta (blocco, manutenzione).
 | Metodo | Ritorno | Parametri |
 |--------|---------|-----------|
 | `analisiStatoFlotta(idFlotta)` | bool | idFlotta: String |
+| *(Semantica)* | — | Rileva Mezzo da manutenere → crea Segnalazione + setta `Mezzo.stato = 'manutenzione'`. Distinto da `getCondizioniMezzi` che è per visualizzazione dashboard. *(clarified 2026-06-23)* |
 | `bloccaMezzo(idMezzo)` | bool | idMezzo |
 | `avviaManutenzione(idFlotta)` | bool | idFlotta: String |
 | `getCondizioniMezzi(idFlotta)` | Mezzo | idFlotta: String |
@@ -1133,9 +1135,19 @@ Tutti i 14 claim sono stati confermati dal team Cofee Coders durante la sessione
 
 ---
 
-**Verdict:** CLEAR | REVIEWED — 14/14 claim verificati, 0 pending, 0 exceptions.
+### Round C: Pending Design Decisions (2026-06-23)
+
+| # | Claim ID | Claim | Fonte | Stato |
+|---|----------|-------|-------|-------|
+| 15 | claim-07-b01 | Formula costo: `stimaCosto = costoOrario × oreUtilizzo + costo_sospensione` | chiarimenti-vari.md punto 19 + team | ✓ |
+| 16 | claim-op01-analisistatoflotta | `analisiStatoFlotta()` rileva Mezzo da manutenere → crea Segnalazione + setta `Mezzo.stato = 'manutenzione'` | chiarimenti-vari.md punto 20 + team | ✓ |
+| 17 | claim-4274e7b4 | Destroy message = logout. Non serve metodo `disconnetti()` esplicito | chiarimenti-vari.md punto 21 + team | ✓ |
+
+---
+
+**Verdict:** CLEAR | REVIEWED — 17/17 claim verificati, 0 pending, 0 exceptions.
 
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | REVIEWED
+Clarity Gate: CLEAR | REVIEWED — 17/17 claim (14 original + 3 pending design decisions resolved 2026-06-23)

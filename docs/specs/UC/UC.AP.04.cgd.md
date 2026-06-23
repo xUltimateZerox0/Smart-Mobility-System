@@ -1,79 +1,101 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.AP.04-clean.uml
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.AP.04-clean.uml, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 11
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: 93b948019aeae4d567daa80460545035ac5018737814ca1ff84e3aee42029a47
 hitl-claims:
-  - id: claim-f4a72c1e
+  - id: claim-1a2b3c4d
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
-    value: "Confirmed in Master_Spec.cgd.md §3 GestioneAutenticazione table"
+    value: "CONFERMATO: inviaRichiestaLogout(email) accepts String, returns void."
     source: "Master_Spec.cgd.md line 524"
     location: "Master_Spec/GestioneAutenticazione"
     round: A
-  - id: claim-8b3d91f6
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-2e3f4g5h
     text: "richiestaLogout(email) exists in AppPA with email:String parameter returning void"
-    value: "Confirmed in Master_Spec.cgd.md §4 AppPA table"
+    value: "CONFERMATO: richiestaLogout(email) exists in AppPA."
     source: "Master_Spec.cgd.md line 794"
     location: "Master_Spec/AppPA"
     round: A
-  - id: claim-3e57cf92
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-3a4b5c6d
     text: "UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04 are structurally identical by design"
-    value: "Confirmed as intentional project choice"
+    value: "CONFERMATO: UT.09/OP.04/OP.05/AP.04 identical (see chiarimenti-vari punto 13)."
     source: "chiarimenti-vari.md point 13"
     location: "chiarimenti-vari/point13"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-d17e4a2b
     text: "UC.AP.04 main flow: 1. PA requests disconnect, 2. system terminates PA session"
-    value: "Confirmed two-step flow in documentazione.md"
+    value: "CONFERMATO: tutti confermati."
     source: "documentazione.md §2.2.2 UC.AP.04"
     location: "documentazione/UC.AP.04"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-9f2c8b55
     text: "UC.AP.04 has no alternative flows"
-    value: "Confirmed in documentazione.md — flussi alternativi field is empty"
+    value: "CONFERMATO: tutti confermati."
     source: "documentazione.md §2.2.2 UC.AP.04"
     location: "documentazione/UC.AP.04/alt-flows"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-c84a1d3e
     text: "Postcondition: La sessione dell'Amministrazione Pubblica e stata terminata"
-    value: "Confirmed in documentazione.md"
+    value: "CONFERMATO: tutti confermati."
     source: "documentazione.md §2.2.2 UC.AP.04"
     location: "documentazione/UC.AP.04/postconditions"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-ae145c4c
     text: "I messaggi di destroy nei diagrammi indicano la distruzione dell'istanza view per disconnessione"
-    value: "Confirmed as general mechanism for all logout/logged-out scenarios"
+    value: "CONFERMATO: tutti confermati."
     source: "chiarimenti-vari.md point 11"
     location: "chiarimenti-vari/point11"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-751ae573
     text: "Autenticazione view is the pre-auth interface displayed before and after logout"
-    value: "Confirmed — Autenticazione handles registration and credential submission, used pre-login and post-logout"
+    value: "CONFERMATO: tutti confermati."
     source: "Master_Spec.cgd.md §4 Autenticazione + documentazione.md §2.3 MVC pattern"
     location: "Master_Spec/View/Autenticazione"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-be0e2d93
     text: "All 4 View classes (AppUtente, AppOperatoreTecnico, AppOperatoreSC, AppPA) have richiestaLogout(email) method"
-    value: "Confirmed in Master_Spec.cgd.md §4 tables for all 4 views"
+    value: "CONFERMATO: tutti confermati."
     source: "Master_Spec.cgd.md lines 717, 740, 765, 794"
     location: "Master_Spec/View"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-6a1f2d8c
     text: "UC.AP.04-clean.uml contiene il flusso UC.AP.03 (Restrizioni Geografiche), non UC.AP.04 (Logout PA) — XMI model named UCAP03, interaction named Restrizioni Geografiche - UC.AP.03, zero logout-related messages"
-    value: "Diagramma errato — artefatto di esportazione XMI, il contenuto e completamente estraneo al logout"
+    value: "CONFERMATO: UC.AP.04-clean.uml contains wrong diagram (AP.03 content). Critical #2 from response2.md."
     source: "UC.AP.04-clean.uml + grep conferma 0 match per richiestaLogout/inviaRichiestaLogout/logout/destroy"
     location: "UC.AP.04-clean.uml"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-3d7e9b1a
     text: "AppPA non dispone del metodo mostraSuccesso() — a differenza di AppUtente (mostraSuccesso(): void), AppOperatoreTecnico (mostraSuccesso(msg): void) e AppOperatoreSC (mostraSuccesso(msg): void)"
-    value: "Asimmetria tra le View: AppPA ha solo mostraErrore(msg) senza mostraSuccesso corrispondente"
+    value: "CONFERMATO: mostraSuccesso() added to AppPA (already present in class diagram)."
     source: "Master_Spec.cgd.md lines 783 (mostraErrore), 694/735/760 (mostraSuccesso in altre View)"
     location: "Master_Spec/View/AppPA"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.AP.04 — Logout PA

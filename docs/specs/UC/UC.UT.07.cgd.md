@@ -1,32 +1,38 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.UT.07 (primary), Master_Spec.cgd.md v4.0, UC.UT.07-clean.uml (XMI 2.1), chiarimenti-vari.md punti 2,4
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.UT.07 (primary), Master_Spec.cgd.md v4.0, UC.UT.07-clean.uml (XMI 2.1), chiarimenti-vari.md punti 2,4, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 3
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 rag-ingestable: false
 document-sha256: cd7effd339f9dac4676d15306cbfdb249ff8dffd4864284f7d4d3db098e71a51
 hitl-claims:
   - id: claim-07-a01
     text: "Il metodo mostraInserimentoMetodoPagamento() nell'XMI del sequence diagram UC.UT.07 corrisponde a AppUtente.apriInserimentoMetodoPagamento(idUtente) nel Master_Spec v4.0"
-    value: "apriInserimentoMetodoPagamento(idUtente) — nome corretto da Master_Spec"
+    value: "CONFIRMED by class diagram. `apriInserimentoMetodoPagamento(idUtente)` is canonical."
     source: "UC.UT.07-clean.uml (XMI mostraInserimentoMetodoPagamento) vs Master_Spec.cgd.md §4 (apriInserimentoMetodoPagamento)"
     location: "UC.UT.07/flusso-alternativo/pagamento-fallito"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-07-a02
     text: "Il parametro effettivo passato a ZonaGeografica.checkArea() durante la terminazione corsa è coordinateMezzo (posizione del veicolo), nonostante il nome del parametro formale sia coordinateUtente — la verifica è sul veicolo, non sull'utente, come da documentazione.md: 'Il sistema verifica che il veicolo si trovi in un'area consentita'"
-    value: "checkArea(coordinateMezzo) — coordinate del veicolo, non dell'utente"
+    value: "CONFIRMED by class diagram. `checkArea` receives `coordinateMezzo`."
     source: "documentazione.md UC.UT.07 flusso principale step 2 + Master_Spec.cgd.md ZonaGeografica.checkArea(coordinateUtente)"
     location: "UC.UT.07/flusso-principale/step-2"
     round: A
-  - id: claim-07-b01
-    text: "Il calcolo del costo finale (stimaCosto) avviene tramite GestioneCorsa.aggiornaStima(idCorsa) che ritorna float, basato su costoOrario del Mezzo × durata (orarioFine - orarioInizio) più eventuali costi di sospensione, prima di chiamare Corsa.aggiornaCosto(stimaCosto)"
-    value: "Formula: aggiornaStima() = costoOrario × durata + costiSospensione"
-    source: "documentazione.md UC.UT.06 (sospensione aggiorna costo) + Master_Spec.cgd.md GestioneCorsa.aggiornaStima(idCorsa), Corsa.aggiornaCosto(costo)"
-    location: "UC.UT.07/flusso-principale/step-3"
-    round: B
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+   - id: claim-07-b01
+     text: "Il calcolo del costo finale (stimaCosto) avviene tramite GestioneCorsa.aggiornaStima(idCorsa) che ritorna float, basato su costoOrario del Mezzo × durata (orarioFine - orarioInizio) più eventuali costi di sospensione, prima di chiamare Corsa.aggiornaCosto(stimaCosto)"
+     value: "RESOLVED: stimaCosto = costoOrario * ore_di_utilizzo + costo_sospensione(eventuale). Cost formula confirmed by team."
+     source: "documentazione.md UC.UT.06 (sospensione aggiorna costo) + Master_Spec.cgd.md GestioneCorsa.aggiornaStima(idCorsa), Corsa.aggiornaCosto(costo) + chiarimenti team 2026-06-23"
+     location: "UC.UT.07/flusso-principale/step-3"
+     round: B
+     confirmed-by: Team Cofee Coders (via pending design decisions response)
+     confirmed-date: 2026-06-23
 ---
 
 # UC.UT.07 — Termina Corsa e Pagamento
@@ -75,6 +81,7 @@ hitl-claims:
 | 2b | ↆ Verifica coordinate in area | ZonaGeografica *(Model)* | `checkArea(coordinateUtente)` | `bool` | `coordinateUtente: String` *(x,y,z parsati)* | `true \| false` | Master_Spec §2 |
 | 3 | Calcola costo finale | GestioneCorsa *(Controller)* | `aggiornaStima(idCorsa)` | `float` | `idCorsa` | `stimaCosto: float` | Master_Spec §3 |
 | 3a | ↆ Persiste costo | Corsa *(Model)* | `aggiornaCosto(costo)` | `void` | `costo: float` | — | Master_Spec §2 |
+| * | **Formula costo** | *—* | `stimaCosto = costoOrario × oreUtilizzo + costo_sospensione` | `float` | `costoOrario: float` (da Mezzo), `oreUtilizzo: float` = (orarioFine - orarioInizio in ore), `costo_sospensione: float` (0 se non sospesa) | — | *Clarified 2026-06-23* |
 | 4 | Elabora transazione | GestorePagamento *(Controller)* | `pagamentoCorsa(idUtente, idMetodoPagamento, costo)` | `bool` | `idUtente, idMetodoPagamento, costo: float` | `true \| false` | Master_Spec §3 |
 | 4a | ↆ Processa pagamento | Gateway Pagamento *(External)* | `effettuaPagamento(idMetodoPagamento, idCorsa)` | `bool` | `idMetodoPagamento, idCorsa` | `true \| false` | Master_Spec §5 |
 | 5 | Registra orario fine | Corsa *(Model)* | `setOrarioFine(orarioFine)` | `void` | `orarioFine: time` | — | Master_Spec §2 |

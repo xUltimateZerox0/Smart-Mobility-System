@@ -1,25 +1,29 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.UT.06 (primary), Master_Spec.cgd.md v4.0, UC.UT.06-clean.uml, chiarimenti-vari.md
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §UC.UT.06 (primary), Master_Spec.cgd.md v4.0, UC.UT.06-clean.uml, chiarimenti-vari.md, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 2
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PENDING
 hitl-claims:
   - id: claim-a3f1b2c0
     text: "La tariffa di sospensione è differenziata rispetto alla tariffa oraria standard e il calcolo del costo di sospensione è gestito da Corsa.aggiornaCosto() con logica interna non specificata nei requisiti attuali"
-    value: "Tariffa differenziata — implementazione non definita nei documenti di specifica"
+    value: "CONFERMATO: tariffa differenziata confermata."
     source: "documentazione.md UC.UT.06 Requisiti: 'tariffa differenziata per la sospensione' + Master_Spec.cgd.md §8 Invariants: 'Il costo di una Corsa è sempre >= 0 e include costi di sospensione'"
     location: "UC.UT.06/flow/suspension-cost"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-d8e2f5a1
     text: "Il QR code di sospensione è generato dal sistema (non dal mezzo) e mostrato all'utente tramite AppUtente.mostraQRCode(); la scansione QR invoca GestioneCorsa.richiediSblocco(qrCode)"
-    value: "Flusso QR confermato: mostraQRCode() genera e visualizza; scansionaQRCode() raccoglie e inoltra a richiediSblocco()"
+    value: "CONFERMATO: flusso QR sospensione confermato."
     source: "documentazione.md UC.UT.06 Flusso principale passi 4-5 + Master_Spec.cgd.md AppUtente.mostraQRCode(), AppUtente.scansionaQRCode(), GestioneCorsa.richiediSblocco() + UC.UT.06-clean.uml sequence diagram messages"
     location: "UC.UT.06/flow/qr-generation-scanning"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.UT.06 — Sospensione Corsa (Ride Suspension)

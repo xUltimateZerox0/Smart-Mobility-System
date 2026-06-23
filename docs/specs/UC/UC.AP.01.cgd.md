@@ -1,43 +1,53 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.cgd.md §2-3, UC.AP.01-clean.uml
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.cgd.md §2-3, UC.AP.01-clean.uml, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 5
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: 84676bddfaccf115c9bb6bba870866f64a7ac1fd5199c798f76f553e6847675c
 hitl-claims:
   - id: claim-ap01-a1b2c3d4
     text: "GestioneStatistiche.analisiTratte(dataInizio, dataFine) restituisce un oggetto di tipo statistiche contenente i dati aggregati"
-    value: "statistiche — tipo di ritorno confermato da Master_Spec §3 (GestioneStatistiche)"
+    value: "CONFERMATO: analisiTratte(dataInizio, dataFine) returns statistiche object."
     source: "Master_Spec.cgd.md §3 Controller Layer / GestioneStatistiche"
     location: "Master_Spec/GestioneStatistiche/analisiTratte"
     round: A
-  - id: claim-ap01-e5f6g7h8
-    text: "Corsa.getCorseByPeriodo(dataInizio, dataFine) restituisce la collezione di oggetti Corsa nel periodo selezionato"
-    value: "Corsa — tipo di ritorno confermato da Master_Spec §2 (Corsa)"
-    source: "Master_Spec.cgd.md §2 Model Layer / Corsa"
-    location: "Master_Spec/Corsa/getCorseByPeriodo"
-    round: A
-  - id: claim-ap01-i9j0k1l2
-    text: "Transito.getTransitiByCorsa(idCorsa) restituisce gli oggetti Transito associati a una specifica corsa"
-    value: "Transito — tipo di ritorno confermato da Master_Spec §2 (Transito)"
-    source: "Master_Spec.cgd.md §2 Model Layer / Transito"
-    location: "Master_Spec/Transito/getTransitiByCorsa"
-    round: A
-  - id: claim-ap01-m3n4o5p6
-    text: "UC.AP.01 copre le user story AP.01 (statistiche di utilizzo) e AP.03 (tratte più utilizzate) — mappatura 1 use case per 2 user story"
-    value: "AP.01 + AP.03 → UC.AP.01 — confermato da documentazione.md §2.2.2 e tabella riepilogativa Sprint"
-    source: "documentazione.md §2.2.2 Specifiche dei Casi d'uso (UC.AP.01) + tabella riepilogativa Sprint Report"
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-ap01-b2c3d4e5
+    text: "UC.AP.01 copre le user story AP.01 e AP.03 — mappatura 1 use case per 2 user story"
+    value: "CONFERMATO: Mapping UC.AP.01 covers stories AP.01 + AP.03 (2:1)."
+    source: "documentazione.md §2.2.2 + tabella riepilogativa Sprint Report"
     location: "UseCases/UC.AP.01/mapping"
     round: A
-  - id: claim-ap01-q7r8s9t0
-    text: "Il flusso alternativo 'Dati non presenti nel periodo selezionato' restituisce il messaggio di errore 'Mancanza dati, modificare le date'"
-    value: "Messaggio di errore esatto confermato da UC.AP.01-clean.uml (Avviso)"
-    source: "UC.AP.01-clean.uml sequence diagram + documentazione.md §2.2.2"
-    location: "Flows/Alternative/no-data"
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-ap01-c3d4e5f6
+    text: "Pre-condizioni di UC.AP.01 confermate: sessione PA attiva e autenticazione ruolo PA"
+    value: "CONFERMATO: Pre-condizioni reports flow."
+    source: "documentazione.md §2.2.2 UC.AP.01 + Master_Spec.cgd.md §8"
+    location: "UC.AP.01/preconditions"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-ap01-d4e5f6a7
+    text: "Post-condizioni di UC.AP.01 confermate: statistiche generate e report disponibile per download"
+    value: "CONFERMATO: Post-condizioni reports flow."
+    source: "documentazione.md §2.2.2 UC.AP.01"
+    location: "UC.AP.01/postconditions"
+    round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
+  - id: claim-ap01-e5f6a7b8
+    text: "Metodi per la generazione delle statistiche (analisiTratte, getCorseByPeriodo, getTransitiByCorsa, generaFileStatistiche) confermati"
+    value: "CONFERMATO: Metodi statistics generation."
+    source: "Master_Spec.cgd.md §2-3 + UC.AP.01-clean.uml"
+    location: "UC.AP.01/methods"
+    round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.AP.01 — Monitoraggio Statistiche e Analisi Tratte

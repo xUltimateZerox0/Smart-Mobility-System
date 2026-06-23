@@ -1,73 +1,93 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.UT.09-clean.uml
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.UT.09-clean.uml, response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 10
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PENDING
 hitl-claims:
   - id: claim-333b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
-    value: "Confirmed in Master_Spec.cgd.md §3 GestioneAutenticazione table"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "Master_Spec.cgd.md line 524"
     location: "Master_Spec/GestioneAutenticazione"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-37ac2cbc
     text: "richiestaLogout(email) exists in AppUtente with email:String parameter returning void"
-    value: "Confirmed in Master_Spec.cgd.md §4 AppUtente table"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "Master_Spec.cgd.md line 717"
     location: "Master_Spec/AppUtente"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-7e12d7ac
     text: "Sessione singola: Login termina sessione precedente"
-    value: "Confirmed as architectural constraint #9"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "Master_Spec.cgd.md §8 constraint 9"
     location: "Master_Spec/ArchitecturalConstraints/9"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-3e57cf92
     text: "UC.OP.04, UC.OP.05, UC.AP.04 are structurally identical to UC.UT.09 by design"
-    value: "Confirmed as intentional project choice"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "chiarimenti-vari.md point 13"
     location: "chiarimenti-vari/point13"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-09100558
     text: "UC.UT.09 main flow: 1. user requests disconnect, 2. system terminates session"
-    value: "Confirmed two-step flow in documentazione.md"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "documentazione.md §2.2.2 UC.UT.09"
     location: "documentazione/UC.UT.09"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-b3a4cb86
     text: "UC.UT.09 has no alternative flows"
-    value: "Confirmed in documentazione.md — flussi alternativi field is empty"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "documentazione.md §2.2.2 UC.UT.09"
     location: "documentazione/UC.UT.09/alt-flows"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-a3b4a527
     text: "Postcondition: La sessione dell'utente e terminata"
-    value: "Confirmed in documentazione.md"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "documentazione.md §2.2.2 UC.UT.09"
     location: "documentazione/UC.UT.09/postconditions"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-ae145c4c
     text: "I messaggi di destroy nei diagrammi indicano la distruzione dell'istanza view per disconnessione"
-    value: "Confirmed as general mechanism for all logout/logged-out scenarios"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "chiarimenti-vari.md point 11"
     location: "chiarimenti-vari/point11"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-751ae573
     text: "Autenticazione view is the pre-auth interface displayed before and after logout"
-    value: "Confirmed — Autenticazione handles registration and credential submission, used pre-login and post-logout"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "Master_Spec.cgd.md §4 Autenticazione + documentazione.md §2.3 MVC pattern"
     location: "Master_Spec/View/Autenticazione"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-be0e2d93
     text: "All 4 View classes (AppUtente, AppOperatoreTecnico, AppOperatoreSC, AppPA) have richiestaLogout(email) method"
-    value: "Confirmed in Master_Spec.cgd.md §4 tables for all 4 views"
+    value: "CONFERMATO: tutti i claim confermati."
     source: "Master_Spec.cgd.md lines 717, 740, 765, 794"
     location: "Master_Spec/View"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.UT.09 — Logout Utente

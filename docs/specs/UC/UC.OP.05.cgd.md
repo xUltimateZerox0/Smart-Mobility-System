@@ -1,73 +1,93 @@
 ---
 clarity-gate-version: 2.1
-processed-date: 2026-06-22
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.OP.05-clean.uml, UC.UT.09.cgd.md (reference pattern)
+processed-date: 2026-06-23
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md §2.2.2, Master_Spec.cgd.md v4.0, chiarimenti-vari.md, UC.OP.05-clean.uml, UC.UT.09.cgd.md (reference pattern), response2.md
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 10
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PENDING
 hitl-claims:
   - id: claim-333b42a7
     text: "inviaRichiestaLogout(email) accepts email:String parameter and returns void"
-    value: "Confirmed in Master_Spec.cgd.md §3 GestioneAutenticazione table"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md line 524"
     location: "Master_Spec/GestioneAutenticazione"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-30c58ad7
     text: "richiestaLogout(email) exists in AppOperatoreSC with email:String parameter returning void"
-    value: "Confirmed in Master_Spec.cgd.md §4 AppOperatoreSC table"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md line 765"
     location: "Master_Spec/AppOperatoreSC"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-0b1e31e4
     text: "All 4 logout UCs (UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04) are structurally identical by design"
-    value: "Confirmed as intentional project choice"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "chiarimenti-vari.md point 13"
     location: "chiarimenti-vari/point13"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-8c2078bc
     text: "UC.OP.05 main flow: 1. OperatoreSC requests disconnect, 2. system terminates session and disconnects"
-    value: "Confirmed two-step flow in documentazione.md"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "documentazione.md §2.2.2 UC.OP.05"
     location: "documentazione/UC.OP.05"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-28596041
     text: "UC.OP.05 has no alternative flows"
-    value: "Confirmed in documentazione.md — flussi alternativi field is empty"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "documentazione.md §2.2.2 UC.OP.05"
     location: "documentazione/UC.OP.05/alt-flows"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-73bb5f88
     text: "Postcondition: La sessione dell Operatore Servizio Clienti e terminata"
-    value: "Confirmed in documentazione.md"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "documentazione.md §2.2.2 UC.OP.05"
     location: "documentazione/UC.OP.05/postconditions"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-d543f131
     text: "Destroy messages in sequence diagrams indicate view instance destruction for disconnect/logout"
-    value: "Confirmed as general mechanism for all logout/logged-out scenarios"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "chiarimenti-vari.md point 11"
     location: "chiarimenti-vari/point11"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-a81bf7cd
     text: "AppOperatoreSC.mostraSuccesso(msg) and mostraErrore(msg) exist with msg:String parameter"
-    value: "Confirmed in Master_Spec.cgd.md §4 AppOperatoreSC table"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md lines 759-760"
     location: "Master_Spec/AppOperatoreSC"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-31f9f7c3
     text: "Autenticazione view is the pre-auth interface displayed before and after logout"
-    value: "Confirmed — Autenticazione handles registration and credential submission, used pre-login and post-logout for all roles"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md §4 Autenticazione + documentazione.md §2.3 MVC pattern"
     location: "Master_Spec/View/Autenticazione"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-da2c9f49
     text: "AppOperatoreSC depends on GestioneAutenticazione for logout operations"
-    value: "Confirmed in Master_Spec.cgd.md §6 Dipendenze View-Controller table"
+    value: "CONFERMATO: confirmed via chiarimentiUC.md."
     source: "Master_Spec.cgd.md line 917"
     location: "Master_Spec/Dependencies/AppOperatoreSC"
     round: A
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
 ---
 
 # UC.OP.05 — Logout Operatore Servizio Clienti

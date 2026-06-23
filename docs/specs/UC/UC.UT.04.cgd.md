@@ -1,7 +1,7 @@
 ---
 clarity-gate-version: '2.1'
-processed-date: 2026-06-22
-processed-by: "Claude (AI) — cross-reference: Master_Spec.cgd.md v4.0, documentazione.md v3.0, UC.UT.04-clean.uml, chiarimenti-vari.md"
+processed-date: 2026-06-23
+processed-by: "Claude (AI) — cross-reference: Master_Spec.cgd.md v4.0, documentazione.md v3.0, UC.UT.04-clean.uml, chiarimenti-vari.md, response2.md"
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
@@ -10,12 +10,12 @@ document-sha256: ea533926cf1dc59b2d6763a9c9c908bbf94024754de6150db290e2e1afcd29b
 hitl-claims:
   - id: claim-uc04001
     text: "Il parametro si chiama 'destinazione' (Master_Spec) e non 'stringaDestinazione' (XMI) — la fonte primaria documentazione.md prevale"
-    value: "destinazione: String — confermata"
+    value: "CONFERMATO: stringaDestinazione (per priorità chiarimentiUc > Master_Spec)"
     source: "Master_Spec.cgd.md §3 GestioneCorsa + chiarimenti-vari.md punto 15 (documentazione.md primaria)"
     location: "GestioneCorsa/richiediCalcoloPercorso/param"
     round: A
-    confirmed-by: Team Cofee Coders (derivato da Master_Spec.cgd.md REVIEWED)
-    confirmed-date: 2026-06-22
+    confirmed-by: Team Cofee Coders (via response2.md)
+    confirmed-date: 2026-06-23
   - id: claim-uc04002
     text: "ServizioMappa.getPercorso() typo 'coordinateFinali' corretto a 'coordinateFinali' — già validato in Master_Spec.cgd.md"
     value: "coordinateFinali: String — corretta"
