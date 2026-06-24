@@ -6,20 +6,21 @@ import com.smartmobility.service.GestioneAreeService;
 import com.smartmobility.service.GestioneAutenticazioneService;
 import com.smartmobility.service.GestioneFlottaService;
 import com.smartmobility.service.GestioneStatisticheService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Component
+@SuppressWarnings("unused")
 public class AppPA {
 
     private final GestioneFlottaService gestioneFlottaService;
     private final GestioneStatisticheService gestioneStatisticheService;
     private final GestioneAreeService gestioneAreeService;
     private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idPA;
+    private Long idSessionePA;
 
     public AppPA(GestioneFlottaService gestioneFlottaService, GestioneStatisticheService gestioneStatisticheService, GestioneAreeService gestioneAreeService, GestioneAutenticazioneService gestioneAutenticazioneService) {
         this.gestioneFlottaService = gestioneFlottaService;
@@ -29,54 +30,82 @@ public class AppPA {
     }
 
     public void mostraErrore(String msg) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.err.println("ERRORE: " + msg);
     }
 
     public void mostraStatistiche(Object statistiche) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Statistiche: " + statistiche);
     }
 
     public void visualizzaMezzi(List<MezzoResponse> mezzi) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Mezzi: " + mezzi.size());
     }
 
     public void mostraMappa(List<ZonaGeograficaResponse> zone) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Zone: " + zone.size());
     }
 
     public void selezionaIntervallo(LocalDate dataInizio, LocalDate dataFine) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneStatisticheService.analisiTratte(dataInizio.toString(), dataFine.toString());
     }
 
     public void richiedeStatoFlotta(String idFlotta) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        try {
+            gestioneFlottaService.getCondizioniMezzi(Long.parseLong(idFlotta));
+        } catch (NumberFormatException e) {
+            System.err.println("ERRORE: formato idFlotta non valido - " + idFlotta);
+        }
     }
 
     public void avviaIntervento(String idFlotta) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        try {
+            long id = Long.parseLong(idFlotta);
+            boolean needsMaintenance = gestioneFlottaService.analisiStatoFlotta(id);
+            if (needsMaintenance) {
+                gestioneFlottaService.avviaManutenzione(id);
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("ERRORE: formato idFlotta non valido - " + idFlotta);
+        }
     }
 
     public void selezionaMappa() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Mappa selezionata");
     }
 
     public void modificaRestrizioni(ZonaGeograficaResponse zona) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Modifica restrizioni per zona: " + zona.getId());
     }
 
     public void confermaSovrascrittura(Long idArea, String tipoRestrizione, String noteRestrizione) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneAreeService.aggiornaRestrizione(idArea, tipoRestrizione, noteRestrizione, null);
     }
 
     public void rifiutaSovrascrittura() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Sovrascrittura rifiutata");
     }
 
     public void richiestaLogout(String email) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneAutenticazioneService.inviaRichiestaLogout(email);
     }
 
     public void mostraSuccesso(String msg) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("SUCCESSO: " + msg);
+    }
+
+    public Long getIdPA() {
+        return idPA;
+    }
+
+    public void setIdPA(Long idPA) {
+        this.idPA = idPA;
+    }
+
+    public Long getIdSessionePA() {
+        return idSessionePA;
+    }
+
+    public void setIdSessionePA(Long idSessionePA) {
+        this.idSessionePA = idSessionePA;
     }
 }

@@ -3,17 +3,18 @@ package com.smartmobility.view;
 import com.smartmobility.dto.response.MezzoResponse;
 import com.smartmobility.service.GestioneAutenticazioneService;
 import com.smartmobility.service.GestioneFlottaService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @Component
+@SuppressWarnings("unused")
 public class AppOperatoreTecnico {
 
     private final GestioneFlottaService gestioneFlottaService;
     private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idOperatoreTecnico;
+    private Long idSessioneOperatoreTecnico;
 
     public AppOperatoreTecnico(GestioneFlottaService gestioneFlottaService, GestioneAutenticazioneService gestioneAutenticazioneService) {
         this.gestioneFlottaService = gestioneFlottaService;
@@ -21,26 +22,42 @@ public class AppOperatoreTecnico {
     }
 
     public void mostraSuccesso(String msg) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("SUCCESSO: " + msg);
     }
 
     public void mostraErrore(String msg) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.err.println("ERRORE: " + msg);
     }
 
     public void visualizzaMezzi(List<MezzoResponse> mezzi) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Mezzi in flotta: " + mezzi.size());
     }
 
     public void richiedeStatoFlotta(String idFlotta) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneFlottaService.getCondizioniMezzi(Long.parseLong(idFlotta));
     }
 
     public void selezionaVeicolo(Long idMezzo) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Veicolo selezionato: " + idMezzo);
     }
 
     public void richiestaLogout(String email) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneAutenticazioneService.inviaRichiestaLogout(email);
+    }
+
+    public Long getIdOperatoreTecnico() {
+        return idOperatoreTecnico;
+    }
+
+    public void setIdOperatoreTecnico(Long idOperatoreTecnico) {
+        this.idOperatoreTecnico = idOperatoreTecnico;
+    }
+
+    public Long getIdSessioneOperatoreTecnico() {
+        return idSessioneOperatoreTecnico;
+    }
+
+    public void setIdSessioneOperatoreTecnico(Long idSessioneOperatoreTecnico) {
+        this.idSessioneOperatoreTecnico = idSessioneOperatoreTecnico;
     }
 }

@@ -3,16 +3,17 @@ package com.smartmobility.view;
 import com.smartmobility.service.GestioneAutenticazioneService;
 import com.smartmobility.service.GestionePrenotazioneService;
 import com.smartmobility.service.GestioneUtentiService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 @Component
+@SuppressWarnings("unused")
 public class AppOperatoreSC {
 
     private final GestioneUtentiService gestioneUtentiService;
     private final GestionePrenotazioneService gestionePrenotazioneService;
     private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idOperatoreSC;
+    private Long idSessioneOperatoreSC;
 
     public AppOperatoreSC(GestioneUtentiService gestioneUtentiService, GestionePrenotazioneService gestionePrenotazioneService, GestioneAutenticazioneService gestioneAutenticazioneService) {
         this.gestioneUtentiService = gestioneUtentiService;
@@ -21,34 +22,50 @@ public class AppOperatoreSC {
     }
 
     public void mostraPrenotazioni() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestionePrenotazioneService.richiediLista();
     }
 
     public void mostraErrore(String msg) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.err.println("ERRORE: " + msg);
     }
 
     public void mostraSuccesso(String msg) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("SUCCESSO: " + msg);
     }
 
     public void mostraReport(Long idUtente) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneUtentiService.cercaReport(idUtente);
     }
 
     public void richiediListaPrenotazioni() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestionePrenotazioneService.richiediLista();
     }
 
     public void selezionaPrenotazione(Long idPrenotazione) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Prenotazione selezionata: " + idPrenotazione);
     }
 
     public void aggiornaReport(Long idUtente) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Report aggiornato per utente: " + idUtente);
     }
 
     public void richiestaLogout(String email) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneAutenticazioneService.inviaRichiestaLogout(email);
+    }
+
+    public Long getIdOperatoreSC() {
+        return idOperatoreSC;
+    }
+
+    public void setIdOperatoreSC(Long idOperatoreSC) {
+        this.idOperatoreSC = idOperatoreSC;
+    }
+
+    public Long getIdSessioneOperatoreSC() {
+        return idSessioneOperatoreSC;
+    }
+
+    public void setIdSessioneOperatoreSC(Long idSessioneOperatoreSC) {
+        this.idSessioneOperatoreSC = idSessioneOperatoreSC;
     }
 }

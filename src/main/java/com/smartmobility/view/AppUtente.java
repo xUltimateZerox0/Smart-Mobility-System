@@ -7,13 +7,12 @@ import com.smartmobility.service.GestioneCorsaService;
 import com.smartmobility.service.GestionePrenotazioneService;
 import com.smartmobility.service.GestorePagamentoService;
 import com.smartmobility.service.RicercaMezziService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @Component
+@SuppressWarnings("unused")
 public class AppUtente {
 
     private final GestioneCorsaService gestioneCorsaService;
@@ -21,6 +20,8 @@ public class AppUtente {
     private final RicercaMezziService ricercaMezziService;
     private final GestionePrenotazioneService gestionePrenotazioneService;
     private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idUtente;
+    private Long idSessioneUtente;
 
     public AppUtente(GestioneCorsaService gestioneCorsaService, GestorePagamentoService gestorePagamentoService, RicercaMezziService ricercaMezziService, GestionePrenotazioneService gestionePrenotazioneService, GestioneAutenticazioneService gestioneAutenticazioneService) {
         this.gestioneCorsaService = gestioneCorsaService;
@@ -31,106 +32,125 @@ public class AppUtente {
     }
 
     public void mostraErrore(String msg) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.err.println("ERRORE: " + msg);
     }
 
     public void mostraStima(Long idCorsa) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        Float result = gestioneCorsaService.aggiornaStima(idCorsa);
+        if (result != null) {
+            System.out.println("Costo stimato: " + result);
+        }
     }
 
     public void mostraSuccesso() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Operazione completata con successo");
     }
 
     public void mostraFineCorsa() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Corsa terminata");
     }
 
     public void mostraQRCode() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("QR Code generato");
     }
 
     public void mostraRipresaCorsa() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Corsa ripresa");
     }
 
     public void mostraMetodi(List<MetodoPagamentoResponse> metodi) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Metodi: " + metodi.size());
     }
 
     public void mostraSceltaMetodi() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Mostra scelta metodi");
     }
 
     public void mostraMezzi(List<MezzoResponse> mezzi) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Mezzi trovati: " + mezzi.size());
     }
 
     public void mostraMetodoConvalidato() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Metodo convalidato");
     }
 
     public void renderizzaDettagliVeicolo(MezzoResponse mezzo) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Dettagli: " + mezzo.getTipo());
     }
 
     public void scansionaQRCode(String qrCode) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneCorsaService.richiediSblocco(qrCode);
     }
 
     public void inserisciDatiCarta(Long idUtente, String numCarta, String dsCarta, String cvv, String intestatarioCarta) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestorePagamentoService.elaboraDatiCarta(idUtente, numCarta, dsCarta, cvv, intestatarioCarta);
     }
 
     public void apriAvvioCorsa() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Avvio corsa");
     }
 
     public void terminazioneCorsa(Long idCorsa) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneCorsaService.terminaCorsa(idCorsa);
     }
 
     public void sospendiCorsa(Long idCorsa) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneCorsaService.sospensioneCorsa(idCorsa);
     }
 
     public void apriSezioneProfilo(Long idUtente) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Profilo utente: " + idUtente);
     }
 
     public void apriInserimentoMetodoPagamento(Long idUtente) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Inserimento metodo per utente: " + idUtente);
     }
 
     public void selezionaMezzo(Long idMezzo) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Mezzo selezionato: " + idMezzo);
     }
 
     public void inserisciDestinazione(String indirizzoArrivo) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Destinazione: " + indirizzoArrivo);
     }
 
     public void avviaRicercaMezzi(String coordinateUtente, float raggio) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        ricercaMezziService.visualizzaMezziVicini(coordinateUtente, raggio);
     }
 
     public void confermaEspansione() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Espansione confermata");
     }
 
     public void notificaAzione(Long idUtente, String azione) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Notifica a " + idUtente + ": " + azione);
     }
 
     public void ottieniMetodiSalvati() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestorePagamentoService.recuperaMetodiSalvati();
     }
 
     public void selezionaMetodo(String numCarta) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Metodo selezionato: " + numCarta);
     }
 
     public void richiestaLogout(String email) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        gestioneAutenticazioneService.inviaRichiestaLogout(email);
+    }
+
+    public Long getIdUtente() {
+        return idUtente;
+    }
+
+    public void setIdUtente(Long idUtente) {
+        this.idUtente = idUtente;
+    }
+
+    public Long getIdSessioneUtente() {
+        return idSessioneUtente;
+    }
+
+    public void setIdSessioneUtente(Long idSessioneUtente) {
+        this.idSessioneUtente = idSessioneUtente;
     }
 }

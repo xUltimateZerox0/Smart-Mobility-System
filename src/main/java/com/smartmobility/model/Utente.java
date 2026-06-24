@@ -2,8 +2,6 @@ package com.smartmobility.model;
 
 import com.smartmobility.model.enums.StatoUtente;
 import jakarta.persistence.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 @Entity
 @Table(name = "utente")
@@ -101,14 +99,32 @@ public class Utente extends Attore {
     }
 
     public Utente ricercaUtente(Long idUtente) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        if (this.idUtente != null && this.idUtente.equals(idUtente)) {
+            return this;
+        }
+        return null;
     }
 
     public void azioneCorrettiva(String azione) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        if (reportUtente == null || reportUtente.isEmpty()) {
+            this.reportUtente = azione;
+        } else {
+            this.reportUtente = reportUtente + " | " + azione;
+        }
+
+        String azioneLower = azione.toLowerCase();
+        if (azioneLower.contains("sospensione") || azioneLower.contains("sospendi")) {
+            this.statoUtente = StatoUtente.sospeso;
+        } else if (azioneLower.contains("disattiv") || azioneLower.contains("banna")) {
+            this.statoUtente = StatoUtente.disattivato;
+        }
     }
 
     public void creaAccountUtente(String nome, String cognome, String email, String password, String datanascita) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        this.nomeUtente = nome;
+        this.cognomeUtente = cognome;
+        setEmail(email);
+        setPassword(password);
+        this.statoUtente = StatoUtente.attivo;
     }
 }

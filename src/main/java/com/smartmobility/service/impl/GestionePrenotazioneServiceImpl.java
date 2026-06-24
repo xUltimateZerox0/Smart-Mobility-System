@@ -102,7 +102,7 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
         }
     }
 
-    public Prenotazione creaPrenotazione(Long idMezzo, Long idUtente) {
+    private Prenotazione creaPrenotazione(Long idMezzo, Long idUtente) {
         Mezzo mezzo = mezzoRepository.findById(idMezzo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 

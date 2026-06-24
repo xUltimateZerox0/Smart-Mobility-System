@@ -1,28 +1,47 @@
 package com.smartmobility.view;
 
+import com.smartmobility.dto.response.AuthResponse;
 import com.smartmobility.service.GestioneAutenticazioneService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 @Component
+@SuppressWarnings("unused")
 public class Autenticazione {
 
     private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idAttore;
+    private Long idSessioneAttore;
 
     public Autenticazione(GestioneAutenticazioneService gestioneAutenticazioneService) {
         this.gestioneAutenticazioneService = gestioneAutenticazioneService;
     }
 
     public void mostraFormRegistrazione() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Mostra form registrazione");
     }
 
     public void inserisciCredenziali(String nome, String cognome, String email, String password, String datanascita) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        AuthResponse result = gestioneAutenticazioneService.verificaValidita(nome, cognome, email, password, datanascita);
+        System.out.println("Registrazione completata per: " + result.getEmail());
     }
 
     public void registrazioneUtente() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Skeleton phase - Awaiting implementation");
+        System.out.println("Registrazione utente completata");
+    }
+
+    public Long getIdAttore() {
+        return idAttore;
+    }
+
+    public void setIdAttore(Long idAttore) {
+        this.idAttore = idAttore;
+    }
+
+    public Long getIdSessioneAttore() {
+        return idSessioneAttore;
+    }
+
+    public void setIdSessioneAttore(Long idSessioneAttore) {
+        this.idSessioneAttore = idSessioneAttore;
     }
 }

@@ -9,7 +9,12 @@
         <div class="form-group" style="margin-top:8px">
           <input v-model="editNote[z.id]" :placeholder="'Nuova nota per ' + z.nome" />
         </div>
-        <button @click="updateZone(z.id)" class="btn-primary" style="margin-top:4px">Aggiorna</button>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button @click="checkAndUpdate(z)" class="btn-primary">Verifica Conflitti e Aggiorna</button>
+        </div>
+        <p v-if="conflictMsg[z.id]" :style="{ color: conflictResolved[z.id] ? 'var(--success)' : 'var(--warning)', fontSize: '13px', marginTop: '4px' }">
+          {{ conflictMsg[z.id] }}
+        </p>
       </div>
     </div>
     <p v-else style="color:var(--gray)">Nessuna zona configurata</p>
@@ -24,18 +29,28 @@ import type { ZonaGeograficaResponse } from '../../types'
 
 const zone = ref<ZonaGeograficaResponse[]>([])
 const editNote = reactive<Record<number, string>>({})
+const conflictMsg = reactive<Record<number, string>>({})
+const conflictResolved = reactive<Record<number, boolean>>({})
 const error = ref('')
 
 onMounted(async () => {
   try { const res = await zonesApi.getZones(); zone.value = res.data } catch {}
 })
 
-async function updateZone(id: number) {
+async function checkAndUpdate(z: ZonaGeograficaResponse) {
   error.value = ''
+  const id = z.id
   try {
-    await zonesApi.updateZone(id, { tipoRestrizione: '', noteRestrizione: editNote[id] || '', zona: '' })
+    const conflictRes = await zonesApi.checkConflict('')
+    if (conflictRes.data) {
+      conflictMsg[id] = 'Attenzione: rilevato conflitto con zona esistente. Sovrascrittura in corso...'
+      conflictResolved[id] = false
+    }
+    await zonesApi.updateZone(id, { tipoRestrizione: z.tipoRestrizione, noteRestrizione: editNote[id] || z.noteRestrizione || '', zona: '' })
     const res = await zonesApi.getZones()
     zone.value = res.data
+    conflictMsg[id] = 'Zona aggiornata con successo'
+    conflictResolved[id] = true
   } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
 }
 </script>
