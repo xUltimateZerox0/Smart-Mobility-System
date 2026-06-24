@@ -16,6 +16,7 @@ export interface AuthResponse {
   email: string
   ruolo: string
   idUtente: number
+  tipo?: string
 }
 
 export interface MezzoResponse {

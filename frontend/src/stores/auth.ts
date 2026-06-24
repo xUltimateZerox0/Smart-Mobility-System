@@ -16,8 +16,18 @@ export const useAuthStore = defineStore('auth', () => {
     const storedUser = localStorage.getItem('auth_user')
     const storedToken = localStorage.getItem('auth_token')
     if (storedUser && storedToken) {
-      user.value = JSON.parse(storedUser)
+      const parsed: AuthResponse = JSON.parse(storedUser)
+      user.value = parsed
       token.value = storedToken
+      syncOperatoreTipo(parsed)
+    }
+  }
+
+  function syncOperatoreTipo(data: AuthResponse | null) {
+    if (data?.tipo) {
+      localStorage.setItem('operatore_tipo', data.tipo)
+    } else {
+      localStorage.removeItem('operatore_tipo')
     }
   }
 
@@ -28,6 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = data.token
     localStorage.setItem('auth_user', JSON.stringify(data))
     localStorage.setItem('auth_token', data.token)
+    syncOperatoreTipo(data)
     return data
   }
 
@@ -38,6 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = data.token
     localStorage.setItem('auth_user', JSON.stringify(data))
     localStorage.setItem('auth_token', data.token)
+    syncOperatoreTipo(data)
     return data
   }
 
@@ -53,6 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     localStorage.removeItem('auth_user')
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('operatore_tipo')
   }
 
   loadFromStorage()

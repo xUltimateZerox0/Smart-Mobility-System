@@ -2,6 +2,7 @@ package com.smartmobility.service.impl;
 
 import com.smartmobility.dto.response.AuthResponse;
 import com.smartmobility.model.Attore;
+import com.smartmobility.model.Operatore;
 import com.smartmobility.model.Utente;
 import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.model.enums.StatoUtente;
@@ -44,11 +45,14 @@ public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazione
         String token = sessionRegistry.createSession(attore);
 
         Long idUtente = null;
+        String tipo = null;
         if (attore instanceof Utente u) {
             idUtente = u.getIdUtente();
+        } else if (attore instanceof Operatore o) {
+            tipo = o.getTipo().name();
         }
 
-        return new AuthResponse(token, attore.getEmail(), attore.getRuolo().name(), idUtente);
+        return new AuthResponse(token, attore.getEmail(), attore.getRuolo().name(), idUtente, tipo);
     }
 
     @Override
@@ -73,7 +77,7 @@ public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazione
 
         String token = sessionRegistry.createSession(utente);
 
-        return new AuthResponse(token, utente.getEmail(), utente.getRuolo().name(), utente.getIdUtente());
+        return new AuthResponse(token, utente.getEmail(), utente.getRuolo().name(), utente.getIdUtente(), null);
     }
 
     @Override
