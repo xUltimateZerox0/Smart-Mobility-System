@@ -1,4 +1,9 @@
 import client from './client'
+import type { UtenteResponse } from '../types'
+
+export function getUsers() {
+  return client.get<UtenteResponse[]>('/admin/users')
+}
 
 export function getUserReport(id: number) {
   return client.get<string>(`/admin/users/${id}/report`)

@@ -36,4 +36,10 @@ public class RicercaMezziController {
         MezzoResponse mezzo = ricercaMezziService.visualizzaSpecifiche(id);
         return ResponseEntity.ok(mezzo);
     }
+
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<Boolean> checkVehicleAvailability(@PathVariable Long id) {
+        boolean result = ricercaMezziService.verificaDisponibilita(id);
+        return ResponseEntity.ok(result);
+    }
 }

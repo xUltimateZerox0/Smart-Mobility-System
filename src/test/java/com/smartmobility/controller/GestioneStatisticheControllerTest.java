@@ -18,6 +18,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(GestioneStatisticheController.class)
@@ -84,22 +85,29 @@ class GestioneStatisticheControllerTest {
                 new CorsaResponse(1L, 1L, 1L, "2026-01-15T10:00", "2026-01-15T10:30", 2.5, 5.0, "completata")
         );
         ExportStatisticsRequest request = new ExportStatisticsRequest(corse);
+        String csvContent = "idCorsa,idUtente,idMezzo,dataInizio,dataFine,costo,distanza,stato\n1,1,1,2026-01-15T10:00,2026-01-15T10:30,2.50,5.00,completata\n";
+
+        when(gestioneStatisticheService.generaFileStatistiche(corse)).thenReturn(csvContent);
 
         mockMvc.perform(post("/statistics/export")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", startsWith("attachment; filename=\"statistiche_")))
+                .andExpect(content().contentType("text/csv"));
 
         verify(gestioneStatisticheService).generaFileStatistiche(corse);
     }
 
     @Test
-    void exportStatistics_WithEmptyList_ReturnsBadRequest() throws Exception {
+    void exportStatistics_WithEmptyList_ReturnsOk() throws Exception {
         ExportStatisticsRequest request = new ExportStatisticsRequest(List.of());
+
+        when(gestioneStatisticheService.generaFileStatistiche(List.of())).thenReturn("idCorsa,idUtente,idMezzo,dataInizio,dataFine,costo,distanza,stato\n");
 
         mockMvc.perform(post("/statistics/export")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
     }
 }

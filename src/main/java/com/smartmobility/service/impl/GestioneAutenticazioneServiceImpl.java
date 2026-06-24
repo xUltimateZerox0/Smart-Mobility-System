@@ -72,8 +72,11 @@ public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazione
         utente.setNumMezziPrenotati(0);
         utente.setCoordinateUtente("0.0,0.0,0.0");
 
+        utente.setDataNascita(datanascita);
+
         utente = utenteRepository.save(utente);
         utente.setIdUtente(utente.getId());
+        utenteRepository.save(utente);
 
         String token = sessionRegistry.createSession(utente);
 

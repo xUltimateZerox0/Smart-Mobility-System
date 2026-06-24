@@ -3,7 +3,7 @@ package com.smartmobility.service;
 import com.smartmobility.dto.response.PercorsoResponse;
 
 public interface GestioneCorsaService {
-    void avviaCorsa(Long idMezzo, Long idUtente);
+    Long avviaCorsa(Long idMezzo, Long idUtente);
     void terminaCorsa(Long idCorsa);
     Float aggiornaStima(Long idCorsa);
     boolean sospensioneCorsa(Long idCorsa);

@@ -48,7 +48,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
     @Override
     @Transactional
-    public void avviaCorsa(Long idMezzo, Long idUtente) {
+    public Long avviaCorsa(Long idMezzo, Long idUtente) {
         Mezzo mezzo = mezzoRepository.findById(idMezzo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 
@@ -70,10 +70,12 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         corsa.setUtente(utente);
         corsa.setMezzo(mezzo);
         corsa.setCosto(0);
-        corsaRepository.save(corsa);
+        corsa = corsaRepository.save(corsa);
 
         mezzo.setStato(StatoMezzo.in_uso);
         mezzoRepository.save(mezzo);
+
+        return corsa.getIdCorsa();
     }
 
     @Override
@@ -154,7 +156,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         Mezzo mezzo = mezzoRepository.findById(idMezzo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 
-        if (mezzo.getStato() != StatoMezzo.prenotato && mezzo.getStato() != StatoMezzo.disponibile) {
+        if (mezzo.getStato() != StatoMezzo.prenotato && mezzo.getStato() != StatoMezzo.disponibile && mezzo.getStato() != StatoMezzo.in_uso) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Mezzo non sbloccabile");
         }
 

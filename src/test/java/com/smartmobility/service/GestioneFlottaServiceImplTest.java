@@ -111,6 +111,8 @@ class GestioneFlottaServiceImplTest {
         Mezzo m2 = TestDataFactory.createMezzo(2L, "scooter", StatoMezzo.disponibile, "41.9030,12.4970,0.0", 60.0f, 8.0f);
 
         when(mezzoRepository.findByIdFlotta("1")).thenReturn(List.of(m1, m2));
+        when(mezzoRepository.findById(1L)).thenReturn(Optional.of(m1));
+        when(mezzoRepository.findById(2L)).thenReturn(Optional.of(m2));
 
         boolean result = service.avviaManutenzione(1L);
 

@@ -36,9 +36,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useAuthStore } from '../../stores/auth'
 import * as paymentsApi from '../../api/payments'
 import * as ridesApi from '../../api/rides'
 import type { MetodoPagamentoResponse } from '../../types'
+
+const auth = useAuthStore()
 
 const metodi = ref<MetodoPagamentoResponse[]>([])
 const numCarta = ref('')
@@ -50,7 +53,7 @@ const cardError = ref('')
 
 onMounted(async () => {
   try {
-    const res = await paymentsApi.getSavedMethods()
+    const res = await paymentsApi.getSavedMethods(auth.userId!)
     metodi.value = res.data
   } catch {}
 })
@@ -60,13 +63,13 @@ async function addCard() {
   cardError.value = ''
   try {
     await paymentsApi.addPaymentMethod({
-      idUtente: 0,
+      idUtente: auth.userId!,
       numCarta: numCarta.value,
       intestatarioCarta: intestatario.value,
       dsCarta: scadenza.value,
       cvv: cvv.value,
     })
-    const res = await paymentsApi.getSavedMethods()
+    const res = await paymentsApi.getSavedMethods(auth.userId!)
     metodi.value = res.data
     numCarta.value = ''
     intestatario.value = ''

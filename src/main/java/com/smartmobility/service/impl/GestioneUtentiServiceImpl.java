@@ -1,5 +1,6 @@
 package com.smartmobility.service.impl;
 
+import com.smartmobility.dto.response.UtenteResponse;
 import com.smartmobility.model.Utente;
 import com.smartmobility.model.enums.StatoUtente;
 import com.smartmobility.repository.UtenteRepository;
@@ -8,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Service
 public class GestioneUtentiServiceImpl implements GestioneUtentiService {
 
@@ -15,6 +18,20 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
 
     public GestioneUtentiServiceImpl(UtenteRepository utenteRepository) {
         this.utenteRepository = utenteRepository;
+    }
+
+    @Override
+    public List<UtenteResponse> getElencoUtenti() {
+        return utenteRepository.findAll().stream()
+                .map(u -> new UtenteResponse(
+                        u.getId(),
+                        u.getIdUtente(),
+                        u.getNomeUtente(),
+                        u.getCognomeUtente(),
+                        u.getEmail(),
+                        u.getStatoUtente() != null ? u.getStatoUtente().name() : null
+                ))
+                .toList();
     }
 
     @Override

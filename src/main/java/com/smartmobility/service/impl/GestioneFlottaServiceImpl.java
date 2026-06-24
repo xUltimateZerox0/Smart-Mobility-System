@@ -41,8 +41,10 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
 
         for (Mezzo mezzo : mezzi) {
             if ("danneggiato".equalsIgnoreCase(mezzo.getCondizione())
+                    || "danneggiata".equalsIgnoreCase(mezzo.getCondizione())
                     || mezzo.getAutonomia() <= 0
-                    || "manutenzione_necessaria".equalsIgnoreCase(mezzo.getCondizione())) {
+                    || "manutenzione_necessaria".equalsIgnoreCase(mezzo.getCondizione())
+                    || "manutenzione".equalsIgnoreCase(mezzo.getCondizione())) {
 
                 Segnalazione segnalazione = new Segnalazione();
                 segnalazione.setMezzo(mezzo);
@@ -79,6 +81,22 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
 
     @Override
     @Transactional
+    public boolean sbloccaMezzo(Long idMezzo) {
+        Mezzo mezzo = mezzoRepository.findById(idMezzo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
+
+        if (!mezzoIoTService.sbloccoMezzoFisico(idMezzo)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Sblocco remoto fallito");
+        }
+
+        mezzo.setStato(StatoMezzo.disponibile);
+        mezzoRepository.save(mezzo);
+
+        return true;
+    }
+
+    @Override
+    @Transactional
     public boolean avviaManutenzione(Long idFlotta) {
         List<Mezzo> mezzi = mezzoRepository.findByIdFlotta(String.valueOf(idFlotta));
 
@@ -87,17 +105,28 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
         }
 
         for (Mezzo mezzo : mezzi) {
-            mezzo.setStato(StatoMezzo.manutenzione);
-
-            Segnalazione segnalazione = new Segnalazione();
-            segnalazione.setMezzo(mezzo);
-            segnalazione.setStato(StatoSegnalazione.aperta);
-            segnalazione.setData(LocalDate.now());
-            segnalazione.setOra(LocalTime.now());
-            segnalazioneRepository.save(segnalazione);
-
-            mezzoRepository.save(mezzo);
+            avviaManutenzioneVeicolo(mezzo.getIdMezzo());
         }
+
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean avviaManutenzioneVeicolo(Long idMezzo) {
+        Mezzo mezzo = mezzoRepository.findById(idMezzo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
+
+        mezzo.setStato(StatoMezzo.manutenzione);
+
+        Segnalazione segnalazione = new Segnalazione();
+        segnalazione.setMezzo(mezzo);
+        segnalazione.setStato(StatoSegnalazione.aperta);
+        segnalazione.setData(LocalDate.now());
+        segnalazione.setOra(LocalTime.now());
+        segnalazioneRepository.save(segnalazione);
+
+        mezzoRepository.save(mezzo);
 
         return true;
     }
@@ -113,6 +142,7 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
 
     private MezzoResponse toMezzoResponse(Mezzo mezzo) {
         double[] coords = parseCoordinates(mezzo.getCoordinateMezzo());
+        String tempoDisp = mezzo.getTempoDisponibilita() != null ? mezzo.getTempoDisponibilita().toString() : null;
         return new MezzoResponse(
                 mezzo.getIdMezzo(),
                 mezzo.getTipo(),
@@ -121,7 +151,8 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
                 coords[1],
                 (double) mezzo.getAutonomia(),
                 (double) mezzo.getCostoOrario(),
-                mezzo.getIdFlotta()
+                mezzo.getIdFlotta(),
+                tempoDisp
         );
     }
 

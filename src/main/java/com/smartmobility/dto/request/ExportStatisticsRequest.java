@@ -1,12 +1,10 @@
 package com.smartmobility.dto.request;
 
 import com.smartmobility.dto.response.CorsaResponse;
-import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.Objects;
 
 public class ExportStatisticsRequest {
-    @NotEmpty
     private List<CorsaResponse> corse;
 
     public ExportStatisticsRequest() {}

@@ -87,9 +87,9 @@ class GestorePagamentoControllerTest {
         List<MetodoPagamentoResponse> methods = List.of(
                 new MetodoPagamentoResponse(1L, "****1111", "Mario Rossi", null)
         );
-        when(gestorePagamentoService.recuperaMetodiSalvati()).thenReturn(methods);
+        when(gestorePagamentoService.recuperaMetodiSalvati(1L)).thenReturn(methods);
 
-        mockMvc.perform(get("/payments/methods"))
+        mockMvc.perform(get("/payments/methods").param("idUtente", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].numCarta").value("****1111"))

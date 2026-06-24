@@ -26,9 +26,9 @@ public class GestioneCorsaController {
     }
 
     @PostMapping("/start")
-    public ResponseEntity<Void> startRide(@Valid @RequestBody StartRideRequest request) {
-        gestioneCorsaService.avviaCorsa(request.getIdMezzo(), request.getIdUtente());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Long> startRide(@Valid @RequestBody StartRideRequest request) {
+        Long corsaId = gestioneCorsaService.avviaCorsa(request.getIdMezzo(), request.getIdUtente());
+        return ResponseEntity.ok(corsaId);
     }
 
     @PostMapping("/{id}/end")

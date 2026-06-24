@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface GestioneStatisticheService {
     StatisticheResponse analisiTratte(String dataInizio, String dataFine);
-    void generaFileStatistiche(List<CorsaResponse> corse);
+    String generaFileStatistiche(List<CorsaResponse> corse);
 }

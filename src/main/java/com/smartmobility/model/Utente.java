@@ -32,6 +32,9 @@ public class Utente extends Attore {
     @Column(name = "num_mezzi_prenotati")
     private int numMezziPrenotati;
 
+    @Column(name = "data_nascita")
+    private String dataNascita;
+
     public Utente() {}
 
     public Long getIdUtente() {
@@ -97,6 +100,9 @@ public class Utente extends Attore {
     public void setNumMezziPrenotati(int numMezziPrenotati) {
         this.numMezziPrenotati = numMezziPrenotati;
     }
+
+    public String getDataNascita() { return dataNascita; }
+    public void setDataNascita(String dataNascita) { this.dataNascita = dataNascita; }
 
     public Utente ricercaUtente(Long idUtente) {
         if (this.idUtente != null && this.idUtente.equals(idUtente)) {

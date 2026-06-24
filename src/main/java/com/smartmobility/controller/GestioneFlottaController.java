@@ -33,6 +33,18 @@ public class GestioneFlottaController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/vehicles/{id}/unlock")
+    public ResponseEntity<Boolean> unlockVehicle(@PathVariable Long id) {
+        boolean result = gestioneFlottaService.sbloccaMezzo(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/vehicles/{id}/maintenance")
+    public ResponseEntity<Boolean> startVehicleMaintenance(@PathVariable Long id) {
+        boolean result = gestioneFlottaService.avviaManutenzioneVeicolo(id);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping("/{flottaId}/maintenance")
     public ResponseEntity<Boolean> startMaintenance(@PathVariable Long flottaId) {
         boolean result = gestioneFlottaService.avviaManutenzione(flottaId);

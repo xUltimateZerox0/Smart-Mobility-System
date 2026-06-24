@@ -28,6 +28,7 @@ export interface MezzoResponse {
   autonomia: number
   tariffa: number
   codiceMezzo: string
+  tempoDisponibilita?: string
 }
 
 export interface PrenotazioneResponse {
@@ -37,6 +38,8 @@ export interface PrenotazioneResponse {
   dataInizio: string
   dataFine: string
   stato: string
+  nomeVeicolo?: string
+  tipoVeicolo?: string
 }
 
 export interface CorsaResponse {
@@ -76,6 +79,15 @@ export interface ZonaGeograficaResponse {
 export interface PercorsoResponse {
   percorso: string
   messaggio: string
+}
+
+export interface UtenteResponse {
+  id: number
+  idUtente: number
+  nome: string
+  cognome: string
+  email: string
+  stato: string
 }
 
 export interface ErrorResponse {

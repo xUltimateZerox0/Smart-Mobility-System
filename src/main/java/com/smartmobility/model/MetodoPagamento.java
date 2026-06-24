@@ -17,6 +17,12 @@ public class MetodoPagamento {
     @Column(name = "intestatario_carta")
     private String intestatarioCarta;
 
+    @Column(name = "ds_carta")
+    private String dsCarta;
+
+    @Column(name = "cvv")
+    private String cvv;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_utente")
     private Utente utente;
@@ -46,6 +52,12 @@ public class MetodoPagamento {
     public void setIntestatarioCarta(String intestatarioCarta) {
         this.intestatarioCarta = intestatarioCarta;
     }
+
+    public String getDsCarta() { return dsCarta; }
+    public void setDsCarta(String dsCarta) { this.dsCarta = dsCarta; }
+
+    public String getCvv() { return cvv; }
+    public void setCvv(String cvv) { this.cvv = cvv; }
 
     public Utente getUtente() {
         return utente;

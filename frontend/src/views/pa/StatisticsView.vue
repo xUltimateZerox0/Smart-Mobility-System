@@ -46,7 +46,13 @@ async function analyze() {
 async function exportStats() {
   error.value = ''
   try {
-    await statisticsApi.exportStatistics([])
+    const res = await statisticsApi.exportStatistics([])
+    const url = URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'statistiche.csv'
+    a.click()
+    URL.revokeObjectURL(url)
   } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
 }
 </script>

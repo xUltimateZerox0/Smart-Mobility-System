@@ -9,6 +9,14 @@ export function lockVehicle(id: number) {
   return client.post<boolean>(`/fleet/vehicles/${id}/lock`)
 }
 
+export function unlockVehicle(id: number) {
+  return client.post<boolean>(`/fleet/vehicles/${id}/unlock`)
+}
+
+export function startVehicleMaintenance(id: number) {
+  return client.post<boolean>(`/fleet/vehicles/${id}/maintenance`)
+}
+
 export function startMaintenance(flottaId: number) {
   return client.post<boolean>(`/fleet/${flottaId}/maintenance`)
 }

@@ -11,10 +11,15 @@ public class MezzoResponse {
     private Double autonomia;
     private Double tariffa;
     private String codiceMezzo;
+    private String tempoDisponibilita;
 
     public MezzoResponse() {}
 
     public MezzoResponse(Long id, String tipo, String stato, Double latitudine, Double longitudine, Double autonomia, Double tariffa, String codiceMezzo) {
+        this(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo, null);
+    }
+
+    public MezzoResponse(Long id, String tipo, String stato, Double latitudine, Double longitudine, Double autonomia, Double tariffa, String codiceMezzo, String tempoDisponibilita) {
         this.id = id;
         this.tipo = tipo;
         this.stato = stato;
@@ -23,6 +28,7 @@ public class MezzoResponse {
         this.autonomia = autonomia;
         this.tariffa = tariffa;
         this.codiceMezzo = codiceMezzo;
+        this.tempoDisponibilita = tempoDisponibilita;
     }
 
     public Long getId() { return id; }
@@ -41,18 +47,20 @@ public class MezzoResponse {
     public void setTariffa(Double tariffa) { this.tariffa = tariffa; }
     public String getCodiceMezzo() { return codiceMezzo; }
     public void setCodiceMezzo(String codiceMezzo) { this.codiceMezzo = codiceMezzo; }
+    public String getTempoDisponibilita() { return tempoDisponibilita; }
+    public void setTempoDisponibilita(String tempoDisponibilita) { this.tempoDisponibilita = tempoDisponibilita; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MezzoResponse that = (MezzoResponse) o;
-        return Objects.equals(id, that.id) && Objects.equals(tipo, that.tipo) && Objects.equals(stato, that.stato) && Objects.equals(latitudine, that.latitudine) && Objects.equals(longitudine, that.longitudine) && Objects.equals(autonomia, that.autonomia) && Objects.equals(tariffa, that.tariffa) && Objects.equals(codiceMezzo, that.codiceMezzo);
+        return Objects.equals(id, that.id) && Objects.equals(tipo, that.tipo) && Objects.equals(stato, that.stato) && Objects.equals(latitudine, that.latitudine) && Objects.equals(longitudine, that.longitudine) && Objects.equals(autonomia, that.autonomia) && Objects.equals(tariffa, that.tariffa) && Objects.equals(codiceMezzo, that.codiceMezzo) && Objects.equals(tempoDisponibilita, that.tempoDisponibilita);
     }
 
     @Override
-    public int hashCode() { return Objects.hash(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo); }
+    public int hashCode() { return Objects.hash(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo, tempoDisponibilita); }
 
     @Override
-    public String toString() { return "MezzoResponse{id=" + id + ", tipo='" + tipo + "', stato='" + stato + "', latitudine=" + latitudine + ", longitudine=" + longitudine + ", autonomia=" + autonomia + ", tariffa=" + tariffa + ", codiceMezzo='" + codiceMezzo + "'}"; }
+    public String toString() { return "MezzoResponse{id=" + id + ", tipo='" + tipo + "', stato='" + stato + "', latitudine=" + latitudine + ", longitudine=" + longitudine + ", autonomia=" + autonomia + ", tariffa=" + tariffa + ", codiceMezzo='" + codiceMezzo + "', tempoDisponibilita='" + tempoDisponibilita + "'}"; }
 }

@@ -127,7 +127,7 @@ public class AppUtente {
     }
 
     public void ottieniMetodiSalvati() {
-        gestorePagamentoService.recuperaMetodiSalvati();
+        gestorePagamentoService.recuperaMetodiSalvati(this.idUtente);
     }
 
     public void selezionaMetodo(String numCarta) {

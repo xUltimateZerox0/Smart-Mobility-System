@@ -6,6 +6,7 @@
       <p><strong>Tariffa:</strong> {{ veicolo.tariffa }} €/h</p>
       <p><strong>Autonomia:</strong> {{ veicolo.autonomia }} km</p>
       <p><strong>Posizione:</strong> {{ veicolo.latitudine }}, {{ veicolo.longitudine }}</p>
+      <p v-if="veicolo.tempoDisponibilita"><strong>Disponibile dalle:</strong> {{ veicolo.tempoDisponibilita }}</p>
       <p v-if="disponibile !== null"><strong>Disponibile:</strong> {{ disponibile ? 'Sì' : 'No' }}</p>
       <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
         <button @click="startRide" class="btn-primary" :disabled="rideLoading">
@@ -86,7 +87,7 @@ function statusClass(stato: string) {
 async function checkAvailability() {
   checkLoading.value = true; rideError.value = ''; successMsg.value = ''
   try {
-    const res = await ridesApi.checkAvailability(veicolo.value!.id)
+    const res = await vehiclesApi.checkVehicleAvailability(veicolo.value!.id)
     disponibile.value = res.data
     successMsg.value = res.data ? 'Il mezzo è disponibile' : 'Il mezzo non è disponibile'
   } catch (e: any) { rideError.value = e.response?.data?.message || 'Errore' }
@@ -109,8 +110,8 @@ async function startRide() {
   rideError.value = ''; successMsg.value = ''
   rideLoading.value = true
   try {
-    await ridesApi.startRide(veicolo.value!.id, auth.userId!)
-    router.push(`/utente/ride/${veicolo.value!.id}`)
+    const res = await ridesApi.startRide(veicolo.value!.id, auth.userId!)
+    router.push(`/utente/ride/${res.data}`)
   } catch (e: any) {
     rideError.value = e.response?.data?.message || 'Errore'
   } finally {

@@ -3,7 +3,7 @@
     <h1>Prenotazioni</h1>
     <div v-if="bookings.length > 0" class="booking-list">
       <div v-for="b in bookings" :key="b.id" class="card">
-        <p><strong>Veicolo:</strong> {{ b.idMezzo }}</p>
+        <p><strong>Veicolo:</strong> {{ b.nomeVeicolo || '#' + b.idMezzo }} <span v-if="b.tipoVeicolo" class="badge badge-info">{{ b.tipoVeicolo }}</span></p>
         <p><strong>Data:</strong> {{ b.dataInizio }}</p>
         <p><strong>Stato:</strong> <span class="badge" :class="statusClass(b.stato)">{{ b.stato }}</span></p>
         <button v-if="b.stato === 'attiva'" @click="cancel(b.id)" class="btn-danger" style="margin-top:8px">Annulla</button>
@@ -15,14 +15,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useAuthStore } from '../../stores/auth'
 import * as bookingsApi from '../../api/bookings'
 import type { PrenotazioneResponse } from '../../types'
 
+const auth = useAuthStore()
 const bookings = ref<PrenotazioneResponse[]>([])
 
 onMounted(async () => {
   try {
-    const res = await bookingsApi.getBookings()
+    const res = await bookingsApi.getUserBookings(auth.userId!)
     bookings.value = res.data
   } catch {}
 })

@@ -68,9 +68,13 @@ class GestioneCorsaServiceImplTest {
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
         when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        Corsa savedCorsa = new Corsa();
+        savedCorsa.setIdCorsa(1L);
+        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
 
-        service.avviaCorsa(1L, 1L);
+        Long corsaId = service.avviaCorsa(1L, 1L);
 
+        assertEquals(1L, corsaId);
         verify(corsaRepository).save(any(Corsa.class));
         verify(mezzoRepository).save(mezzo);
         assertEquals(StatoMezzo.in_uso, mezzo.getStato());

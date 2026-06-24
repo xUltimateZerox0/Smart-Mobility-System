@@ -2,7 +2,7 @@ import client from './client'
 import type { PercorsoResponse } from '../types'
 
 export function startRide(idMezzo: number, idUtente: number) {
-  return client.post<void>('/rides/start', { idMezzo, idUtente })
+  return client.post<number>('/rides/start', { idMezzo, idUtente })
 }
 
 export function endRide(id: number) {

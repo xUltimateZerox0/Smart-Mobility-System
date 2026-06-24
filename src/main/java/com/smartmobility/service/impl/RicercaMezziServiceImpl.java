@@ -37,8 +37,16 @@ public class RicercaMezziServiceImpl implements RicercaMezziService {
         return toMezzoResponse(mezzo);
     }
 
+    @Override
+    public boolean verificaDisponibilita(Long idMezzo) {
+        Mezzo mezzo = mezzoRepository.findById(idMezzo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
+        return mezzo.getStato() == StatoMezzo.disponibile || mezzo.getStato() == StatoMezzo.prenotato;
+    }
+
     private MezzoResponse toMezzoResponse(Mezzo mezzo) {
         double[] coords = parseCoordinates(mezzo.getCoordinateMezzo());
+        String tempoDisp = mezzo.getTempoDisponibilita() != null ? mezzo.getTempoDisponibilita().toString() : null;
         return new MezzoResponse(
                 mezzo.getIdMezzo(),
                 mezzo.getTipo(),
@@ -47,7 +55,8 @@ public class RicercaMezziServiceImpl implements RicercaMezziService {
                 coords[1],
                 (double) mezzo.getAutonomia(),
                 (double) mezzo.getCostoOrario(),
-                mezzo.getIdFlotta()
+                mezzo.getIdFlotta(),
+                tempoDisp
         );
     }
 

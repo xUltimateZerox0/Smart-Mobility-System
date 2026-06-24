@@ -48,6 +48,16 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     }
 
     @Override
+    public List<PrenotazioneResponse> richiediListaPerUtente(Long idUtente) {
+        Utente utente = utenteRepository.findByIdUtente(idUtente)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+        return prenotazioneRepository.findAll().stream()
+                .filter(p -> p.getUtente() != null && p.getUtente().getId().equals(utente.getId()))
+                .map(this::toPrenotazioneResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public boolean annullaPrenotazione(Long idPrenotazione) {
         Prenotazione prenotazione = prenotazioneRepository.findById(idPrenotazione)
@@ -133,13 +143,21 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     }
 
     private PrenotazioneResponse toPrenotazioneResponse(Prenotazione p) {
+        String nomeVeicolo = null;
+        String tipoVeicolo = null;
+        if (p.getMezzo() != null) {
+            nomeVeicolo = p.getMezzo().getTipo() + " #" + p.getMezzo().getIdMezzo();
+            tipoVeicolo = p.getMezzo().getTipo();
+        }
         return new PrenotazioneResponse(
                 p.getIdPrenotazione(),
                 p.getUtente() != null ? p.getUtente().getIdUtente() : null,
                 p.getMezzo() != null ? p.getMezzo().getIdMezzo() : null,
                 p.getData() != null ? p.getData().toString() : null,
                 p.getOrarioInizio() != null ? p.getOrarioInizio().toString() : null,
-                p.getStato() != null ? p.getStato().name() : null
+                p.getStato() != null ? p.getStato().name() : null,
+                nomeVeicolo,
+                tipoVeicolo
         );
     }
 }

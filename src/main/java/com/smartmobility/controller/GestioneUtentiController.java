@@ -1,6 +1,7 @@
 package com.smartmobility.controller;
 
 import com.smartmobility.dto.request.CorrectiveActionRequest;
+import com.smartmobility.dto.response.UtenteResponse;
 import com.smartmobility.service.GestioneUtentiService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin/users")
 public class GestioneUtentiController {
@@ -20,6 +23,12 @@ public class GestioneUtentiController {
 
     public GestioneUtentiController(GestioneUtentiService gestioneUtentiService) {
         this.gestioneUtentiService = gestioneUtentiService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UtenteResponse>> getUsers() {
+        List<UtenteResponse> users = gestioneUtentiService.getElencoUtenti();
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}/report")

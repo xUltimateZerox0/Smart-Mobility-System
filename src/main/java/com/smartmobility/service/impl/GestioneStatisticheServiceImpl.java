@@ -9,10 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -82,27 +78,16 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
     }
 
     @Override
-    public void generaFileStatistiche(List<CorsaResponse> corse) {
-        String dirPath = System.getProperty("java.io.tmpdir") + "/smart-mobility-stats";
-        File dir = new File(dirPath);
-        if (!dir.exists()) {
-            dir.mkdirs();
+    public String generaFileStatistiche(List<CorsaResponse> corse) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("idCorsa,idUtente,idMezzo,dataInizio,dataFine,costo,distanza,stato\n");
+        for (CorsaResponse corsa : corse) {
+            sb.append(String.format("%d,%d,%d,%s,%s,%.2f,%.2f,%s%n",
+                    corsa.getId(), corsa.getIdUtente(), corsa.getIdMezzo(),
+                    corsa.getDataInizio(), corsa.getDataFine(),
+                    corsa.getCosto(), corsa.getDistanza(), corsa.getStato()));
         }
-
-        String filename = "statistiche_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".csv";
-        File file = new File(dir, filename);
-
-        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
-            writer.println("idCorsa,idUtente,idMezzo,dataInizio,dataFine,costo,distanza,stato");
-            for (CorsaResponse corsa : corse) {
-                writer.printf("%d,%d,%d,%s,%s,%.2f,%.2f,%s%n",
-                        corsa.getId(), corsa.getIdUtente(), corsa.getIdMezzo(),
-                        corsa.getDataInizio(), corsa.getDataFine(),
-                        corsa.getCosto(), corsa.getDistanza(), corsa.getStato());
-            }
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Errore nella generazione del file statistiche");
-        }
+        return sb.toString();
     }
 
     private double estimateDistance(String coord1, String coord2) {

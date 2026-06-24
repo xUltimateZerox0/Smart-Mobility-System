@@ -59,6 +59,8 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
         MetodoPagamento metodo = new MetodoPagamento();
         metodo.setNumCarta(numCarta);
         metodo.setIntestatarioCarta(intestatarioCarta);
+        metodo.setDsCarta(dsCarta);
+        metodo.setCvv(cvv);
         metodo.setUtente(utente);
         metodoPagamentoRepository.save(metodo);
 
@@ -66,13 +68,15 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
     }
 
     @Override
-    public List<MetodoPagamentoResponse> recuperaMetodiSalvati() {
-        return metodoPagamentoRepository.findAll().stream()
+    public List<MetodoPagamentoResponse> recuperaMetodiSalvati(Long idUtente) {
+        Utente utente = utenteRepository.findByIdUtente(idUtente)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+        return metodoPagamentoRepository.findByUtenteId(utente.getId()).stream()
                 .map(m -> new MetodoPagamentoResponse(
                         m.getIdMetodoPagamento(),
                         maskCardNumber(m.getNumCarta()),
                         m.getIntestatarioCarta(),
-                        null))
+                        m.getDsCarta()))
                 .toList();
     }
 

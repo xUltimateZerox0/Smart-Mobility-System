@@ -37,6 +37,12 @@ public class GestionePrenotazioneController {
         return ResponseEntity.ok(bookings);
     }
 
+    @GetMapping("/user/{idUtente}")
+    public ResponseEntity<List<PrenotazioneResponse>> getUserBookings(@PathVariable Long idUtente) {
+        List<PrenotazioneResponse> bookings = gestionePrenotazioneService.richiediListaPerUtente(idUtente);
+        return ResponseEntity.ok(bookings);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> cancelBooking(@PathVariable Long id) {
         boolean result = gestionePrenotazioneService.annullaPrenotazione(id);

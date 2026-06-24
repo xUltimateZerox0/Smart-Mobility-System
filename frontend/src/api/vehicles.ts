@@ -8,3 +8,7 @@ export function getNearbyVehicles(coordinateUtente: string, raggio: number) {
 export function getVehicleDetails(id: number) {
   return client.get<MezzoResponse>(`/vehicles/${id}`)
 }
+
+export function checkVehicleAvailability(id: number) {
+  return client.get<boolean>(`/vehicles/${id}/availability`)
+}

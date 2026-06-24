@@ -1,5 +1,6 @@
 package com.smartmobility.config;
 
+import com.smartmobility.model.MetodoPagamento;
 import com.smartmobility.model.Mezzo;
 import com.smartmobility.model.Operatore;
 import com.smartmobility.model.PA;
@@ -11,6 +12,7 @@ import com.smartmobility.model.enums.StatoUtente;
 import com.smartmobility.model.enums.TipoOperatore;
 import com.smartmobility.model.enums.TipoRestrizione;
 import com.smartmobility.repository.AttoreRepository;
+import com.smartmobility.repository.MetodoPagamentoRepository;
 import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.repository.OperatoreRepository;
 import com.smartmobility.repository.PARepository;
@@ -36,11 +38,13 @@ public class DataInitializer {
                                 OperatoreRepository operatoreRepository,
                                 PARepository paRepository,
                                 MezzoRepository mezzoRepository,
-                                ZonaGeograficaRepository zonaRepository) {
+                                ZonaGeograficaRepository zonaRepository,
+                                MetodoPagamentoRepository metodoPagamentoRepository) {
         return args -> {
             seedUsers(attoreRepository, utenteRepository, operatoreRepository, paRepository);
             seedMezzi(mezzoRepository);
             seedZone(zonaRepository);
+            seedPaymentMethods(metodoPagamentoRepository, attoreRepository);
         };
     }
 
@@ -59,7 +63,6 @@ public class DataInitializer {
             utente.setReportUtente("");
             utente.setNumMezziPrenotati(0);
             utente.setCoordinateUtente("45.4642,9.1900");
-            utente.setIdUtente(0L);
             utente = utenteRepository.save(utente);
             utente.setIdUtente(utente.getId());
             utenteRepository.save(utente);
@@ -103,7 +106,7 @@ public class DataInitializer {
         m1.setCostoOrario(5);
         m1.setVelocitaMax(25);
         m1.setCondizione("buona");
-        m1.setIdFlotta("FLOTTA-001");
+        m1.setIdFlotta("1");
         m1.setTempoDisponibilita(LocalTime.of(8, 0));
         mezzoRepository.save(m1);
 
@@ -115,7 +118,7 @@ public class DataInitializer {
         m2.setCostoOrario(15);
         m2.setVelocitaMax(45);
         m2.setCondizione("ottima");
-        m2.setIdFlotta("FLOTTA-001");
+        m2.setIdFlotta("1");
         m2.setTempoDisponibilita(LocalTime.of(7, 0));
         mezzoRepository.save(m2);
 
@@ -127,7 +130,7 @@ public class DataInitializer {
         m3.setCostoOrario(30);
         m3.setVelocitaMax(130);
         m3.setCondizione("buona");
-        m3.setIdFlotta("FLOTTA-002");
+        m3.setIdFlotta("2");
         m3.setTempoDisponibilita(LocalTime.of(6, 0));
         mezzoRepository.save(m3);
 
@@ -139,7 +142,7 @@ public class DataInitializer {
         m4.setCostoOrario(5);
         m4.setVelocitaMax(25);
         m4.setCondizione("danneggiata");
-        m4.setIdFlotta("FLOTTA-001");
+        m4.setIdFlotta("1");
         m4.setTempoDisponibilita(LocalTime.of(9, 0));
         mezzoRepository.save(m4);
 
@@ -151,9 +154,26 @@ public class DataInitializer {
         m5.setCostoOrario(15);
         m5.setVelocitaMax(45);
         m5.setCondizione("manutenzione");
-        m5.setIdFlotta("FLOTTA-001");
+        m5.setIdFlotta("1");
         m5.setTempoDisponibilita(LocalTime.of(10, 0));
         mezzoRepository.save(m5);
+    }
+
+    private void seedPaymentMethods(MetodoPagamentoRepository metodoPagamentoRepository,
+                                     AttoreRepository attoreRepository) {
+        if (metodoPagamentoRepository.count() == 0) {
+            attoreRepository.findByEmail("test@smartmobility.com").ifPresent(attore -> {
+                if (attore instanceof Utente utente) {
+                    MetodoPagamento metodo = new MetodoPagamento();
+                    metodo.setNumCarta("4111111111111111");
+                    metodo.setIntestatarioCarta("Mario Rossi");
+                    metodo.setDsCarta("12/28");
+                    metodo.setCvv("123");
+                    metodo.setUtente(utente);
+                    metodoPagamentoRepository.save(metodo);
+                }
+            });
+        }
     }
 
     private void seedZone(ZonaGeograficaRepository zonaRepository) {
