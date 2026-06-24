@@ -87,8 +87,8 @@ com/smartmobility/dto/request/LoginRequest.class
 com/smartmobility/config/DataInitializer.class
 com/smartmobility/service/GestioneFlottaService.class
 com/smartmobility/controller/GestioneStatisticheController.class
-com/smartmobility/SmartMobilityApplication.class
 com/smartmobility/repository/MetodoPagamentoRepository.class
+com/smartmobility/SmartMobilityApplication.class
 com/smartmobility/model/enums/StatoSegnalazione.class
 com/smartmobility/model/Attore.class
 com/smartmobility/service/impl/RicercaMezziServiceImpl.class
