@@ -3,6 +3,7 @@ package com.smartmobility.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.*;
 import com.smartmobility.dto.response.PercorsoResponse;
+import com.smartmobility.dto.response.StimaCorsaResponse;
 import com.smartmobility.service.GestioneCorsaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,11 +75,12 @@ class GestioneCorsaControllerTest {
 
     @Test
     void getEstimate_WithValidId_ReturnsCost() throws Exception {
-        when(gestioneCorsaService.aggiornaStima(1L)).thenReturn(15.5f);
+        when(gestioneCorsaService.aggiornaStima(1L)).thenReturn(new StimaCorsaResponse(15.5f, 10.0f));
 
         mockMvc.perform(get("/rides/1/estimate"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").value(15.5));
+                .andExpect(jsonPath("$.costo").value(15.5))
+                .andExpect(jsonPath("$.tariffa").value(10.0));
     }
 
     @Test

@@ -13,6 +13,11 @@
         <p>Configura restrizioni geografiche</p>
         <router-link to="/pa/zones" class="btn-primary" style="display:inline-block;margin-top:12px">Gestisci</router-link>
       </div>
+      <div class="card">
+        <h3>Analisi Flotta</h3>
+        <p>Monitoraggio dello stato della flotta</p>
+        <router-link to="/pa/statistics" class="btn-primary" style="display:inline-block;margin-top:12px">Analizza</router-link>
+      </div>
     </div>
   </div>
 </template>

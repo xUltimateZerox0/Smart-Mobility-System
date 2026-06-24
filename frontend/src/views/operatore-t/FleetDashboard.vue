@@ -4,8 +4,6 @@
     <p style="color:var(--gray);margin-bottom:16px">Monitoraggio e gestione dei veicoli</p>
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
       <button @click="loadConditions" class="btn-primary" :disabled="loading">{{ loading ? 'Caricamento...' : 'Stato Flotta' }}</button>
-      <button @click="analyzeFleet" class="btn-primary" :disabled="analyzing">{{ analyzing ? 'Analisi...' : 'Analisi Flotta' }}</button>
-      <button @click="maintenanceMode" class="btn-secondary" :disabled="maintLoading">{{ maintLoading ? 'Impostazione...' : 'Manutenzione Intera Flotta' }}</button>
     </div>
     <div class="form-group" style="display:flex;gap:8px;align-items:end;margin-bottom:16px">
       <div>
@@ -14,7 +12,6 @@
       </div>
       <button @click="lockVehicle" class="btn-danger" :disabled="lockLoading">{{ lockLoading ? 'Blocco...' : 'Blocca Mezzo' }}</button>
       <button @click="unlockVehicle" class="btn-secondary" :disabled="unlockLoading">{{ unlockLoading ? 'Sblocco...' : 'Sblocca Mezzo' }}</button>
-      <button @click="maintainVehicle" class="btn-warning" :disabled="maintVehicleLoading">{{ maintVehicleLoading ? 'Impostazione...' : 'Manutenzione Veicolo' }}</button>
     </div>
     <div v-if="conditions.length > 0" class="card" style="margin-bottom:12px">
       <h3>Condizioni Mezzi</h3>
@@ -24,7 +21,6 @@
           <div style="display:flex;gap:4px;flex-wrap:wrap">
             <button @click="lockSpecificVehicle(m.id)" class="btn-danger btn-sm">Blocca</button>
             <button @click="unlockSpecificVehicle(m.id)" class="btn-secondary btn-sm">Sblocca</button>
-            <button @click="maintainSpecificVehicle(m.id)" class="btn-warning btn-sm">Manutenzione</button>
           </div>
         </div>
       </div>
@@ -44,11 +40,8 @@ const fleetData = ref<any>(null)
 const conditions = ref<any[]>([])
 const fleetId = 1
 const loading = ref(false)
-const analyzing = ref(false)
-const maintLoading = ref(false)
 const lockLoading = ref(false)
 const unlockLoading = ref(false)
-const maintVehicleLoading = ref(false)
 const lockVehicleId = ref(1)
 const error = ref('')
 
@@ -59,18 +52,6 @@ async function loadConditions() {
     conditions.value = res.data
   } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
   finally { loading.value = false }
-}
-
-async function analyzeFleet() {
-  analyzing.value = true; error.value = ''
-  try { const res = await fleetApi.analyzeFleet(fleetId); fleetData.value = res.data } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
-  finally { analyzing.value = false }
-}
-
-async function maintenanceMode() {
-  maintLoading.value = true; error.value = ''
-  try { await fleetApi.startMaintenance(fleetId); fleetData.value = { message: 'Manutenzione impostata per flotta' } } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
-  finally { maintLoading.value = false }
 }
 
 async function lockVehicle() {
@@ -85,12 +66,6 @@ async function unlockVehicle() {
   finally { unlockLoading.value = false }
 }
 
-async function maintainVehicle() {
-  maintVehicleLoading.value = true; error.value = ''
-  try { await fleetApi.startVehicleMaintenance(lockVehicleId.value); fleetData.value = { message: `Manutenzione avviata per mezzo ${lockVehicleId.value}` } } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
-  finally { maintVehicleLoading.value = false }
-}
-
 async function lockSpecificVehicle(id: number) {
   error.value = ''
   try { await fleetApi.lockVehicle(id); fleetData.value = { message: `Mezzo ${id} bloccato` }; await loadConditions() } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
@@ -101,10 +76,6 @@ async function unlockSpecificVehicle(id: number) {
   try { await fleetApi.unlockVehicle(id); fleetData.value = { message: `Mezzo ${id} sbloccato` }; await loadConditions() } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
 }
 
-async function maintainSpecificVehicle(id: number) {
-  error.value = ''
-  try { await fleetApi.startVehicleMaintenance(id); fleetData.value = { message: `Manutenzione avviata per mezzo ${id}` }; await loadConditions() } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
-}
 </script>
 
 <style scoped>

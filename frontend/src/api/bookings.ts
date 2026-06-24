@@ -1,8 +1,8 @@
 import client from './client'
 import type { PrenotazioneResponse } from '../types'
 
-export function createBooking(idMezzo: number, idUtente: number) {
-  return client.post<void>('/bookings', { idMezzo, idUtente })
+export function createBooking({ idMezzo, idUtente, orarioInizio }: { idMezzo: number; idUtente: number; orarioInizio?: string }) {
+  return client.post<PrenotazioneResponse>('/bookings', { idMezzo, idUtente, orarioInizio })
 }
 
 export function getBookings() {
@@ -23,4 +23,8 @@ export function handleTimeout() {
 
 export function notifyExpiry(id: number) {
   return client.post<void>(`/bookings/${id}/notify-expiry`)
+}
+
+export function getQRCode(id: number) {
+  return client.get<string>(`/bookings/${id}/qrcode`)
 }

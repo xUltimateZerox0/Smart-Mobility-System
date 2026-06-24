@@ -2,6 +2,7 @@ package com.smartmobility.view;
 
 import com.smartmobility.dto.response.MetodoPagamentoResponse;
 import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.StimaCorsaResponse;
 import com.smartmobility.service.GestioneAutenticazioneService;
 import com.smartmobility.service.GestioneCorsaService;
 import com.smartmobility.service.GestionePrenotazioneService;
@@ -36,9 +37,9 @@ public class AppUtente {
     }
 
     public void mostraStima(Long idCorsa) {
-        Float result = gestioneCorsaService.aggiornaStima(idCorsa);
+        StimaCorsaResponse result = gestioneCorsaService.aggiornaStima(idCorsa);
         if (result != null) {
-            System.out.println("Costo stimato: " + result);
+            System.out.println("Costo stimato: " + result.getCosto() + " (tariffa: " + result.getTariffa() + " €/h)");
         }
     }
 

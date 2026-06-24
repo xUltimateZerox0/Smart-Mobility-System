@@ -13,6 +13,6 @@ public interface CorsaRepository extends JpaRepository<Corsa, Long> {
     List<Corsa> findByUtenteIdAndOrarioFineIsNull(Long idUtente);
     List<Corsa> findByOrarioFineIsNull();
 
-    @Query("SELECT c FROM Corsa c WHERE c.orarioInizio >= :start AND c.orarioFine <= :end")
+    @Query("SELECT c FROM Corsa c WHERE c.orarioInizio >= :start AND (c.orarioFine IS NULL OR c.orarioFine <= :end)")
     List<Corsa> findByDataRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }

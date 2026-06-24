@@ -130,7 +130,7 @@ public class DataInitializer {
         m3.setCostoOrario(30);
         m3.setVelocitaMax(130);
         m3.setCondizione("buona");
-        m3.setIdFlotta("2");
+        m3.setIdFlotta("1");
         m3.setTempoDisponibilita(LocalTime.of(6, 0));
         mezzoRepository.save(m3);
 

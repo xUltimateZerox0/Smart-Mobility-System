@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -32,23 +32,27 @@ class GestionePrenotazioneControllerTest {
 
     @Test
     void createBooking_WithValidRequest_ReturnsOk() throws Exception {
-        PrenotazioneRequest request = new PrenotazioneRequest(1L, 1L);
+        PrenotazioneRequest request = new PrenotazioneRequest(1L, 1L, null);
+        PrenotazioneResponse mockResponse = new PrenotazioneResponse(1L, 1L, 1L, "2026-01-15", "10:00", "attiva");
+
+        when(gestionePrenotazioneService.inviaRichiestaPrenotazione(1L, 1L, null)).thenReturn(mockResponse);
 
         mockMvc.perform(post("/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L));
 
-        verify(gestionePrenotazioneService).inviaRichiestaPrenotazione(1L, 1L);
+        verify(gestionePrenotazioneService).inviaRichiestaPrenotazione(1L, 1L, null);
     }
 
     @Test
     void createBooking_WhenMezzoNotAvailable_ReturnsConflict() throws Exception {
-        PrenotazioneRequest request = new PrenotazioneRequest(1L, 1L);
+        PrenotazioneRequest request = new PrenotazioneRequest(1L, 1L, null);
 
         doThrow(new org.springframework.web.server.ResponseStatusException(
                 org.springframework.http.HttpStatus.CONFLICT, "Mezzo non disponibile"))
-                .when(gestionePrenotazioneService).inviaRichiestaPrenotazione(1L, 1L);
+                .when(gestionePrenotazioneService).inviaRichiestaPrenotazione(1L, 1L, null);
 
         mockMvc.perform(post("/bookings")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -50,9 +50,9 @@ class GestorePagamentoServiceImplTest {
     void pagamentoCorsa_WithValidData_ReturnsTrue() {
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
         when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
-        when(gatewayPagamentoService.effettuaPagamento(1L, 1L)).thenReturn(true);
+        when(gatewayPagamentoService.effettuaPagamento(1L, 10L)).thenReturn(true);
 
-        boolean result = service.pagamentoCorsa(1L, 1L, 25.50);
+        boolean result = service.pagamentoCorsa(1L, 1L, 10L, 25.50);
 
         assertTrue(result);
     }
@@ -66,7 +66,7 @@ class GestorePagamentoServiceImplTest {
         when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
 
         assertThrows(ResponseStatusException.class,
-                () -> service.pagamentoCorsa(1L, 1L, 25.50));
+                () -> service.pagamentoCorsa(1L, 1L, 10L, 25.50));
     }
 
     @Test
@@ -120,6 +120,6 @@ class GestorePagamentoServiceImplTest {
         when(utenteRepository.findByIdUtente(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class,
-                () -> service.pagamentoCorsa(999L, 1L, 25.50));
+                () -> service.pagamentoCorsa(999L, 1L, 10L, 25.50));
     }
 }

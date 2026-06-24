@@ -6,10 +6,11 @@
         <p><strong>Carta:</strong> {{ m.numCarta }}</p>
         <p><strong>Intestatario:</strong> {{ m.intestatarioCarta }}</p>
         <p><strong>Scadenza:</strong> {{ m.dsCarta }}</p>
-        <button @click="selectForRide(m.id)" class="btn-primary" style="margin-top:8px">Usa per corsa</button>
+        <button @click="selectForRide(m.id)" class="btn-primary" style="margin-top:8px" :disabled="useLoading">{{ useLoading ? 'Selezione...' : 'Usa per corsa' }}</button>
       </div>
+      <p v-if="useSuccess" class="success-message">{{ useSuccess }}</p>
     </div>
-    <p v-else style="color:var(--gray);margin:12px 0">Nessun metodo salvato</p>
+    <p v-if="metodi.length === 0" style="color:var(--gray);margin:12px 0">Nessun metodo salvato</p>
     <div class="card" style="margin-top:16px">
       <h3>Aggiungi carta</h3>
       <div class="form-group">
@@ -50,6 +51,8 @@ const scadenza = ref('')
 const cvv = ref('')
 const saving = ref(false)
 const cardError = ref('')
+const useLoading = ref(false)
+const useSuccess = ref('')
 
 onMounted(async () => {
   try {
@@ -83,11 +86,14 @@ async function addCard() {
 }
 
 async function selectForRide(id: number) {
+  useLoading.value = true; cardError.value = ''; useSuccess.value = ''
   try {
     await ridesApi.selectPaymentMethod(id)
-    cardError.value = ''
+    useSuccess.value = 'Metodo di pagamento selezionato per la corsa'
   } catch (e: any) {
-    cardError.value = e.response?.data?.message || 'Errore'
+    cardError.value = e.response?.data?.message || 'Errore nella selezione del metodo'
+  } finally {
+    useLoading.value = false
   }
 }
 </script>
@@ -96,4 +102,5 @@ async function selectForRide(id: number) {
 .payment-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
 .payment-list .card p { margin-bottom: 4px; font-size: 14px; }
 .error-message { color: var(--danger); font-size: 13px; margin-top: 8px; }
+.success-message { color: var(--success, #28a745); font-size: 13px; margin-top: 8px; }
 </style>

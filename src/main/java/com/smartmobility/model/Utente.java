@@ -117,13 +117,6 @@ public class Utente extends Attore {
         } else {
             this.reportUtente = reportUtente + " | " + azione;
         }
-
-        String azioneLower = azione.toLowerCase();
-        if (azioneLower.contains("sospensione") || azioneLower.contains("sospendi")) {
-            this.statoUtente = StatoUtente.sospeso;
-        } else if (azioneLower.contains("disattiv") || azioneLower.contains("banna")) {
-            this.statoUtente = StatoUtente.disattivato;
-        }
     }
 
     public void creaAccountUtente(String nome, String cognome, String email, String password, String datanascita) {

@@ -29,7 +29,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
     }
 
     @Override
-    public boolean pagamentoCorsa(Long idUtente, Long idMetodoPagamento, Double costo) {
+    public boolean pagamentoCorsa(Long idUtente, Long idMetodoPagamento, Long idCorsa, Double costo) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
 
@@ -40,7 +40,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Metodo pagamento non appartiene all'utente");
         }
 
-        return gatewayPagamentoService.effettuaPagamento(idMetodoPagamento, idUtente);
+        return gatewayPagamentoService.effettuaPagamento(idMetodoPagamento, idCorsa);
     }
 
     @Override

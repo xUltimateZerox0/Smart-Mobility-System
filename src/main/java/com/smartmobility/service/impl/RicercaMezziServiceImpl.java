@@ -55,8 +55,10 @@ public class RicercaMezziServiceImpl implements RicercaMezziService {
                 coords[1],
                 (double) mezzo.getAutonomia(),
                 (double) mezzo.getCostoOrario(),
-                mezzo.getIdFlotta(),
-                tempoDisp
+                "MEZZO-" + mezzo.getIdMezzo(),
+                tempoDisp,
+                mezzo.getCondizione(),
+                mezzo.getIdFlotta()
         );
     }
 

@@ -19,16 +19,62 @@
         <router-link to="/utente/payments" class="btn-primary" style="display:inline-block;margin-top:12px">Gestisci</router-link>
       </div>
     </div>
+
+    <h2 style="margin-top:32px;margin-bottom:16px">Prenotazioni Attive</h2>
+    <div v-if="loadingBookings" class="loading">Caricamento prenotazioni...</div>
+    <div v-else-if="activeBookings.length === 0" class="card no-bookings">
+      <p>Nessuna prenotazione attiva</p>
+    </div>
+    <div v-else class="bookings-grid">
+      <div v-for="b in activeBookings" :key="b.id" class="booking-card card">
+        <h3>{{ b.nomeVeicolo || 'Veicolo #' + b.idMezzo }}</h3>
+        <p><strong>Data:</strong> {{ formatDate(b.dataInizio) }}</p>
+        <p><strong>Ora:</strong> {{ formatTime(b.dataInizio) }} - {{ formatTime(b.dataFine) }}</p>
+        <div v-if="b.qrCode" class="qr-section">
+          <code class="qr-text">{{ b.qrCode }}</code>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth'
+import * as bookingsApi from '../../api/bookings'
+import type { PrenotazioneResponse } from '../../types'
+
 const auth = useAuthStore()
+
+const activeBookings = ref<PrenotazioneResponse[]>([])
+const loadingBookings = ref(false)
+
+onMounted(async () => {
+  loadingBookings.value = true
+  try {
+    const res = await bookingsApi.getUserBookings(auth.userId!)
+    activeBookings.value = res.data.filter(b => b.stato === 'attiva')
+  } catch { activeBookings.value = [] }
+  finally { loadingBookings.value = false }
+})
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('it-IT')
+}
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+}
 </script>
 
 <style scoped>
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .dashboard-grid .card h3 { margin-bottom: 8px; font-size: 16px; }
 .dashboard-grid .card p { font-size: 13px; color: var(--gray); }
+.bookings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.booking-card h3 { margin-bottom: 8px; font-size: 15px; }
+.booking-card p { font-size: 13px; color: var(--gray); margin-bottom: 4px; }
+.no-bookings p { text-align: center; color: var(--gray); padding: 24px 0; }
+.loading { font-size: 13px; color: var(--gray); }
+.qr-section { margin-top: 8px; }
+.qr-text { font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold; color: var(--primary); padding: 8px; background: #f0f0f0; border-radius: 4px; display: inline-block; }
 </style>

@@ -2,7 +2,12 @@ package com.smartmobility.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.model.Attore;
+import com.smartmobility.model.PA;
+import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.service.GestioneFlottaService;
+import com.smartmobility.service.SessionRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,6 +33,20 @@ class GestioneFlottaControllerTest {
 
     @MockBean
     private GestioneFlottaService gestioneFlottaService;
+
+    @MockBean
+    private SessionRegistry sessionRegistry;
+
+    private static final String PA_TOKEN = "pa-token-123";
+    private static final String OPERATORE_TOKEN = "op-token-456";
+
+    @BeforeEach
+    void setUp() {
+        PA pa = new PA();
+        pa.setEmail("pa@comune.it");
+        pa.setRuolo(RuoloAttore.PA);
+        when(sessionRegistry.getAttore(PA_TOKEN)).thenReturn(pa);
+    }
 
     @Test
     void analyzeFleet_WithValidId_ReturnsBoolean() throws Exception {
@@ -70,9 +89,16 @@ class GestioneFlottaControllerTest {
     void startMaintenance_WithValidFleetId_ReturnsTrue() throws Exception {
         when(gestioneFlottaService.avviaManutenzione(1L)).thenReturn(true);
 
-        mockMvc.perform(post("/fleet/1/maintenance"))
+        mockMvc.perform(post("/fleet/1/maintenance")
+                        .header("Authorization", "Bearer " + PA_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void startMaintenance_WithoutAuth_ReturnsUnauthorized() throws Exception {
+        mockMvc.perform(post("/fleet/1/maintenance"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

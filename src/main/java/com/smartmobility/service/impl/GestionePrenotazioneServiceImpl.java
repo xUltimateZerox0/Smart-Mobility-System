@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -36,8 +37,16 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
 
     @Override
     @Transactional
-    public void inviaRichiestaPrenotazione(Long idMezzo, Long idUtente) {
-        creaPrenotazione(idMezzo, idUtente);
+    public PrenotazioneResponse inviaRichiestaPrenotazione(Long idMezzo, Long idUtente, String orarioInizio) {
+        Prenotazione p = creaPrenotazione(idMezzo, idUtente, orarioInizio);
+        return toPrenotazioneResponse(p);
+    }
+
+    @Override
+    public String getQRCode(Long idPrenotazione) {
+        Prenotazione prenotazione = prenotazioneRepository.findById(idPrenotazione)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non trovata"));
+        return "QR-" + prenotazione.getMezzo().getIdMezzo() + "-" + idPrenotazione + "-" + System.currentTimeMillis();
     }
 
     @Override
@@ -112,7 +121,7 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
         }
     }
 
-    private Prenotazione creaPrenotazione(Long idMezzo, Long idUtente) {
+    private Prenotazione creaPrenotazione(Long idMezzo, Long idUtente, String orarioInizioStr) {
         Mezzo mezzo = mezzoRepository.findById(idMezzo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 
@@ -128,12 +137,27 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Utente ha già una prenotazione attiva");
         }
 
+        LocalTime orarioInizio;
+        LocalDate data;
+        if (orarioInizioStr != null && orarioInizioStr.contains("T")) {
+            LocalDateTime dateTime = LocalDateTime.parse(orarioInizioStr);
+            orarioInizio = dateTime.toLocalTime();
+            data = dateTime.toLocalDate();
+        } else if (orarioInizioStr != null) {
+            orarioInizio = LocalTime.parse(orarioInizioStr);
+            data = LocalDate.now();
+        } else {
+            orarioInizio = LocalTime.now();
+            data = LocalDate.now();
+        }
+
         Prenotazione prenotazione = new Prenotazione();
         prenotazione.setMezzo(mezzo);
         prenotazione.setUtente(utente);
-        prenotazione.setOrarioInizio(LocalTime.now());
-        prenotazione.setData(LocalDate.now());
+        prenotazione.setOrarioInizio(orarioInizio);
+        prenotazione.setData(data);
         prenotazione.setStato(StatoPrenotazione.attiva);
+        prenotazione.setQrCode("QR-" + mezzo.getIdMezzo() + "-" + System.currentTimeMillis());
         prenotazioneRepository.save(prenotazione);
 
         mezzo.setStato(StatoMezzo.prenotato);
@@ -145,9 +169,11 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     private PrenotazioneResponse toPrenotazioneResponse(Prenotazione p) {
         String nomeVeicolo = null;
         String tipoVeicolo = null;
+        Long idVeicolo = null;
         if (p.getMezzo() != null) {
             nomeVeicolo = p.getMezzo().getTipo() + " #" + p.getMezzo().getIdMezzo();
             tipoVeicolo = p.getMezzo().getTipo();
+            idVeicolo = p.getMezzo().getIdMezzo();
         }
         return new PrenotazioneResponse(
                 p.getIdPrenotazione(),
@@ -157,7 +183,10 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
                 p.getOrarioInizio() != null ? p.getOrarioInizio().toString() : null,
                 p.getStato() != null ? p.getStato().name() : null,
                 nomeVeicolo,
-                tipoVeicolo
+                tipoVeicolo,
+                p.getOrarioInizio() != null ? p.getOrarioInizio().toString() : null,
+                p.getQrCode(),
+                idVeicolo
         );
     }
 }

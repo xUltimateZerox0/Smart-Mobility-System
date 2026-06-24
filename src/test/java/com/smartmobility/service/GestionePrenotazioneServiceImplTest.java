@@ -55,7 +55,7 @@ class GestionePrenotazioneServiceImplTest {
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
         when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
 
-        service.inviaRichiestaPrenotazione(1L, 1L);
+        service.inviaRichiestaPrenotazione(1L, 1L, null);
 
         verify(prenotazioneRepository).save(any(Prenotazione.class));
         verify(mezzoRepository).save(any(Mezzo.class));
@@ -68,7 +68,7 @@ class GestionePrenotazioneServiceImplTest {
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
 
         assertThrows(ResponseStatusException.class,
-                () -> service.inviaRichiestaPrenotazione(1L, 1L));
+                () -> service.inviaRichiestaPrenotazione(1L, 1L, null));
     }
 
     @Test
@@ -79,7 +79,7 @@ class GestionePrenotazioneServiceImplTest {
                 .thenReturn(List.of(new Prenotazione()));
 
         assertThrows(ResponseStatusException.class,
-                () -> service.inviaRichiestaPrenotazione(1L, 1L));
+                () -> service.inviaRichiestaPrenotazione(1L, 1L, null));
     }
 
     @Test
@@ -155,6 +155,6 @@ class GestionePrenotazioneServiceImplTest {
         when(mezzoRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResponseStatusException.class,
-                () -> service.inviaRichiestaPrenotazione(999L, 1L));
+                () -> service.inviaRichiestaPrenotazione(999L, 1L, null));
     }
 }

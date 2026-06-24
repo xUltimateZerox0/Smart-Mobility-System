@@ -5,6 +5,7 @@ import com.smartmobility.model.Utente;
 import com.smartmobility.model.enums.StatoUtente;
 import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.impl.GestioneUtentiServiceImpl;
+import com.smartmobility.service.SessionRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,13 +25,16 @@ class GestioneUtentiServiceImplTest {
     @Mock
     private UtenteRepository utenteRepository;
 
+    @Mock
+    private SessionRegistry sessionRegistry;
+
     private GestioneUtentiServiceImpl service;
 
     private Utente utente;
 
     @BeforeEach
     void setUp() {
-        service = new GestioneUtentiServiceImpl(utenteRepository);
+        service = new GestioneUtentiServiceImpl(utenteRepository, sessionRegistry);
         utente = TestDataFactory.createDefaultUtente();
     }
 

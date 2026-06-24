@@ -22,6 +22,9 @@ public class Prenotazione {
 
     private LocalDate data;
 
+    @Column(name = "qr_code")
+    private String qrCode;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_utente")
     private Utente utente;
@@ -62,6 +65,14 @@ public class Prenotazione {
 
     public void setData(LocalDate data) {
         this.data = data;
+    }
+
+    public String getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(String qrCode) {
+        this.qrCode = qrCode;
     }
 
     public Utente getUtente() {

@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.smartmobility.controller.GestioneStatisticheControllerTest
 -------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.281 s -- in com.smartmobility.controller.GestioneStatisticheControllerTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.266 s -- in com.smartmobility.controller.GestioneStatisticheControllerTest

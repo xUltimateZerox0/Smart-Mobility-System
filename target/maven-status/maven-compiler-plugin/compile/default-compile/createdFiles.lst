@@ -96,6 +96,7 @@ com/smartmobility/service/impl/RicercaMezziServiceImpl.class
 com/smartmobility/service/GestioneStatisticheService.class
 com/smartmobility/view/Autenticazione.class
 com/smartmobility/repository/TransitoRepository.class
+com/smartmobility/dto/response/StimaCorsaResponse.class
 com/smartmobility/service/RicercaMezziService.class
 com/smartmobility/dto/response/PercorsoResponse.class
 com/smartmobility/controller/GestioneCorsaController.class

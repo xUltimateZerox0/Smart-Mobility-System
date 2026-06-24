@@ -5,6 +5,7 @@
 /home/tekton/opencode/Workspace/Smart-Mobility-System/src/main/java/com/smartmobility/repository/UtenteRepository.java
 /home/tekton/opencode/Workspace/Smart-Mobility-System/src/main/java/com/smartmobility/dto/request/PaymentMethodSelectionRequest.java
 /home/tekton/opencode/Workspace/Smart-Mobility-System/src/main/java/com/smartmobility/repository/AttoreRepository.java
+/home/tekton/opencode/Workspace/Smart-Mobility-System/src/main/java/com/smartmobility/dto/response/StimaCorsaResponse.java
 /home/tekton/opencode/Workspace/Smart-Mobility-System/src/main/java/com/smartmobility/service/impl/GestioneAutenticazioneServiceImpl.java
 /home/tekton/opencode/Workspace/Smart-Mobility-System/src/main/java/com/smartmobility/controller/GestioneAreeController.java
 /home/tekton/opencode/Workspace/Smart-Mobility-System/src/main/java/com/smartmobility/view/AppUtente.java

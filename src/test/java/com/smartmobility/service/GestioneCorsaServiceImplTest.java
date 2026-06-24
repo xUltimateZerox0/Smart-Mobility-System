@@ -2,6 +2,7 @@ package com.smartmobility.service;
 
 import com.smartmobility.config.TestDataFactory;
 import com.smartmobility.dto.response.PercorsoResponse;
+import com.smartmobility.dto.response.StimaCorsaResponse;
 import com.smartmobility.integration.MezzoIoTService;
 import com.smartmobility.integration.ServizioMappaService;
 import com.smartmobility.model.*;
@@ -9,6 +10,7 @@ import com.smartmobility.model.enums.StatoMezzo;
 import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.MetodoPagamentoRepository;
 import com.smartmobility.repository.MezzoRepository;
+import com.smartmobility.repository.PrenotazioneRepository;
 import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.impl.GestioneCorsaServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,10 +45,16 @@ class GestioneCorsaServiceImplTest {
     private MetodoPagamentoRepository metodoPagamentoRepository;
 
     @Mock
+    private PrenotazioneRepository prenotazioneRepository;
+
+    @Mock
     private MezzoIoTService mezzoIoTService;
 
     @Mock
     private ServizioMappaService servizioMappaService;
+
+    @Mock
+    private GestorePagamentoService gestorePagamentoService;
 
     private GestioneCorsaServiceImpl service;
 
@@ -57,7 +65,8 @@ class GestioneCorsaServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new GestioneCorsaServiceImpl(corsaRepository, mezzoRepository, utenteRepository,
-                metodoPagamentoRepository, mezzoIoTService, servizioMappaService);
+                metodoPagamentoRepository, prenotazioneRepository, mezzoIoTService,
+                servizioMappaService, gestorePagamentoService);
         utente = TestDataFactory.createDefaultUtente();
         mezzo = TestDataFactory.createDefaultMezzo();
         metodoPagamento = TestDataFactory.createDefaultMetodoPagamento(utente);
@@ -128,10 +137,11 @@ class GestioneCorsaServiceImplTest {
 
         when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
 
-        Float stima = service.aggiornaStima(1L);
+        StimaCorsaResponse stima = service.aggiornaStima(1L);
 
         assertNotNull(stima);
-        assertTrue(stima > 0);
+        assertTrue(stima.getCosto() > 0);
+        assertTrue(stima.getTariffa() > 0);
         verify(corsaRepository).save(corsa);
     }
 

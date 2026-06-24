@@ -54,6 +54,7 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
                 segnalazioneRepository.save(segnalazione);
 
                 mezzo.setStato(StatoMezzo.manutenzione);
+                mezzo.setCondizione("manutenzione");
                 mezzoRepository.save(mezzo);
 
                 foundIssue = true;
@@ -118,6 +119,7 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 
         mezzo.setStato(StatoMezzo.manutenzione);
+        mezzo.setCondizione("manutenzione");
 
         Segnalazione segnalazione = new Segnalazione();
         segnalazione.setMezzo(mezzo);
@@ -151,8 +153,10 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
                 coords[1],
                 (double) mezzo.getAutonomia(),
                 (double) mezzo.getCostoOrario(),
-                mezzo.getIdFlotta(),
-                tempoDisp
+                "MEZZO-" + mezzo.getIdMezzo(),
+                tempoDisp,
+                mezzo.getCondizione(),
+                mezzo.getIdFlotta()
         );
     }
 

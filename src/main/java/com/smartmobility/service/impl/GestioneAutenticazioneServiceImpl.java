@@ -42,6 +42,13 @@ public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazione
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenziali non valide");
         }
 
+        if (attore instanceof Utente u && u.getStatoUtente() != StatoUtente.attivo) {
+            if (u.getStatoUtente() == StatoUtente.sospeso) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account sospeso");
+            }
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account disattivato");
+        }
+
         String token = sessionRegistry.createSession(attore);
 
         Long idUtente = null;

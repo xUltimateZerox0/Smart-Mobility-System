@@ -2,12 +2,14 @@ package com.smartmobility.controller;
 
 import com.smartmobility.dto.request.AnalyzeStatisticsRequest;
 import com.smartmobility.dto.request.ExportStatisticsRequest;
+import com.smartmobility.dto.response.MezzoResponse;
 import com.smartmobility.dto.response.StatisticheResponse;
 import com.smartmobility.service.GestioneStatisticheService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/statistics")
@@ -31,6 +36,16 @@ public class GestioneStatisticheController {
         StatisticheResponse stats = gestioneStatisticheService.analisiTratte(
                 request.getDataInizio(), request.getDataFine());
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/fleet")
+    public ResponseEntity<Map<String, Object>> getFleetAnalysis() {
+        List<MezzoResponse> mezzi = gestioneStatisticheService.analisiStatoFlotta();
+        Map<String, Long> stats = gestioneStatisticheService.getStatisticheFlotta();
+        Map<String, Object> response = new HashMap<>();
+        response.put("veicoli", mezzi);
+        response.put("statistiche", stats);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/export")

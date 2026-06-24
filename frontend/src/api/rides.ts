@@ -1,5 +1,5 @@
 import client from './client'
-import type { PercorsoResponse } from '../types'
+import type { PercorsoResponse, StimaCorsaResponse } from '../types'
 
 export function startRide(idMezzo: number, idUtente: number) {
   return client.post<number>('/rides/start', { idMezzo, idUtente })
@@ -10,7 +10,7 @@ export function endRide(id: number) {
 }
 
 export function getEstimate(id: number) {
-  return client.get<number>(`/rides/${id}/estimate`)
+  return client.get<StimaCorsaResponse>(`/rides/${id}/estimate`)
 }
 
 export function pauseRide(id: number) {

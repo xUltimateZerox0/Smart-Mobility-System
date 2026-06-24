@@ -7,6 +7,7 @@ import com.smartmobility.model.Corsa;
 import com.smartmobility.model.Utente;
 import com.smartmobility.model.Mezzo;
 import com.smartmobility.repository.CorsaRepository;
+import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.service.impl.GestioneStatisticheServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,9 @@ class GestioneStatisticheServiceImplTest {
     @Mock
     private CorsaRepository corsaRepository;
 
+    @Mock
+    private MezzoRepository mezzoRepository;
+
     private GestioneStatisticheServiceImpl service;
 
     private Utente utente;
@@ -35,7 +39,7 @@ class GestioneStatisticheServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new GestioneStatisticheServiceImpl(corsaRepository);
+        service = new GestioneStatisticheServiceImpl(corsaRepository, mezzoRepository);
         utente = TestDataFactory.createDefaultUtente();
         mezzo = TestDataFactory.createDefaultMezzo();
     }

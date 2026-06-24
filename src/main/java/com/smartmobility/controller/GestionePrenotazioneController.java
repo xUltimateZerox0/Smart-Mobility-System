@@ -26,9 +26,15 @@ public class GestionePrenotazioneController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createBooking(@Valid @RequestBody PrenotazioneRequest request) {
-        gestionePrenotazioneService.inviaRichiestaPrenotazione(request.idMezzo(), request.idUtente());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<PrenotazioneResponse> createBooking(@Valid @RequestBody PrenotazioneRequest request) {
+        PrenotazioneResponse result = gestionePrenotazioneService.inviaRichiestaPrenotazione(request.idMezzo(), request.idUtente(), request.orarioInizio());
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{id}/qrcode")
+    public ResponseEntity<String> getQRCode(@PathVariable Long id) {
+        String qrCode = gestionePrenotazioneService.getQRCode(id);
+        return ResponseEntity.ok(qrCode);
     }
 
     @GetMapping

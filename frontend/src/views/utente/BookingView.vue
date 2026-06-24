@@ -5,7 +5,12 @@
       <div v-for="b in bookings" :key="b.id" class="card">
         <p><strong>Veicolo:</strong> {{ b.nomeVeicolo || '#' + b.idMezzo }} <span v-if="b.tipoVeicolo" class="badge badge-info">{{ b.tipoVeicolo }}</span></p>
         <p><strong>Data:</strong> {{ b.dataInizio }}</p>
+        <p v-if="b.orarioInizio"><strong>Orario inizio:</strong> {{ b.orarioInizio }}</p>
+        <p><strong>Ora:</strong> {{ formatTime(b.dataInizio) }}</p>
         <p><strong>Stato:</strong> <span class="badge" :class="statusClass(b.stato)">{{ b.stato }}</span></p>
+        <div v-if="b.stato === 'attiva' && b.qrCode" class="qr-box">
+          <code>{{ b.qrCode }}</code>
+        </div>
         <button v-if="b.stato === 'attiva'" @click="cancel(b.id)" class="btn-danger" style="margin-top:8px">Annulla</button>
       </div>
     </div>
@@ -35,6 +40,12 @@ function statusClass(stato: string) {
   return 'badge-danger'
 }
 
+function formatTime(dateStr: string) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+}
+
 async function cancel(id: number) {
   try {
     await bookingsApi.cancelBooking(id)
@@ -46,4 +57,19 @@ async function cancel(id: number) {
 <style scoped>
 .booking-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
 .booking-list .card p { margin-bottom: 4px; font-size: 14px; }
+.qr-box {
+  background: var(--bg-secondary, #f0f0f0);
+  border: 2px dashed var(--border-color, #ccc);
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: center;
+  margin: 8px 0;
+}
+.qr-box code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: var(--primary, #333);
+}
 </style>

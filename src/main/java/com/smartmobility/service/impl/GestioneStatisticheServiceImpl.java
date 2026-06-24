@@ -1,9 +1,13 @@
 package com.smartmobility.service.impl;
 
 import com.smartmobility.dto.response.CorsaResponse;
+import com.smartmobility.dto.response.MezzoResponse;
 import com.smartmobility.dto.response.StatisticheResponse;
 import com.smartmobility.model.Corsa;
+import com.smartmobility.model.Mezzo;
+import com.smartmobility.model.enums.StatoMezzo;
 import com.smartmobility.repository.CorsaRepository;
+import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.service.GestioneStatisticheService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -12,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +25,11 @@ import java.util.Map;
 public class GestioneStatisticheServiceImpl implements GestioneStatisticheService {
 
     private final CorsaRepository corsaRepository;
+    private final MezzoRepository mezzoRepository;
 
-    public GestioneStatisticheServiceImpl(CorsaRepository corsaRepository) {
+    public GestioneStatisticheServiceImpl(CorsaRepository corsaRepository, MezzoRepository mezzoRepository) {
         this.corsaRepository = corsaRepository;
+        this.mezzoRepository = mezzoRepository;
     }
 
     @Override
@@ -88,6 +95,45 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
                     corsa.getCosto(), corsa.getDistanza(), corsa.getStato()));
         }
         return sb.toString();
+    }
+
+    @Override
+    public List<MezzoResponse> analisiStatoFlotta() {
+        List<Mezzo> mezzi = mezzoRepository.findAll();
+        List<MezzoResponse> responses = new ArrayList<>();
+        for (Mezzo m : mezzi) {
+            MezzoResponse r = new MezzoResponse();
+            r.setId(m.getIdMezzo());
+            r.setTipo(m.getTipo());
+            r.setStato(m.getStato() != null ? m.getStato().name() : null);
+            r.setAutonomia((double) m.getAutonomia());
+            r.setTariffa((double) m.getCostoOrario());
+            r.setCondizione(m.getCondizione());
+            r.setIdFlotta(m.getIdFlotta());
+            if (m.getCoordinateMezzo() != null) {
+                String[] coords = m.getCoordinateMezzo().split(",");
+                if (coords.length == 2) {
+                    r.setLatitudine(Double.parseDouble(coords[0].trim()));
+                    r.setLongitudine(Double.parseDouble(coords[1].trim()));
+                }
+            }
+            responses.add(r);
+        }
+        return responses;
+    }
+
+    @Override
+    public Map<String, Long> getStatisticheFlotta() {
+        List<Mezzo> mezzi = mezzoRepository.findAll();
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("disponibile", mezzi.stream().filter(m -> m.getStato() == StatoMezzo.disponibile).count());
+        stats.put("prenotato", mezzi.stream().filter(m -> m.getStato() == StatoMezzo.prenotato).count());
+        stats.put("in_uso", mezzi.stream().filter(m -> m.getStato() == StatoMezzo.in_uso).count());
+        stats.put("manutenzione", mezzi.stream().filter(m -> m.getStato() == StatoMezzo.manutenzione).count());
+        stats.put("bloccato", mezzi.stream().filter(m -> m.getStato() == StatoMezzo.bloccato).count());
+        stats.put("sospeso", mezzi.stream().filter(m -> m.getStato() == StatoMezzo.sospeso).count());
+        stats.put("totale", (long) mezzi.size());
+        return stats;
     }
 
     private double estimateDistance(String coord1, String coord2) {

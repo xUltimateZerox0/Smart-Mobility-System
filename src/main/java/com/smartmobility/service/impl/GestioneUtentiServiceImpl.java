@@ -5,6 +5,7 @@ import com.smartmobility.model.Utente;
 import com.smartmobility.model.enums.StatoUtente;
 import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.GestioneUtentiService;
+import com.smartmobility.service.SessionRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,9 +16,11 @@ import java.util.List;
 public class GestioneUtentiServiceImpl implements GestioneUtentiService {
 
     private final UtenteRepository utenteRepository;
+    private final SessionRegistry sessionRegistry;
 
-    public GestioneUtentiServiceImpl(UtenteRepository utenteRepository) {
+    public GestioneUtentiServiceImpl(UtenteRepository utenteRepository, SessionRegistry sessionRegistry) {
         this.utenteRepository = utenteRepository;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @Override
@@ -48,6 +51,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
 
         if (utente.getStatoUtente() == StatoUtente.attivo) {
             utente.setStatoUtente(StatoUtente.sospeso);
+            sessionRegistry.invalidateByEmail(utente.getEmail());
         } else if (utente.getStatoUtente() == StatoUtente.sospeso) {
             utente.setStatoUtente(StatoUtente.attivo);
         } else {
@@ -56,6 +60,43 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
 
         utenteRepository.save(utente);
         return true;
+    }
+
+    @Override
+    public boolean bloccaUtente(Long idUtente) {
+        Utente utente = utenteRepository.findByIdUtente(idUtente)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+        utente.setStatoUtente(StatoUtente.sospeso);
+        utenteRepository.save(utente);
+        sessionRegistry.invalidateByEmail(utente.getEmail());
+        return true;
+    }
+
+    @Override
+    public boolean sbloccaUtente(Long idUtente) {
+        Utente utente = utenteRepository.findByIdUtente(idUtente)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+        utente.setStatoUtente(StatoUtente.attivo);
+        utenteRepository.save(utente);
+        return true;
+    }
+
+    @Override
+    public boolean disattivaUtente(Long idUtente) {
+        Utente utente = utenteRepository.findByIdUtente(idUtente)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+        utente.setStatoUtente(StatoUtente.disattivato);
+        utenteRepository.save(utente);
+        sessionRegistry.invalidateByEmail(utente.getEmail());
+        return true;
+    }
+
+    @Override
+    public void cancellaReport(Long idUtente) {
+        Utente utente = utenteRepository.findByIdUtente(idUtente)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+        utente.setReportUtente(null);
+        utenteRepository.save(utente);
     }
 
     @Override

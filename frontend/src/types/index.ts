@@ -29,6 +29,8 @@ export interface MezzoResponse {
   tariffa: number
   codiceMezzo: string
   tempoDisponibilita?: string
+  condizione?: string
+  idFlotta?: string
 }
 
 export interface PrenotazioneResponse {
@@ -40,6 +42,9 @@ export interface PrenotazioneResponse {
   stato: string
   nomeVeicolo?: string
   tipoVeicolo?: string
+  orarioInizio?: string
+  qrCode?: string
+  idVeicolo?: number
 }
 
 export interface CorsaResponse {
@@ -112,6 +117,37 @@ export const StatoMezzo = {
   Manutenzione: 'manutenzione',
 } as const
 export type StatoMezzo = (typeof StatoMezzo)[keyof typeof StatoMezzo]
+
+export interface FleetVehicle {
+  id: number
+  tipo: string
+  stato: string
+  latitudine: number
+  longitudine: number
+  autonomia: number
+  tariffa: number
+  condizione: string
+  idFlotta: number
+}
+
+export interface FleetStatistics {
+  disponibile: number
+  prenotato: number
+  in_uso: number
+  manutenzione: number
+  bloccato: number
+  sospeso: number
+}
+
+export interface FleetAnalysisResponse {
+  veicoli: FleetVehicle[]
+  statistiche: FleetStatistics
+}
+
+export interface StimaCorsaResponse {
+  costo: number
+  tariffa: number
+}
 
 export const StatoPrenotazione = {
   Attiva: 'attiva',

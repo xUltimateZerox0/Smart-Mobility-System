@@ -5,6 +5,7 @@ import com.smartmobility.dto.request.RouteRequest;
 import com.smartmobility.dto.request.StartRideRequest;
 import com.smartmobility.dto.request.UnlockRequest;
 import com.smartmobility.dto.response.PercorsoResponse;
+import com.smartmobility.dto.response.StimaCorsaResponse;
 import com.smartmobility.service.GestioneCorsaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +39,8 @@ public class GestioneCorsaController {
     }
 
     @GetMapping("/{id}/estimate")
-    public ResponseEntity<Float> getEstimate(@PathVariable Long id) {
-        Float stima = gestioneCorsaService.aggiornaStima(id);
+    public ResponseEntity<StimaCorsaResponse> getEstimate(@PathVariable Long id) {
+        StimaCorsaResponse stima = gestioneCorsaService.aggiornaStima(id);
         return ResponseEntity.ok(stima);
     }
 

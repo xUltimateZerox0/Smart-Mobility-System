@@ -28,7 +28,7 @@ public class GestorePagamentoController {
     @PostMapping("/process")
     public ResponseEntity<Boolean> processPayment(@Valid @RequestBody ProcessPaymentRequest request) {
         boolean result = gestorePagamentoService.pagamentoCorsa(
-                request.getIdUtente(), request.getIdMetodoPagamento(), request.getCosto());
+                request.getIdUtente(), request.getIdMetodoPagamento(), null, request.getCosto());
         return ResponseEntity.ok(result);
     }
 

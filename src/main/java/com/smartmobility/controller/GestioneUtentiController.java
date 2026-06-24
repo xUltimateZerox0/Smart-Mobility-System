@@ -5,6 +5,7 @@ import com.smartmobility.dto.response.UtenteResponse;
 import com.smartmobility.service.GestioneUtentiService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,30 @@ public class GestioneUtentiController {
     public ResponseEntity<Void> correctiveAction(@PathVariable Long id,
                                                   @Valid @RequestBody CorrectiveActionRequest request) {
         gestioneUtentiService.azioneCorrettiva(id, request.getAzione());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/block")
+    public ResponseEntity<Boolean> blockUser(@PathVariable Long id) {
+        boolean result = gestioneUtentiService.bloccaUtente(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{id}/unblock")
+    public ResponseEntity<Boolean> unblockUser(@PathVariable Long id) {
+        boolean result = gestioneUtentiService.sbloccaUtente(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{id}/disable")
+    public ResponseEntity<Boolean> disableUser(@PathVariable Long id) {
+        boolean result = gestioneUtentiService.disattivaUtente(id);
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/{id}/report")
+    public ResponseEntity<Void> deleteReport(@PathVariable Long id) {
+        gestioneUtentiService.cancellaReport(id);
         return ResponseEntity.noContent().build();
     }
 }
