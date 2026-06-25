@@ -88,7 +88,7 @@ These are claims that were **pending** in the CGD files but are now fully resolv
 | claim-07-a02 | `checkArea` receives `coordinateMezzo` not `coordinateUtente` | **CONFIRMED** by class diagram. |
 | claim-07-b01 | `aggiornaStima` for final cost calculation algorithm | **STILL PENDING** — cost formula/algorithm not fully specified. |
 
-### UC.UT.08 (2 claims → ALL RESOLVED)
+### UC.UT.10 (2 claims → ALL RESOLVED)
 
 | Claim ID | Issue | Resolution |
 |----------|-------|------------|

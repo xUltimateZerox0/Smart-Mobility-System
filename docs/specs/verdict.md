@@ -191,7 +191,7 @@ The priority chain `documentazione.md > chiarimenti-vari >= chiarimentiUc >= cla
 | UC.UT.05 | 8 | 8 ✓ | — | **REVIEWED** |
 | UC.UT.06 | — | — | — | *(claims in Master_Spec)* |
 | UC.UT.07 | 1 | 1 ✓ | — | **REVIEWED** |
-| UC.UT.08 | 2 | 2 ✓ | — | **REVIEWED** |
+| UC.UT.10 | 2 | 2 ✓ | — | **REVIEWED** |
 | UC.UT.09 | 10 | 10 ✓ | — | **REVIEWED** |
 | UC.OP.01 | 1 | 1 ✓ | — | **REVIEWED** |
 | UC.OP.02 | 3 | 3 ✓ | — | **REVIEWED** |

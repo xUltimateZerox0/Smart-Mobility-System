@@ -101,7 +101,7 @@ tutti i claim sono confermati (intuizione corretta)
 ### UC.UT.07
 `fineCorsa(idCorsa)` esiste sia in UC.UT.07-clean.uml che nel classDiagram
 
-### UC.UT.08
+### UC.UT.10
 claim 1: confermato, il progetto è strutturato sul pattern MVC con fat controller; ogni comunicazione dalla view al model o viceversa, deve necessariamente passare dal controller.
 
 claim 2 (7b2d5e09): !attenzione! il metodo verificaValidita() serve a validare sintatticamente i dati di login (ad esempio la corretta sintassi della email)

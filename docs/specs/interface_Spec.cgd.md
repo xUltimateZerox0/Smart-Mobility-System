@@ -183,7 +183,7 @@ Il Controller invoca i metodi di queste interfacce per notificare aggiornamenti 
 | Metodo | Ritorno | Parametri | UC di Riferimento |
 |--------|---------|-----------|-------------------|
 | `inserisciCredenziali(nome, cognome, email, password, datanascita)` | void | nome, cognome, email, password, datanascita | UC.ATT.01 |
-| `registrazioneUtente()` | void | — | UC.UT.08 |
+| `registrazioneUtente()` | void | — | UC.UT.10 |
 | `getIdAttore()` | — | — | — |
 | `setIdAttore(id)` | void | id | — |
 | `getIdSessioneAttore()` | — | — | — |
@@ -260,7 +260,7 @@ Le View invocano i metodi di queste interfacce per richiedere operazioni di busi
 
 | Metodo | Ritorno | Parametri | UC di Riferimento |
 |--------|---------|-----------|-------------------|
-| `verificaValidita(nome, cognome, email, password, datanascita)` | RuoloAttore | nome, cognome, email, password, datanascita | UC.UT.08 |
+| `verificaValidita(nome, cognome, email, password, datanascita)` | RuoloAttore | nome, cognome, email, password, datanascita | UC.UT.10 |
 | `invioCredenziali(email, password)` | RuoloAttore | email: String, password: String | UC.ATT.01 |
 | `inviaRichiestaLogout(email)` | void | email: String | UC.UT.09 |
 | `getIdGestioneAutenticazione()` | — | — | — |
@@ -409,7 +409,7 @@ Le View invocano i metodi di queste interfacce per richiedere operazioni di busi
 
 | Metodo | Ritorno | Parametri | UC di Riferimento |
 |--------|---------|-----------|-------------------|
-| `verificaValidita(nome, cognome, email, password, datanascita)` | RuoloAttore | nome, cognome, email, password, datanascita | UC.UT.08 |
+| `verificaValidita(nome, cognome, email, password, datanascita)` | RuoloAttore | nome, cognome, email, password, datanascita | UC.UT.10 |
 | `invioCredenziali(email, password)` | RuoloAttore | email: String, password: String | UC.ATT.01 |
 | `inviaRichiestaLogout(email)` | void | email: String | UC.UT.09, UC.OP.04, UC.OP.05, UC.AP.04 |
 | `getIdGestioneAutenticazione()` | — | — | — |

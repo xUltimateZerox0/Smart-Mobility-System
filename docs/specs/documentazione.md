@@ -401,7 +401,7 @@ Sprint Report N. 3
 | :---- | :---- |
 | **UserStories** | **\-** |
 | **Nome** | **Registrazione Utente** |
-| **ID** | **UC.UT.08** |
+| **ID** | **UC.UT.10** |
 | **Breve descrizione** | **L'utente non registrato inserisce i propri dati anagrafici e le credenziali per creare un nuovo profilo. Il sistema verifica la validità dei dati e l'assenza di duplicati, creando il nuovo account utente.** |
 | **Attori principali** | **Utente (Non registrato)** |
 | **Precondizioni** | **L'utente non dispone di un account nel sistema.** |
@@ -624,7 +624,7 @@ TABELLA RIEPILOGATIVA USER STORIES E BACKLOG
 | Sprint | ID (Caso D’uso) | Attore | Tipo | Elemento | Priorità (1-50) |
 | :---- | :---: | :---: | :---: | ----- | :---: |
 | 1 | UT.01 (UC.UT.01) | Utente | Funzionale | Visualizzare i mezzi disponibili in un raggio prestabilito a partire dalla posizione scelta, così da poter iniziare una corsa. | 50 |
-| 3 | UC.UT.08 | Utente (non registrato) | Funzionale | L'utente non registrato inserisce i propri dati anagrafici e le credenziali per creare un nuovo profilo. Il sistema verifica la validità dei dati e l'assenza di duplicati, creando il nuovo account utente. | 50 |
+| 3 | UC.UT.10 | Utente (non registrato) | Funzionale | L'utente non registrato inserisce i propri dati anagrafici e le credenziali per creare un nuovo profilo. Il sistema verifica la validità dei dati e l'assenza di duplicati, creando il nuovo account utente. | 50 |
 | 3 | UC.ATT.01 | Attore | Funzionale | L'attore inserisce le proprie credenziali per autenticarsi. Il sistema verifica se i dati forniti sono già presenti nel sistema e, in caso di esito positivo, concede l'accesso alle funzionalità riservate in base al ruolo dell'attore (Utente, Operatore, o Amministrazione Pubblica). | 50 |
 | 1 | OP.02 (UC.OP.02) | Operatore Servizio Clienti | Funzionale | Conoscere l’anagrafica dell’utente, così da poter risalire ad eventuali furti ed incidenti | 45 |
 | 2 | UC.UT.07 | Utente | Funzionale | L'utente richiede la terminazione della corsa. Il sistema verifica se il veicolo si trova in un'area consentita, calcola il costo, effettua il pagamento, invia il comando di blocco al veicolo e lo rende nuovamente disponibile. | 45 |

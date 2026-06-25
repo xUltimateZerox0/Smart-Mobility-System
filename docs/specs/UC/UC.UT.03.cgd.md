@@ -1,13 +1,14 @@
 ---
 clarity-gate-version: 2.1
 document-type: Implementation
-processed-date: 2026-06-23
-processed-by: AI Cross-Reference Engine, response2.md
+processed-date: 2026-06-25
+processed-by: AI Cross-Reference Engine, response2.md, UC.UT.03-clean.uml v2.0
 sources:
   primary: documentazione.md §2.2.2 — UC.UT.03 specifica tabellare
   master-spec: Master_Spec.cgd.md v4.0 — GestioneCorsa, Corsa, Mezzo, AppUtente, External Systems
   sequence-diagram: docs/diagrams/sequence-diagrams/UC.UT.03/UC.UT.03-clean.uml
   chiarimenti: chiarimenti-vari.md — punti 2 (orarioFine) e 3 (auth=constraint)
+  uc08-spec: UC.UT.08.cgd.md — specifica Monitoraggio Costo (nuovo use case attivato)
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
@@ -64,6 +65,7 @@ hitl-claims:
 |-----------|-----------------|-----------|
 | **Include** | UC.UT.05 (Metodo Pagamento) | UC.UT.03 include UC.UT.05 — la selezione del metodo di pagamento è passo obbligatorio del flusso principale |
 | **Include** | UC.UT.07 (Termina Corsa e Pagamento) | UC.UT.03 include UC.UT.07 — la terminazione della corsa completa il ciclo di vita |
+| **Attiva** | UC.UT.08 (Monitoraggio Costo) | UC.UT.03 attiva UC.UT.08 — dopo l'avvio della corsa, il monitoraggio periodico del costo viene attivato e prosegue fino alla terminazione della corsa |
 | **Estende** | UC.UT.02 (Prenotazione Mezzo) | UC.UT.03 estende UC.UT.02 — l'avvio della corsa parte dalla prenotazione attiva |
 | **Esteso da** | UC.UT.06 (Sospensione Corsa) | UC.UT.06 estende UC.UT.03 — la sospensione è possibile solo durante corsa attiva |
 
@@ -95,16 +97,19 @@ hitl-claims:
 | 7 | Sistema | Sblocca fisicamente il mezzo | `sbloccoMezzoFisico(idMezzo)` | Mezzo:IoT:836 |
 | 8 | Sistema | Imposta lo stato logico del mezzo a "in uso" | `setStato(StatoMezzo.in_uso)` | Mezzo:321 |
 | 9 | Sistema | Notifica l'avvio della corsa all'utente | `mostraSuccesso()` | AppUtente:694 |
-| 10 | Sistema | Avvia aggiornamento periodico del costo e lo mostra | `aggiornaStima(idCorsa)` → `mostraStima(idCorsa)` | GestioneCorsa:577, AppUtente:693 |
+| 10 | Sistema | Attiva monitoraggio periodico del costo (UC.UT.08) | `Attivazione caso d'uso UC.UT.08` → `aggiornaStima(idCorsa)` → `mostraStima(idCorsa)` | GestioneCorsa:577, AppUtente:693 |
+
+> **Nota su Step 10:** Il diagramma di sequenza UC.UT.03-clean.uml mostra il messaggio esplicito `Attivazione caso d'uso UC.UT.08` (synchCall) dopo la notifica di avvio corsa e la conferma `true` dello sblocco fisico. Questa attivazione avvia il ciclo periodico di monitoraggio costo documentato in UC.UT.08.cgd.md.
 
 ### 4.1 Dettaglio Cost Flow (Step 10)
 
 | Sotto-step | Azione | Metodo | Componente |
 |------------|--------|--------|------------|
-| 10a | Il Controller calcola il costo parziale | `aggiornaStima(idCorsa)` → `return float` | GestioneCorsa:577 |
-| 10b | Il Model aggiorna il costo della corsa | `aggiornaCosto(costo)` | Corsa:373 |
-| 10c | L'AppUtente mostra la stima aggiornata | `mostraStima(idCorsa)` | AppUtente:693 |
-| 10d | Ripetizione periodica (loop) fino a terminazione | — | GestioneCorsa → AppUtente |
+| 10a | Il Controller attiva UC.UT.08 | `Attivazione caso d'uso UC.UT.08` (synchCall) | GestioneCorsa |
+| 10b | Il Controller calcola il costo parziale | `aggiornaStima(idCorsa)` → `return float` | GestioneCorsa:577 |
+| 10c | Il Model aggiorna il costo della corsa | `aggiornaCosto(costo)` | Corsa:373 |
+| 10d | L'AppUtente mostra la stima aggiornata | `mostraStima(idCorsa)` | AppUtente:693 |
+| 10e | Ripetizione periodica (loop) fino a terminazione | — | GestioneCorsa → AppUtente |
 
 ### 4.2 Verifica Sblocco (Step 7 — Dettaglio IoT)
 
@@ -245,7 +250,7 @@ hitl-claims:
 
 ---
 
-## 10. Sequence Diagram Cross-Validation *(fonte: UC.UT.03-clean.uml)*
+## 10. Sequence Diagram Cross-Validation *(fonte: UC.UT.03-clean.uml v2.0)*
 
 ### 10.1 Lifeline Mapping
 
@@ -265,20 +270,31 @@ hitl-claims:
 
 | Step SD | Messaggio SD | Metodo Canonico (Master_Spec) | Allineamento |
 |---------|-------------|-------------------------------|-------------|
-| QR scan | `scans QR code on vehicle(vehicleId, userId)` | `scansionaQRCode(QR_Code)` | **PARZIALE:** SD usa firma diversa (vehicleId, userId) |
+| Scansione QR | `scansioneQRCode(QR_Code)` | `scansionaQRCode(qrCode)` | Corretto *(overload String)* |
+| QR scan (attore) | `scans QR code on vehicle(vehicleId, userId)` | `scansionaQRCode(qrCode)` | **PARZIALE:** SD usa firma diversa (vehicleId, userId) — artefatto XMI |
 | Controllo disponibilità | `controllaDisponibilità(QR_Code)` | `controllaDisponibilita(info: String)` | Corretto |
-| Verifica mezzo | `check vehicle availability(vehicleId)` | `Mezzo.getStato()` | **DESCRITTIVO:** non è nome metodo reale |
+| Verifica mezzo | `getStato(idMezzo)` | `Mezzo.getStato()` | Corretto |
+| Risposta stato | `stato:enum` | *(reply value)* | **DESCRITTIVO** |
+| Verifica mezzo (eng) | `check vehicle availability(vehicleId)` | `Mezzo.getStato()` | **DESCRITTIVO:** non è nome metodo reale |
 | Verifica pagamento | `check payment validity(userId)` | — | **DESCRITTIVO:** non mappa a metodo specifico |
-| Avvio corsa | `avviaCorsa(idMezzo, idUtente)` | `avviaCorsa()` | **DISCREPANZA PARAMETRI:** Master_Spec ha no-args |
+| Disponibilità ok | `true` / `notifica mezzo disponibile` | — | **DESCRITTIVO:** risposte intermedie |
+| Conferma visiva | `visualizza conferma` | `mostraSuccesso()` | **DESCRITTIVO** |
+| Metodo convalidato | `mostraMetodoConvalidato()` | `mostraMetodoConvalidato()` | Corretto |
+| Attivazione UC.UT.05 | `Attivazione caso d'uso UC.UT.05` (asynchCall) | — | **DESCRITTIVO:** attiva include UC.UT.05 |
+| Avvio corsa UI | `apriAvvioCorsa()` | AppUtente (View) | Corretto |
+| Avvio corsa | `avviaCorsa(idMezzo, idUtente)` | `avviaCorsa()` | **DISCREPANZA PARAMETRI:** Master_Spec ha no-args, SD ha (idMezzo, idUtente) |
 | Creazione corsa | `creaCorsa(orarioInizio, coordinatePartenza, idUtente, idMezzo)` | `creaCorsa(orarioinizio, coordinatePartenza, idUtente, idMezzo)` | Corretto |
 | Sblocco IoT | `sbloccoMezzoFisico(idMezzo)` | `sbloccoMezzoFisico(idMezzo)` | Corretto |
 | Set stato | `setStato(in_uso)` | `setStato(StatoMezzo.in_uso)` | Corretto |
+| Attivazione UC.UT.08 | `Attivazione caso d'uso UC.UT.08` (synchCall) | — | **NOVITÀ:** attiva monitoraggio costo periodico (UC.UT.08) |
 | Aggiornamento costo | `aggiornaStima(idCorsa)` | `aggiornaStima(idCorsa)` | Corretto |
 | Calcolo parziale | `calculate partial cost(vehicleId)` | — | **DESCRITTIVO:** logica interna di aggiornaStima |
 | Stima display | `stimaCosto` | — | **DESCRITTIVO:** non è metodo — è il valore mostrato |
 | Mostra stima | `mostraStima(idCorsa)` | `mostraStima(idCorsa)` | Corretto |
 | Notifica avvio | `notifica avvio corsa` | `mostraSuccesso()` | **DESCRITTIVO:** naming generico |
 | Conferma metodo | `mostraMetodoConvalidato()` | `mostraMetodoConvalidato()` | Corretto |
+| Errore disponibilità | `mostraErrore("mezzo non disponibile")` | `mostraErrore(msg)` | Corretto |
+| Errore metodo | `mostraErrore("metodo non convalidato")` | `mostraErrore(msg)` | Corretto |
 
 ### 10.3 Messaggi Descrittivi/Logici (non metodi reali)
 
@@ -292,6 +308,19 @@ hitl-claims:
 | `visualizza conferma` | Proxy per `mostraSuccesso()` |
 | `return partial cost(cost)` | Valore di ritorno di `aggiornaStima()` |
 | `notifica mezzo disponibile` | Messaggio di sistema post-verifica disponibilità |
+| `Attivazione caso d'uso UC.UT.05` | Attivazione dell'include UC.UT.05 (Metodo Pagamento) — messaggio di flusso, non metodo |
+| `Attivazione caso d'uso UC.UT.08` | Attivazione del monitoraggio costo periodico — messaggio di flusso, non metodo |
+| `scans QR code on vehicle(vehicleId, userId)` | Azione utente descrittiva — alternativa XMI a `scansionaQRCode(QR_Code)` |
+| `initiate scan verification(vehicleId, userId, vehicle)` | Interazione utente concettuale — artefatto XMI della vista alternativa del diagramma |
+| `unlock vehicle physically` | Proxy per `sbloccoMezzoFisico(idMezzo)` — descrizione dell'effetto |
+| `check vehicle availability(vehicleId)` | Proxy per `controllaDisponibilita()` + `getStato()` |
+| `check payment validity(userId)` | Proxy per verifica metodo pagamento via UC.UT.05 |
+| `cannot unlock vehicle: transaction failed or account blocked` | Messaggio di errore descrittivo — proxy per `mostraErrore()` |
+| `notifica avvio corsa` | Proxy per `mostraSuccesso()` |
+| `stato:enum` | Valore di ritorno di `Mezzo.getStato()` |
+| `true` / `false` | Risposte booleane di verifica disponibilità / pagamento |
+| `void` | Risposta di conferma per metodi senza ritorno |
+| `apriAvvioCorsa()` | Metodo View per interfaccia di avvio corsa |
 
 ---
 
@@ -386,7 +415,18 @@ hitl-claims:
 
 > **Verdetto:** Tutti i vincoli pertinenti sono rispettati nel flusso.
 
-### 11.9 Check 9: Chiarimenti-vari.md Punti Rilevanti ✅
+### 11.9 Check 9: Attivazione UC.UT.08 ✅
+
+| Elemento | Fonte | Stato |
+|----------|-------|-------|
+| Messaggio `Attivazione caso d'uso UC.UT.08` nel SD | UC.UT.03-clean.uml (Manage Ride interaction) | ✓ Presente come synchCall dopo lo sblocco fisico |
+| UC.UT.08 documentato | UC.UT.08.cgd.md | ✓ Specifica CGD creata |
+| UC.UT.08 citato in Master_Spec.cgd.md §7 | Master_Spec.cgd.md | ✗ **NON PRESENTE** — UC.UT.08 è nuovo use case (Monitoraggio Costo) non ancora aggiunto alla tabella Use Case Logic |
+| UC.UT.08 citato in documentazione.md | documentazione.md §2.2.2 | ✗ **NON PRESENTE** — UC.UT.08 è nuovo use case non ancora presente in documentazione.md |
+
+> **Risultato:** L'attivazione di UC.UT.08 è documentata nel diagramma di sequenza e nella CGD, ma la tabella Use Case Logic di Master_Spec.cgd.md §7 e documentazione.md §2.2.2 devono essere aggiornate per includere il nuovo use case.
+
+### 11.10 Check 10: Chiarimenti-vari.md Punti Rilevanti ✅
 
 | Punto | Contenuto | Impatto su UC.UT.03 |
 |-------|-----------|---------------------|
@@ -480,7 +520,8 @@ hitl-claims:
 | chiarimenti-vari.md punto 2 | orarioFine verificabile | Applicato |
 | chiarimenti-vari.md punto 3 | UT.07 = vincolo | Documentato |
 | chiarimenti-vari.md punto 14 | Artefatti XMI | Identificati e isolati |
-| UC.UT.03-clean.uml | Sequence Diagram | Cross-validato con 6 discrepanze identificate |
+| UC.UT.03-clean.uml v2.0 | Sequence Diagram (aggiornato) | Cross-validato con 7 nuove discrepanze e attivazione UC.UT.08 identificate |
+| UC.UT.08.cgd.md | `docs/specs/UC/UC.UT.08.cgd.md` | Specifica CGD del nuovo use case Monitoraggio Costo |
 
 ---
 
@@ -491,7 +532,9 @@ hitl-claims:
 | documentazione.md | `docs/specs/documentazione.md` | Sorgente primaria |
 | Master_Spec.cgd.md | `docs/specs/Master_Spec.cgd.md` | Specifica architetturale consolidata |
 | chiarimenti-vari.md | `docs/specs/chiarimenti-vari.md` | Interpretazioni e vincoli |
-| UC.UT.03-clean.uml | `docs/diagrams/sequence-diagrams/UC.UT.03/UC.UT.03-clean.uml` | Sequence diagram XMI 2.1 |
+| UC.UT.03-clean.uml v2.0 | `docs/diagrams/sequence-diagrams/UC.UT.03/UC.UT.03-clean.uml` | Sequence diagram XMI 2.1 (aggiornato) |
+| UC.UT.08-clean.uml | `docs/diagrams/sequence-diagrams/UC.UT.08/UC.UT.08-clean.uml` | Sequence diagram UC.UT.08 (Monitoraggio Costo) |
+| UC.UT.08.cgd.md | `docs/specs/UC/UC.UT.08.cgd.md` | Specifica CGD UC.UT.08 (nuovo use case) |
 | Master_Spec.md | `docs/specs/Master_Spec.md` | Specifica originale v3.0 |
 
 ---
@@ -499,18 +542,19 @@ hitl-claims:
 ## 17. Summary Statistics
 
 | Metrica | Valore |
-|---------|--------|
+|---------|-------|
 | Controller methods coinvolti | 9 (di 13 totali in GestioneCorsa) |
 | Model entities coinvolte | 5 (Corsa, Mezzo, Utente, MetodoPagamento, Prenotazione) |
 | External systems coinvolti | 2 (Mezzo:IoT, Gateway Pagamento) |
 | View methods coinvolti | 8 (AppUtente) |
-| Step flusso principale | 10 |
+| Step flusso principale | 11 (inclusa attivazione UC.UT.08) |
 | Flussi alternativi | 3 |
 | Precondizioni | 4 |
 | Postcondizioni | 5 |
-| Discrepanze SD identificate | 6 (3 naming lifeline, 1 firma parametri, 2 messaggi descrittivi) |
+| Discrepanze SD identificate | 7 (3 naming lifeline, 1 firma parametri, 3+ messaggi descrittivi) |
 | Claim HITL pending | 3 (Round A) |
 | Vincoli architetturali applicabili | 6 |
+| Use case attivati | 1 (UC.UT.08 — Monitoraggio Costo) |
 
 ---
 
@@ -526,6 +570,7 @@ hitl-claims:
 | TC-UT03-IT01 | Integration View→Controller→Model | Contratto `scansionaQRCode` → `controllaDisponibilita` → `creaCorsa` | P1-P4 tutte verificate | `qrCode` valido | `scansionaQRCode()` → `controllaDisponibilita()` true → `creaCorsa()` → record creato | Flusso end-to-end: QR a corsa attiva | QR code di mezzo diverso da quello prenotato |
 | TC-UT03-IT02 | Integration Controller→External | Contratto `richiediSblocco` → `sbloccoMezzoFisico` IoT | Corsa creata, mezzo in stato prenotato | `qrCode` → `richiediSblocco(qrCode)` → `sbloccoMezzoFisico(idMezzo)` | `sbloccoMezzoFisico()` → true → `setStato(in_uso)` | Sblocco fisico + aggiornamento logico atomici | Timeout comunicazione IoT, sblocco parziale |
 | TC-UT03-IT03 | Integration Cost Flow | Contratto `aggiornaStima` → `aggiornaCosto` → `mostraStima` | Corsa attiva, timer avviato | `idCorsa`, `costo` calcolato | `aggiornaStima(idCorsa)` → `float` → `Corsa.aggiornaCosto(costo)` → `AppUtente.mostraStima(idCorsa)` | Display utente aggiornato con costo corrente | Frequenza aggiornamento, costo negativo, overflow |
+| TC-UT03-IT04 | Integration UC.UT.08 Activation | Attivazione monitoraggio costo dopo avvio corsa | Corsa creata, mezzo sbloccato e stato in_uso | Corsa attiva confermata | `Attivazione caso d'uso UC.UT.08` → ciclo `aggiornaStima()` avviato | UC.UT.08 attivo, costo in aggiornamento periodico | Attivazione prima dello sblocco fisico, doppia attivazione |
 
 ---
 
@@ -540,6 +585,7 @@ hitl-claims:
 | ERR-UT03-05 | Security | GestioneCorsa | `avviaCorsa()` — sessione utente scaduta o token non valido | Redirect a `UC.ATT.01` (Login) | L'utente si ri-autentica e ripete la scansione | ERROR |
 | ERR-UT03-06 | Business logic | GestioneCorsa | `acquisisciSceltaMetodo()` — nessun metodo pagamento selezionato (UC.UT.05 non completato) | Loop: mostra scelta metodi finché metodo valido selezionato | L'utente seleziona/aggiunge metodo pagamento | WARN |
 | ERR-UT03-07 | Business logic | GestioneCorsa | `avviaCorsa()` — P4 violata: utente già in corsa attiva (`orarioFine == null`) | `mostraErrore("Corsa già in corso")` | Reindirizzamento alla corsa attiva in corso | ERROR |
+| ERR-UT03-08 | Business logic | GestioneCorsa | `Attivazione caso d'uso UC.UT.08` — monitoraggio costo non si attiva (timer fallisce) | Log errore, riprovo attivazione | Il ciclo di monitoraggio potrebbe non partire — impatto su UT.03 | ERROR |
 
 ---
 
@@ -558,6 +604,21 @@ hitl-claims:
 *Nessun claim richiede Round B — tutti i claim sono verificabili tramite fonti già presenti nel repository.*
 
 ---
+
+## 20. Aggiornamenti dalla revisione UC.UT.03-clean.uml v2.0 *(2026-06-25)*
+
+Il diagramma di sequenza UC.UT.03 è stato aggiornato con le seguenti novità rilevate durante la generazione della specifica:
+
+| Novità | Descrizione | Riferimento |
+|--------|-------------|-------------|
+| **Attivazione UC.UT.08** | Il diagramma mostra il messaggio esplicito `Attivazione caso d'uso UC.UT.08` (synchCall) dopo lo sblocco fisico e la conferma della corsa | GestioneCorsa attiva il monitoraggio costo periodico |
+| **GestorePagamento lifeline** | Lifeline `GestorePagamento` presente nel diagramma per la gestione del metodo di pagamento via UC.UT.05 | Coerente con include UC.UT.05 |
+| **Flussi di errore espliciti** | Messaggi `mostraErrore("mezzo non disponibile")` e `mostraErrore("metodo non convalidato")` visibili nel diagramma | FA-01 e FA-02 documentati in §5 |
+| **Messaggi inglese/italiano misti** | Nuovi messaggi descrittivi in inglese: `initiate scan verification`, `check vehicle availability`, `check payment validity`, `unlock vehicle physically`, `cannot unlock vehicle: transaction failed or account blocked` | Artefatti XMI — da ignorare come nomi metodo |
+
+---
+
+**Fine specifica UC.UT.03 — CGD aggiornato il 2026-06-25. HITL Round A: 3/3 claim REVIEWED. Nuovo use case UC.UT.08 documentato in specifica separata.**
 
 <!-- CLARITY_GATE_END -->
 Clarity Gate: CLEAR | PENDING

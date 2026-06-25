@@ -938,7 +938,7 @@ Persistenza dati — interfaccia CRUD standard verso database relazionale.
 | UC.UT.05 | Metodo Pagamento | Utente | — | — | — |
 | UC.UT.06 | Sospensione Corsa | Utente | — | UC.UT.03 | — |
 | UC.UT.07 | Termina Corsa e Pagamento | Utente | — | — | — |
-| UC.UT.08 | Registrazione Utente | Utente (non reg.) | — | — | — |
+| UC.UT.10 | Registrazione Utente | Utente (non reg.) | — | — | — |
 | UC.UT.09 | Logout Utente | Utente | — | — | — |
 | UC.OP.01 | Gestione Flotta | Operatore Tecnico | — | — | — |
 | UC.OP.02 | Moderazione Utenti | Operatore SC | — | — | — |

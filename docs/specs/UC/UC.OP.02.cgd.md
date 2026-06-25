@@ -240,7 +240,7 @@ AppOperatoreSC.mostraReport(idUtente)
 |:-------|:-------------|:------------------|:------|:-----|
 | `ricercaUtente(idUtente)` | → `Utente` | → `Utente` | ✓ | Master_Spec §2 line 256 — parametro `idUtente`, ritorna oggetto Utente |
 | `azioneCorrettiva(azione)` | → `void` | → `void` | ✓ | Master_Spec §2 line 257 — parametro `azione: String` |
-| `creaAccountUtente(...)` | → `void` | → `void` | ✓ | Master_Spec §2 line 258 — 5 parametri; usato in UC.UT.08, non in UC.OP.02 |
+| `creaAccountUtente(...)` | → `void` | → `void` | ✓ | Master_Spec §2 line 258 — 5 parametri; usato in UC.UT.10, non in UC.OP.02 |
 
 ### 7.2 StatoUtente Enum
 
@@ -351,7 +351,7 @@ AppOperatoreSC.mostraReport(idUtente)
 | 2 | **AMBIGUITY** | Valori esatti del parametro `azione` in `Utente.azioneCorrettiva(azione: String)` non documentati esplicitamente | Master_Spec §2 line 257 | documentazione.md ("sospensione/disattivazione") | Basso — sono stringhe libere interpretate a runtime | **RESOLVED**: valori sono `'sospensione'` e `'disattivazione'` (response2.md Warning #8). |
 | 3 | **ARTIFACT XMI** | Spazi nei nomi dei messaggi (`cercaReport (idUtente)`, `Utente.ricercaUtente (idUtente)`) | UC.OP.02-clean.uml | Convenzione camelCase | Basso — errore di formattazione XMI, nessun impatto funzionale | Correzione applicata nella sezione 3.4 — rimozione spazi. |
 | 4 | **NOTE** | `AppOperatoreSC.richiediListaPrenotazioni()` e `selezionaPrenotazione()` sono metodi della View ma appartengono a UC.OP.03, non UC.OP.02 | Master_Spec §4 | documentazione.md UC.OP.03 | Basso — cross-reference corretto, metodi verificati come presenti | Documentato nella sezione 5 (Metodi Non Utilizzati). |
-| 5 | **NOTE** | `Utente.creaAccountUtente()` è un metodo del Model Utente ma non è utilizzato in UC.OP.02 (appartiene a UC.UT.08) | Master_Spec §2 line 258 | — | Nessuno — verifica richiesta completata | Metodo verificato come presente ma non pertinente a questo UC. |
+| 5 | **NOTE** | `Utente.creaAccountUtente()` è un metodo del Model Utente ma non è utilizzato in UC.OP.02 (appartiene a UC.UT.10) | Master_Spec §2 line 258 | — | Nessuno — verifica richiesta completata | Metodo verificato come presente ma non pertinente a questo UC. |
 
 ---
 
