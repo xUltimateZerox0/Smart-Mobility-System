@@ -14,24 +14,29 @@
         <button v-if="b.stato === 'attiva'" @click="cancel(b.id)" class="btn-danger" style="margin-top:8px">Annulla</button>
       </div>
     </div>
-    <p v-else style="color:var(--gray)">Nessuna prenotazione</p>
+    <p v-else-if="!loadError" style="color:var(--gray)">Nessuna prenotazione</p>
+    <p v-if="loadError" class="error-message">{{ loadError }}</p>
+    <p v-if="cancelError" class="error-message">{{ cancelError }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useAuthStore } from '../../stores/auth'
 import * as bookingsApi from '../../api/bookings'
 import type { PrenotazioneResponse } from '../../types'
 
-const auth = useAuthStore()
 const bookings = ref<PrenotazioneResponse[]>([])
+const cancelError = ref('')
+const loadError = ref('')
 
 onMounted(async () => {
   try {
-    const res = await bookingsApi.getUserBookings(auth.userId!)
+    const res = await bookingsApi.getUserBookings()
     bookings.value = res.data
-  } catch {}
+  } catch (e: any) {
+    loadError.value = e.response?.data?.message || 'Errore nel caricamento delle prenotazioni'
+    console.error('getUserBookings failed:', e)
+  }
 })
 
 function statusClass(stato: string) {
@@ -47,10 +52,14 @@ function formatTime(dateStr: string) {
 }
 
 async function cancel(id: number) {
+  cancelError.value = ''
   try {
     await bookingsApi.cancelBooking(id)
     bookings.value = bookings.value.filter(b => b.id !== id)
-  } catch {}
+  } catch (e: any) {
+    console.error('cancelBooking failed:', e)
+    cancelError.value = e.response?.data?.message || 'Errore durante l\'annullamento'
+  }
 }
 </script>
 
@@ -72,4 +81,5 @@ async function cancel(id: number) {
   letter-spacing: 1px;
   color: var(--primary, #333);
 }
+.error-message { color: var(--danger); font-size: 13px; margin-top: 8px; }
 </style>

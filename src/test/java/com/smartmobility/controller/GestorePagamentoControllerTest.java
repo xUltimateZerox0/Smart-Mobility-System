@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.AddPaymentMethodRequest;
 import com.smartmobility.dto.request.ProcessPaymentRequest;
 import com.smartmobility.dto.response.MetodoPagamentoResponse;
+import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestorePagamentoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ class GestorePagamentoControllerTest {
 
     @MockBean
     private GestorePagamentoService gestorePagamentoService;
+
+    @MockBean
+    private SecurityHelper securityHelper;
 
     @Test
     void processPayment_WithValidData_ReturnsTrue() throws Exception {

@@ -1,5 +1,6 @@
 package com.smartmobility.service.impl;
 
+import com.smartmobility.dto.response.CorsaResponse;
 import com.smartmobility.dto.response.PercorsoResponse;
 import com.smartmobility.dto.response.StimaCorsaResponse;
 import com.smartmobility.integration.MezzoIoTService;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -33,7 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
-    private static final float PAUSA_TASSO = 2.0f;
+    private static final float SOSPENSIONE_FISSO = 1.0f;
+    private static final Logger log = LoggerFactory.getLogger(GestioneCorsaServiceImpl.class);
 
     private final CorsaRepository corsaRepository;
     private final MezzoRepository mezzoRepository;
@@ -68,12 +72,31 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
     @Override
     @Transactional
-    public Long avviaCorsa(Long idMezzo, Long idUtente) {
+    public Long avviaCorsa(Long idMezzo, Long idUtente, String qrCode) {
+        if (qrCode == null || qrCode.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "QR Code obbligatorio per avviare la corsa");
+        }
+
+        Long idMezzoDaQR = parseQrCode(qrCode);
+        if (!idMezzo.equals(idMezzoDaQR)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Il QR Code non corrisponde al veicolo selezionato");
+        }
+
         Mezzo mezzo = mezzoRepository.findById(idMezzo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 
         if (mezzo.getStato() != StatoMezzo.prenotato && mezzo.getStato() != StatoMezzo.disponibile) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mezzo non disponibile per corsa");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Mezzo non disponibile per corsa (stato attuale: " + mezzo.getStato() + ")");
+        }
+
+        if (mezzo.getStato() == StatoMezzo.prenotato) {
+            boolean hasBooking = prenotazioneRepository.findByUtenteIdAndStato(
+                    idUtente, StatoPrenotazione.attiva).stream()
+                    .anyMatch(p -> p.getMezzo() != null && p.getMezzo().getIdMezzo().equals(idMezzo));
+            if (!hasBooking) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Veicolo prenotato da un altro utente. Non puoi avviare la corsa.");
+            }
         }
 
         Utente utente = utenteRepository.findByIdUtente(idUtente)
@@ -81,7 +104,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
         List<Corsa> corseAttive = corsaRepository.findByUtenteIdAndOrarioFineIsNull(utente.getId());
         if (!corseAttive.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Utente ha già una corsa attiva");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Hai già una corsa attiva. Termina la corsa corrente prima di avviarne una nuova.");
         }
 
         Corsa corsa = new Corsa();
@@ -102,7 +125,11 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             }
         }
 
-        mezzoIoTService.sbloccoMezzoFisico(idMezzo);
+        boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(idMezzo);
+        if (!sbloccato) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossibile sbloccare il veicolo: errore di comunicazione IoT");
+        }
+
         mezzo.setStato(StatoMezzo.in_uso);
         mezzoRepository.save(mezzo);
 
@@ -113,6 +140,65 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         return corsa.getIdCorsa();
     }
 
+    private Long parseQrCode(String qrCode) {
+        try {
+            if (qrCode.startsWith("QR-")) {
+                String[] parts = qrCode.split("-");
+                if (parts.length >= 2) {
+                    return Long.parseLong(parts[1]);
+                }
+            }
+            return Long.parseLong(qrCode);
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "QR Code non valido");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CorsaResponse getCorsaAttiva(Long idUtente) {
+        Utente utente = utenteRepository.findByIdUtente(idUtente)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+
+        List<Corsa> corseAttive = corsaRepository.findByUtenteIdAndOrarioFineIsNull(utente.getId());
+        if (corseAttive.isEmpty()) {
+            return null;
+        }
+
+        if (corseAttive.size() > 1) {
+            log.warn("Utente {} ha {} corse attive. Restituita la prima.", idUtente, corseAttive.size());
+        }
+
+        Corsa corsa = corseAttive.get(0);
+        Mezzo mezzo = corsa.getMezzo();
+
+        Long idMetodo = null;
+        String metodoLabel = null;
+        MetodoPagamento mp = corsa.getMetodoPagamento();
+        if (mp != null) {
+            idMetodo = mp.getIdMetodoPagamento();
+            String num = mp.getNumCarta();
+            if (num != null && num.length() >= 4) {
+                metodoLabel = num.substring(num.length() - 4) + " - " + mp.getIntestatarioCarta();
+            } else {
+                metodoLabel = mp.getIntestatarioCarta();
+            }
+        }
+
+        return new CorsaResponse(
+                corsa.getIdCorsa(),
+                utente.getIdUtente(),
+                mezzo != null ? mezzo.getIdMezzo() : null,
+                corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,
+                null,
+                (double) corsa.getCosto(),
+                null,
+                "in_corso",
+                idMetodo,
+                metodoLabel
+        );
+    }
+
     @Override
     @Transactional
     public void terminaCorsa(Long idCorsa) {
@@ -121,17 +207,27 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
         aggiornaStima(idCorsa);
 
+        // Aggiunge costo fisso di sospensione una tantum se la corsa è stata sospesa
+        if (totalePausaMillis.getOrDefault(idCorsa, 0L) > 0) {
+            float costoSospensione = corsa.getCosto() + SOSPENSIONE_FISSO;
+            corsa.setCosto(costoSospensione);
+        }
+
         LocalDateTime now = LocalDateTime.now();
         corsa.setOrarioFine(now);
         corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);
         corsaRepository.save(corsa);
 
         if (corsa.getMetodoPagamento() != null) {
-            gestorePagamentoService.pagamentoCorsa(
+            boolean pagato = gestorePagamentoService.pagamentoCorsa(
                     corsa.getUtente().getIdUtente(),
                     corsa.getMetodoPagamento().getIdMetodoPagamento(),
                     idCorsa,
                     (double) corsa.getCosto());
+            if (!pagato) {
+                throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
+                        "Pagamento non riuscito. La corsa rimane aperta.");
+            }
         }
 
         completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
@@ -148,6 +244,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     }
 
     @Override
+    @Transactional
     public StimaCorsaResponse aggiornaStima(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
@@ -159,19 +256,15 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
         LocalDateTime start = corsa.getOrarioInizio();
         LocalDateTime now = LocalDateTime.now();
-        long minutiTotali = ChronoUnit.MINUTES.between(start, now);
+
+        long secondiTotali = ChronoUnit.SECONDS.between(start, now);
 
         long pausaMs = totalePausaMillis.getOrDefault(idCorsa, 0L);
-        long minutiPausa = pausaMs / 60000;
-        long minutiEffettivi = Math.max(0, minutiTotali - minutiPausa);
+        long secondiPausa = pausaMs / 1000;
+        long secondiEffettivi = Math.max(0, secondiTotali - secondiPausa);
 
-        float ore = (float) minutiEffettivi / 60;
+        float ore = (float) secondiEffettivi / 3600;
         float stima = mezzo.getCostoOrario() * ore;
-
-        if (pausaMs > 0) {
-            float orePausa = (float) pausaMs / 3600000;
-            stima += PAUSA_TASSO * orePausa;
-        }
 
         corsa.setCosto(stima);
         corsaRepository.save(corsa);
@@ -183,7 +276,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     @Transactional
     public boolean sospensioneCorsa(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata. Verificare i dati."));
 
         Mezzo mezzo = corsa.getMezzo();
         if (mezzo == null) {
@@ -191,11 +284,19 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         }
 
         if (mezzo.getStato() == StatoMezzo.in_uso) {
+            boolean bloccato = mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());
+            if (!bloccato) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossibile bloccare il mezzo. Contattare assistenza.");
+            }
             mezzo.setStato(StatoMezzo.sospeso);
             mezzoRepository.save(mezzo);
             pausaStartTimes.put(idCorsa, System.currentTimeMillis());
             return true;
         } else if (mezzo.getStato() == StatoMezzo.sospeso) {
+            boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(mezzo.getIdMezzo());
+            if (!sbloccato) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossibile sbloccare il mezzo. Contattare assistenza.");
+            }
             mezzo.setStato(StatoMezzo.in_uso);
             mezzoRepository.save(mezzo);
             Long pStart = pausaStartTimes.remove(idCorsa);
@@ -271,6 +372,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean controllaDisponibilita(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
@@ -284,17 +386,20 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean controllaDisponibilita(Long idCorsa, String info) {
-        boolean base = controllaDisponibilita(idCorsa);
+        Corsa corsa = corsaRepository.findById(idCorsa)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+        Mezzo mezzo = corsa.getMezzo();
+        if (mezzo == null) return false;
+
+        boolean base = mezzo.getStato() == StatoMezzo.disponibile
+                || mezzo.getStato() == StatoMezzo.prenotato
+                || mezzo.getStato() == StatoMezzo.in_uso;
         if (!base) return false;
 
         if (info != null && !info.isBlank()) {
-            Corsa corsa = corsaRepository.findById(idCorsa)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
-            Mezzo mezzo = corsa.getMezzo();
-            if (mezzo != null && info.equalsIgnoreCase(mezzo.getTipo())) {
-                return true;
-            }
+            return info.equalsIgnoreCase(mezzo.getTipo());
         }
         return base;
     }

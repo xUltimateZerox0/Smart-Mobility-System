@@ -86,7 +86,7 @@ class GestionePrenotazioneServiceImplTest {
     void annullaPrenotazione_WithActiveBooking_CancelsSuccessfully() {
         Prenotazione prenotazione = TestDataFactory.createPrenotazione(1L, utente, mezzo, StatoPrenotazione.attiva, LocalTime.now());
 
-        when(prenotazioneRepository.findById(1L)).thenReturn(Optional.of(prenotazione));
+        when(prenotazioneRepository.findByIdWithMezzo(1L)).thenReturn(Optional.of(prenotazione));
 
         boolean result = service.annullaPrenotazione(1L);
 
@@ -99,7 +99,7 @@ class GestionePrenotazioneServiceImplTest {
     void annullaPrenotazione_WithNonActiveBooking_ThrowsConflict() {
         Prenotazione prenotazione = TestDataFactory.createPrenotazione(1L, utente, mezzo, StatoPrenotazione.scaduta, LocalTime.now());
 
-        when(prenotazioneRepository.findById(1L)).thenReturn(Optional.of(prenotazione));
+        when(prenotazioneRepository.findByIdWithMezzo(1L)).thenReturn(Optional.of(prenotazione));
 
         assertThrows(ResponseStatusException.class,
                 () -> service.annullaPrenotazione(1L));
@@ -111,7 +111,7 @@ class GestionePrenotazioneServiceImplTest {
         Prenotazione expiredPrenotazione = TestDataFactory.createPrenotazione(
                 1L, utente, mezzo, StatoPrenotazione.attiva, LocalTime.now().minusMinutes(16));
 
-        when(prenotazioneRepository.findByStato(StatoPrenotazione.attiva))
+        when(prenotazioneRepository.findByStatoWithDetails(StatoPrenotazione.attiva))
                 .thenReturn(List.of(expiredPrenotazione));
 
         service.gestisciTimeout();
@@ -127,7 +127,7 @@ class GestionePrenotazioneServiceImplTest {
         Prenotazione activePrenotazione = TestDataFactory.createPrenotazione(
                 1L, utente, mezzo, StatoPrenotazione.attiva, LocalTime.now().minusMinutes(5));
 
-        when(prenotazioneRepository.findByStato(StatoPrenotazione.attiva))
+        when(prenotazioneRepository.findByStatoWithDetails(StatoPrenotazione.attiva))
                 .thenReturn(List.of(activePrenotazione));
 
         service.gestisciTimeout();
@@ -142,7 +142,7 @@ class GestionePrenotazioneServiceImplTest {
                 1L, utente, mezzo, StatoPrenotazione.attiva, LocalTime.now().minusMinutes(16));
 
         when(prenotazioneRepository.findById(1L)).thenReturn(Optional.of(prenotazione));
-        when(prenotazioneRepository.findByStato(StatoPrenotazione.attiva))
+        when(prenotazioneRepository.findByStatoWithDetails(StatoPrenotazione.attiva))
                 .thenReturn(List.of(prenotazione));
 
         service.notificaScadenzaTempo(1L);

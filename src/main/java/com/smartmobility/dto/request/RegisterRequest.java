@@ -53,5 +53,5 @@ public class RegisterRequest {
     public int hashCode() { return Objects.hash(nome, cognome, email, password, datanascita); }
 
     @Override
-    public String toString() { return "RegisterRequest{nome='" + nome + "', cognome='" + cognome + "', email='" + email + "', password='" + password + "', datanascita='" + datanascita + "'}"; }
+    public String toString() { return "RegisterRequest{nome='" + nome + "', cognome='" + cognome + "', email='" + email + "', password='[REDACTED]', datanascita='" + datanascita + "'}"; }
 }

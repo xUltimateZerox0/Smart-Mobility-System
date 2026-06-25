@@ -8,6 +8,7 @@ import com.smartmobility.service.GestioneUtentiService;
 import com.smartmobility.service.SessionRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -45,6 +46,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     }
 
     @Override
+    @Transactional
     public boolean gestioneUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
@@ -63,6 +65,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     }
 
     @Override
+    @Transactional
     public boolean bloccaUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
@@ -73,6 +76,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     }
 
     @Override
+    @Transactional
     public boolean sbloccaUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
@@ -82,6 +86,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     }
 
     @Override
+    @Transactional
     public boolean disattivaUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
@@ -92,6 +97,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     }
 
     @Override
+    @Transactional
     public void cancellaReport(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
@@ -100,6 +106,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     }
 
     @Override
+    @Transactional
     public void azioneCorrettiva(Long idUtente, String azione) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));

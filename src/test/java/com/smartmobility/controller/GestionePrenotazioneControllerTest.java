@@ -3,6 +3,7 @@ package com.smartmobility.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.PrenotazioneRequest;
 import com.smartmobility.dto.response.PrenotazioneResponse;
+import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestionePrenotazioneService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ class GestionePrenotazioneControllerTest {
 
     @MockBean
     private GestionePrenotazioneService gestionePrenotazioneService;
+
+    @MockBean
+    private SecurityHelper securityHelper;
 
     @Test
     void createBooking_WithValidRequest_ReturnsOk() throws Exception {

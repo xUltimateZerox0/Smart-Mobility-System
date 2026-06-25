@@ -1,10 +1,12 @@
 package com.smartmobility.service;
 
+import com.smartmobility.dto.response.CorsaResponse;
 import com.smartmobility.dto.response.PercorsoResponse;
 import com.smartmobility.dto.response.StimaCorsaResponse;
 
 public interface GestioneCorsaService {
-    Long avviaCorsa(Long idMezzo, Long idUtente);
+    Long avviaCorsa(Long idMezzo, Long idUtente, String qrCode);
+    CorsaResponse getCorsaAttiva(Long idUtente);
     void terminaCorsa(Long idCorsa);
     StimaCorsaResponse aggiornaStima(Long idCorsa);
     boolean sospensioneCorsa(Long idCorsa);

@@ -9,6 +9,7 @@ import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.GestorePagamentoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
     }
 
     @Override
+    @Transactional
     public boolean pagamentoCorsa(Long idUtente, Long idMetodoPagamento, Long idCorsa, Double costo) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
@@ -44,6 +46,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
     }
 
     @Override
+    @Transactional
     public boolean elaboraDatiCarta(Long idUtente, String numCarta, String dsCarta, String cvv, String intestatarioCarta) {
         if (metodoPagamentoRepository.existsByNumCarta(numCarta)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Carta già registrata");

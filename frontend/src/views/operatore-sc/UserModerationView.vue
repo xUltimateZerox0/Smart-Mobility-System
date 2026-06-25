@@ -5,7 +5,8 @@
 
     <div class="two-column-layout">
       <div class="user-list-column">
-        <div v-if="users.length > 0" class="user-list">
+        <div v-if="loadError" class="error-msg">{{ loadError }}</div>
+        <div v-else-if="users.length > 0" class="user-list">
           <div v-for="u in users" :key="u.id"
             class="card user-item"
             :class="{ selected: userId === u.idUtente }"
@@ -17,7 +18,8 @@
             </p>
           </div>
         </div>
-        <div v-else style="color:var(--gray)">Caricamento utenti...</div>
+        <div v-else-if="usersLoading" style="color:var(--gray)">Caricamento utenti...</div>
+        <div v-else style="color:var(--gray)">Nessun utente trovato</div>
       </div>
 
       <div v-if="selectedUser" class="detail-column card">
@@ -89,14 +91,22 @@ const actionLoading = ref(false)
 const correctiveActionText = ref('')
 const error = ref('')
 const successMsg = ref('')
+const loadError = ref('')
+const usersLoading = ref(false)
 
 const selectedUser = computed(() => users.value.find(u => u.idUtente === userId.value) || null)
 
 onMounted(async () => {
+  usersLoading.value = true
   try {
     const res = await adminApi.getUsers()
     users.value = res.data
-  } catch {}
+  } catch (e: any) {
+    loadError.value = e.response?.data?.message || 'Errore nel caricamento degli utenti. Verifica i permessi di accesso.'
+    console.error('getUsers failed:', e)
+  } finally {
+    usersLoading.value = false
+  }
 })
 
 function statoBadgeClass(stato: string): string {

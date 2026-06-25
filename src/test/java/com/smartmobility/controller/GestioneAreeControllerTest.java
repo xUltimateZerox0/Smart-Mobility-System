@@ -84,7 +84,7 @@ class GestioneAreeControllerTest {
     @Test
     void getZones_ReturnsListOfZones() throws Exception {
         List<ZonaGeograficaResponse> zones = List.of(
-                new ZonaGeograficaResponse(1L, "ZTL", "ZTL", "Centro storico", "41.9028,12.4964")
+                new ZonaGeograficaResponse(1L, "ZTL", "Centro storico", "41.9028,12.4964")
         );
         when(gestioneAreeService.getZoneGeografiche()).thenReturn(zones);
 

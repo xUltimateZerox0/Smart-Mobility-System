@@ -72,6 +72,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { isAxiosError } from 'axios'
 import * as statisticsApi from '../../api/statistics'
 import { lockVehicle, unlockVehicle, startVehicleMaintenance } from '../../api/fleet'
 import type { StatisticheResponse, FleetAnalysisResponse } from '../../types'
@@ -93,22 +94,50 @@ async function analyze() {
   loading.value = true; error.value = ''
   try {
     const res = await statisticsApi.analyzeStatistics(dataInizio.value + 'T00:00:00', dataFine.value + 'T23:59:59')
-    stats.value = res.data
-  } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
+    stats.value = res.data ?? null
+  } catch (e: unknown) {
+    if (isAxiosError(e)) {
+      error.value = e.response?.data?.message || 'Errore'
+    } else {
+      error.value = 'Errore'
+    }
+  }
   finally { loading.value = false }
 }
 
 async function exportStats() {
+  if (!dataInizio.value || !dataFine.value) {
+    error.value = 'Seleziona un intervallo di date prima di esportare'
+    return
+  }
   error.value = ''
   try {
-    const res = await statisticsApi.exportStatistics([])
-    const url = URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }))
+    if (!stats.value) {
+      const res = await statisticsApi.analyzeStatistics(dataInizio.value + 'T00:00:00', dataFine.value + 'T23:59:59')
+      stats.value = res.data ?? null
+      if (!stats.value) { error.value = 'Nessun dato disponibile'; return }
+    }
+    const s = stats.value!
+    const csv = [
+      'Metrica,Valore',
+      `Corse totali,${s.totalCorse}`,
+      `Km totali,${s.totalKm.toFixed(2)}`,
+      `Ricavo totale,${s.totalRicavo.toFixed(2)}`,
+      `Durata media (min),${s.mediaDurata.toFixed(1)}`,
+    ].join('\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
     const a = document.createElement('a')
     a.href = url
     a.download = 'statistiche.csv'
     a.click()
     URL.revokeObjectURL(url)
-  } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
+  } catch (e: unknown) {
+    if (isAxiosError(e)) {
+      error.value = e.response?.data?.message || 'Errore durante l\'esportazione'
+    } else {
+      error.value = 'Errore durante l\'esportazione'
+    }
+  }
 }
 
 async function generateReport() {
@@ -118,9 +147,12 @@ async function generateReport() {
   }
   reportLoading.value = true; error.value = ''; reportGenerated.value = false
   try {
-    const res = await statisticsApi.analyzeStatistics(dataInizio.value + 'T00:00:00', dataFine.value + 'T23:59:59')
-    stats.value = res.data
-    const reportData = JSON.stringify(res.data, null, 2)
+    if (!stats.value) {
+      const res = await statisticsApi.analyzeStatistics(dataInizio.value + 'T00:00:00', dataFine.value + 'T23:59:59')
+      stats.value = res.data ?? null
+      if (!stats.value) { error.value = 'Nessun dato disponibile'; return }
+    }
+    const reportData = JSON.stringify(stats.value, null, 2)
     const blob = new Blob([reportData], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -131,7 +163,13 @@ async function generateReport() {
     URL.revokeObjectURL(url)
     reportGenerated.value = true
     successMsg.value = 'Report generato e scaricato con successo'
-  } catch (e: any) { error.value = e.response?.data?.message || 'Errore durante la generazione del report' }
+  } catch (e: unknown) {
+    if (isAxiosError(e)) {
+      error.value = e.response?.data?.message || 'Errore durante la generazione del report'
+    } else {
+      error.value = 'Errore durante la generazione del report'
+    }
+  }
   finally { reportLoading.value = false }
 }
 
@@ -139,24 +177,48 @@ async function loadFleet() {
   fleetLoading.value = true; fleetError.value = ''
   try {
     const res = await statisticsApi.getFleetAnalysis()
-    fleetData.value = res.data
-  } catch (e: any) { fleetError.value = e.response?.data?.message || 'Errore caricamento flotta' }
+    fleetData.value = res.data ?? null
+  } catch (e: unknown) {
+    if (isAxiosError(e)) {
+      fleetError.value = e.response?.data?.message || 'Errore caricamento flotta'
+    } else {
+      fleetError.value = 'Errore caricamento flotta'
+    }
+  }
   finally { fleetLoading.value = false }
 }
 
 async function lockVehicleAction(id: number) {
   try { await lockVehicle(id); await loadFleet() }
-  catch (e: any) { fleetError.value = e.response?.data?.message || 'Errore' }
+  catch (e: unknown) {
+    if (isAxiosError(e)) {
+      fleetError.value = e.response?.data?.message || 'Errore durante il lock'
+    } else {
+      fleetError.value = 'Errore durante il lock'
+    }
+  }
 }
 
 async function unlockVehicleAction(id: number) {
   try { await unlockVehicle(id); await loadFleet() }
-  catch (e: any) { fleetError.value = e.response?.data?.message || 'Errore' }
+  catch (e: unknown) {
+    if (isAxiosError(e)) {
+      fleetError.value = e.response?.data?.message || 'Errore durante l\'unlock'
+    } else {
+      fleetError.value = 'Errore durante l\'unlock'
+    }
+  }
 }
 
 async function maintenanceAction(id: number) {
   try { await startVehicleMaintenance(id); await loadFleet() }
-  catch (e: any) { fleetError.value = e.response?.data?.message || 'Errore' }
+  catch (e: unknown) {
+    if (isAxiosError(e)) {
+      fleetError.value = e.response?.data?.message || 'Errore durante la manutenzione'
+    } else {
+      fleetError.value = 'Errore durante la manutenzione'
+    }
+  }
 }
 
 function badgeClass(stato: string): string {

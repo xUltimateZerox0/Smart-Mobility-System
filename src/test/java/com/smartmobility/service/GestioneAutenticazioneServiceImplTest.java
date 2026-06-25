@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -44,7 +45,7 @@ class GestioneAutenticazioneServiceImplTest {
     @Test
     void invioCredenziali_WithValidCredentials_ReturnsAuthResponse() {
         Utente utente = TestDataFactory.createDefaultUtente();
-        utente.setPassword("5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"); // SHA-256 of "password"
+        utente.setPassword(new BCryptPasswordEncoder().encode("password"));
 
         when(attoreRepository.findByEmail("mario.rossi@example.com")).thenReturn(Optional.of(utente));
         when(sessionRegistry.createSession(utente)).thenReturn("token-123");
@@ -68,7 +69,7 @@ class GestioneAutenticazioneServiceImplTest {
     @Test
     void invioCredenziali_WithWrongPassword_ThrowsUnauthorized() {
         Utente utente = TestDataFactory.createDefaultUtente();
-        utente.setPassword("5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
+        utente.setPassword(new BCryptPasswordEncoder().encode("password"));
 
         when(attoreRepository.findByEmail("mario.rossi@example.com")).thenReturn(Optional.of(utente));
 
@@ -108,7 +109,7 @@ class GestioneAutenticazioneServiceImplTest {
     @Test
     void login_SingleSessionConstraint_TerminatesPreviousSession() {
         Utente utente = TestDataFactory.createDefaultUtente();
-        utente.setPassword("5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
+        utente.setPassword(new BCryptPasswordEncoder().encode("password"));
 
         when(attoreRepository.findByEmail("mario.rossi@example.com")).thenReturn(Optional.of(utente));
         when(sessionRegistry.createSession(utente)).thenReturn("token-456");
