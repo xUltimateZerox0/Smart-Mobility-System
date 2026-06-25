@@ -38,6 +38,12 @@ public class Corsa {
     @JoinColumn(name = "id_utente")
     private Utente utente;
 
+    @Column(name = "is_paused")
+    private boolean isPaused;
+
+    @Column(name = "totale_pausa_millis")
+    private long totalePausaMillis;
+
     public Corsa() {}
 
     public Long getIdCorsa() {
@@ -110,5 +116,21 @@ public class Corsa {
 
     public void setUtente(Utente utente) {
         this.utente = utente;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        isPaused = paused;
+    }
+
+    public long getTotalePausaMillis() {
+        return totalePausaMillis;
+    }
+
+    public void setTotalePausaMillis(long totalePausaMillis) {
+        this.totalePausaMillis = totalePausaMillis;
     }
 }

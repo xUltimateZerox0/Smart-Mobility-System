@@ -58,6 +58,8 @@ export interface CorsaResponse {
   stato: string
   idMetodoPagamento?: number
   metodoPagamentoLabel?: string
+  isPaused?: boolean
+  totalePausaMillis?: number
 }
 
 export interface MetodoPagamentoResponse {

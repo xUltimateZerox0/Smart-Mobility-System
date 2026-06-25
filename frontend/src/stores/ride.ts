@@ -6,33 +6,36 @@ export const useRideStore = defineStore('ride', () => {
   const corsaId = ref<number>(0)
   const idMezzo = ref<number>(0)
   const dataInizio = ref<string | null>(null)
-  const metodoPagamentoId = ref<number | null>(null)
-  const metodoPagamentoLabel = ref('')
-  const isPaused = ref(false)
-  const stato = ref<string>('')
-  const costo = ref<number>(0)
+const metodoPagamentoId = ref<number | null>(null)
+const metodoPagamentoLabel = ref('')
+const isPaused = ref(false)
+const totalePausaMillis = ref(0)
+const stato = ref<string>('')
+const costo = ref<number>(0)
 
-  const hasActiveRide = computed(() => corsaId.value > 0)
-  const orarioInizio = computed(() => dataInizio.value)
+const hasActiveRide = computed(() => corsaId.value > 0)
+const orarioInizio = computed(() => dataInizio.value)
 
-  async function fetchActiveRide(): Promise<boolean> {
-    try {
-      const res = await ridesApi.getActiveRide()
-      if (res.data && res.data.id) {
-        corsaId.value = res.data.id
-        idMezzo.value = res.data.idMezzo || 0
-        dataInizio.value = res.data.dataInizio || null
-        metodoPagamentoId.value = res.data.idMetodoPagamento || null
-        metodoPagamentoLabel.value = res.data.metodoPagamentoLabel || ''
-        stato.value = res.data.stato || 'in_corso'
-        return true
-      }
-      clearRide()
-      return false
-    } catch {
-      return corsaId.value > 0
+async function fetchActiveRide(): Promise<boolean> {
+  try {
+    const res = await ridesApi.getActiveRide()
+    if (res.data && res.data.id) {
+      corsaId.value = res.data.id
+      idMezzo.value = res.data.idMezzo || 0
+      dataInizio.value = res.data.dataInizio || null
+      metodoPagamentoId.value = res.data.idMetodoPagamento || null
+      metodoPagamentoLabel.value = res.data.metodoPagamentoLabel || ''
+      isPaused.value = res.data.isPaused || false
+      totalePausaMillis.value = res.data.totalePausaMillis || 0
+      stato.value = res.data.stato || 'in_corso'
+      return true
     }
+    clearRide()
+    return false
+  } catch {
+    return corsaId.value > 0
   }
+}
 
   function setRide(id: number, mezzoId: number) {
     corsaId.value = id
@@ -59,13 +62,14 @@ export const useRideStore = defineStore('ride', () => {
     metodoPagamentoId.value = null
     metodoPagamentoLabel.value = ''
     isPaused.value = false
+    totalePausaMillis.value = 0
     stato.value = ''
     costo.value = 0
   }
 
   return {
     corsaId, idMezzo, dataInizio, metodoPagamentoId, metodoPagamentoLabel,
-    isPaused, stato, costo, hasActiveRide, orarioInizio,
+    isPaused, totalePausaMillis, stato, costo, hasActiveRide, orarioInizio,
     fetchActiveRide, setRide, setPaymentMethod, setPaused, updateCosto, clearRide
   }
 })

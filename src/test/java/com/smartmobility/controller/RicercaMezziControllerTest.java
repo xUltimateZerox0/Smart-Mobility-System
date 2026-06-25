@@ -89,6 +89,59 @@ class RicercaMezziControllerTest {
     }
 
     @Test
+    void getNearbyVehicles_With5kmRange_ReturnsOk() throws Exception {
+        NearbyVehiclesRequest request = new NearbyVehiclesRequest("41.9028,12.4964,0.0", 5.0f);
+        List<MezzoResponse> responseList = List.of(
+                new MezzoResponse(1L, "bici", "disponibile", 41.9028, 12.4964, 80.0, 5.0, "FLOTTA-1")
+        );
+
+        when(ricercaMezziService.visualizzaMezziVicini("41.9028,12.4964,0.0", 5.0f))
+                .thenReturn(responseList);
+
+        mockMvc.perform(post("/vehicles/nearby")
+                        .header("Authorization", "Bearer test-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getNearbyVehicles_With5kmAsInteger_ReturnsOk() throws Exception {
+        String json = "{\"coordinateUtente\": \"41.9028,12.4964,0.0\", \"raggio\": 5}";
+
+        when(ricercaMezziService.visualizzaMezziVicini("41.9028,12.4964,0.0", 5.0f))
+                .thenReturn(List.of());
+
+        mockMvc.perform(post("/vehicles/nearby")
+                        .header("Authorization", "Bearer test-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getNearbyVehicles_WithInvalidRange6km_ReturnsBadRequest() throws Exception {
+        String json = "{\"coordinateUtente\": \"41.9028,12.4964,0.0\", \"raggio\": 6}";
+
+        mockMvc.perform(post("/vehicles/nearby")
+                        .header("Authorization", "Bearer test-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getNearbyVehicles_WithRange1km_ReturnsBadRequest() throws Exception {
+        String json = "{\"coordinateUtente\": \"41.9028,12.4964,0.0\", \"raggio\": 1}";
+
+        mockMvc.perform(post("/vehicles/nearby")
+                        .header("Authorization", "Bearer test-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void getVehicleDetails_WithValidId_ReturnsMezzoResponse() throws Exception {
         MezzoResponse response = new MezzoResponse(1L, "scooter", "disponibile", 41.9028, 12.4964, 60.0, 8.0, "FLOTTA-1");
 

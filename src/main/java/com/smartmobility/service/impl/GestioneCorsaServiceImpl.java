@@ -51,7 +51,6 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
     private final Map<Long, PendingPayment> pendingPaymentMethods = new ConcurrentHashMap<>();
     private final Map<Long, Long> pausaStartTimes = new ConcurrentHashMap<>();
-    private final Map<Long, Long> totalePausaMillis = new ConcurrentHashMap<>();
     private final Object lock = new Object();
 
     private static class PendingPayment {
@@ -140,9 +139,8 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Metodo di pagamento non valido o non trovato"));
         corsa.setMetodoPagamento(metodo);
+        corsa.setTotalePausaMillis(0L);
         corsa = corsaRepository.save(corsa);
-
-        totalePausaMillis.put(corsa.getIdCorsa(), 0L);
 
         boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(idMezzo);
         if (!sbloccato) {
@@ -214,7 +212,9 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 null,
                 "in_corso",
                 idMetodo,
-                metodoLabel
+                metodoLabel,
+                corsa.isPaused(),
+                corsa.getTotalePausaMillis()
         );
     }
 
@@ -245,6 +245,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         corsa.setCosto((float) cost);
         corsa.setOrarioFine(LocalDateTime.now());
         corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);
+        corsa.setPaused(false);
         corsaRepository.save(corsa);
         completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
 
@@ -257,7 +258,6 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             mezzoRepository.save(mezzo);
         }
 
-        totalePausaMillis.remove(idCorsa);
         pausaStartTimes.remove(idCorsa);
 
         String metodoLabel = null;
@@ -283,7 +283,9 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 0.0,
                 "completata",
                 idMetodo,
-                metodoLabel
+                metodoLabel,
+                false,
+                0
         );
     }
 
@@ -315,6 +317,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             }
         }
 
+        corsa.setPaused(false);
         corsaRepository.save(corsa);
         completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
 
@@ -324,7 +327,6 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             mezzoRepository.save(mezzo);
         }
 
-        totalePausaMillis.remove(idCorsa);
         pausaStartTimes.remove(idCorsa);
 
         return buildCorsaResponse(corsa);
@@ -365,7 +367,9 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 0.0,
                 corsa.getOrarioFine() != null ? "completata" : "in_corso",
                 idMetodo,
-                metodoLabel
+                metodoLabel,
+                corsa.isPaused(),
+                corsa.getTotalePausaMillis()
         );
     }
 
@@ -397,7 +401,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         LocalDateTime end = corsa.getOrarioFine() != null ? corsa.getOrarioFine() : LocalDateTime.now();
 
         long secondiTotali = ChronoUnit.SECONDS.between(start, end);
-        long pausaMs = totalePausaMillis.getOrDefault(corsa.getIdCorsa(), 0L);
+        long pausaMs = corsa.getTotalePausaMillis();
         long secondiPausa = pausaMs / 1000;
         long secondiEffettivi = Math.max(0, secondiTotali - secondiPausa);
 
@@ -434,7 +438,9 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 }
                 mezzo.setStato(StatoMezzo.sospeso);
                 mezzoRepository.save(mezzo);
+                corsa.setPaused(true);
                 pausaStartTimes.put(idCorsa, System.currentTimeMillis());
+                corsaRepository.save(corsa);
                 return true;
             } else if (mezzo.getStato() == StatoMezzo.sospeso) {
                 boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(mezzo.getIdMezzo());
@@ -446,8 +452,10 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 Long pStart = pausaStartTimes.remove(idCorsa);
                 if (pStart != null) {
                     long durata = System.currentTimeMillis() - pStart;
-                    totalePausaMillis.merge(idCorsa, durata, Long::sum);
+                    corsa.setTotalePausaMillis(corsa.getTotalePausaMillis() + durata);
                 }
+                corsa.setPaused(false);
+                corsaRepository.save(corsa);
                 return true;
             }
         }

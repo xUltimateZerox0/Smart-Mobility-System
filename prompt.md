@@ -17,7 +17,22 @@ You are a senior software engineer and your job is to start analyzing the entire
 
 To fix those problems, make sure to analyze in particular functions and methods related to the flow and to follow the stream correctly, the calls, the return calls, everywhere. Do this with multiple subagents in parallel, creating the real and deep tests related to these functions and problems to really verify the working status of this methods and funcionality at logical level and do not rely on "build success" or "compilation not failed" "zero errors", analyze that beyond that.
 
+You are a senior software engineer and your job is to start analyzing the entire flow of backend and frontend of the system, in a critical and objective way. Make sure to analyze everything not only function to function, but even following the flow and the stack pile activation and the returns call, like a real developer debugging and do it with multiple subagent in parallel to speed up the workflow (use the use-subagent skill). In particular, there are some flow that presents many inconsistency, so start analyzing and evaluating them in order to study the flow and fix the problem:
 
+- The search at the 5 km option is broken, since after the user execute the 2km search and doesn't found any vehicle, the 5km part result in a BAD REQUEST and in a complete error with no proxecution. Analyze deeply and critically every function, call, return call or methods related and search the specific problem, then solve the flaws and make sure to test it multiple times, to make sure the flow isn't broken. Follow it until the end. Since this is the second time that i ask you that, if you can't fix it, at least transform Bad Request in "nessun mezzo trovato" o qualcosa del genere.
+
+-Right now, if the user start a ride and then suspend the ride, the status of suspended result in any interface/view, but if he logout and login again in the interface, the suspended state brokes and the ride resume without any interaction. Make sure that the ride status does not change automatically even if the user logs in again, in order to avoid errors like this. Analyze deeply and critically every function, call, return call or methods related and search the specific problem, then solve the flaws and make sure to test it multiple times, to make sure the flow isn't broken. Follow it until the end and assure that this is fixed. It is reallly important, pay attention.
+
+- The error if the user hasn't selected the payment method is QRCOde invalid, but it must say that the problem is with the Payment method instead, so change the error message in this specific case.
+
+- In the left angle of the interface, the text "Pubblica Amministrazione" or "Smart Mobility" are in blue, same color of the background. Change the color of the test and put it to bold to make it effectively readable
+
+To fix those problems, make sure to analyze in particular functions and methods related to the flow and to follow the stream correctly, the calls, the return calls, everywhere. Do this with multiple subagents in parallel (use-subagents skills), creating the real and deep tests related to these functions and problems to really verify the working status of this methods and funcionality at logical level and do not rely on "build success" or "compilation not failed" "zero errors", analyze that beyond that. Use the stream coding skills to
+
+
+
+
+VALIDATION:
 
 You are a senior software engineer and your job is to analyze critically, objectically and deeply the documentation of the project in order to validate it, correct any possibile ambiguity or flaws, with the goal of making it AI-ready for stream coding and production. So, start by studying the documentation.md and right after that, analyze the Master_Spec: everything here must coincide, since the documentation is the sprint report and the Master_Spec contains the core logic and the various specifics of the system. If there are any conflicts, errors or inconsistency here, stop the process and totally focus on them, prompting the user to make absolute clarity. Each step of the validation must be executed with the stream-coding skill and the clarity gates skill: each pillar and clarity/quality gates must pass with perfect score, this is extremely important. Delegate as many subagents as you need, using the use-subagents skill.
 

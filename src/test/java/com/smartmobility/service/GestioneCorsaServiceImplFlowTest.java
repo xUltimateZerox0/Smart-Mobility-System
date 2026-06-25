@@ -421,4 +421,65 @@ class GestioneCorsaServiceImplFlowTest {
         assertNotNull(corsa.getOrarioFine());
         assertEquals(StatoMezzo.disponibile, mezzo.getStato());
     }
+
+    @Test
+    void sospensioneCorsa_SetsCorsaPausedFlag() {
+        mezzo.setStato(StatoMezzo.in_uso);
+        Corsa corsa = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento,
+                LocalDateTime.now().minusHours(1), 10.0f);
+        corsa.setOrarioFine(null);
+
+        when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(mezzoIoTService.bloccoMezzoFisico(1L)).thenReturn(true);
+
+        boolean result = service.sospensioneCorsa(1L);
+
+        assertTrue(result);
+        assertTrue(corsa.isPaused());
+        verify(corsaRepository, atLeastOnce()).save(corsa);
+    }
+
+    @Test
+    void sospensioneCorsa_PauseAndResume_AccumulatesPauseMillis() {
+        mezzo.setStato(StatoMezzo.in_uso);
+        Corsa corsa = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento,
+                LocalDateTime.now().minusHours(1), 10.0f);
+        corsa.setOrarioFine(null);
+        corsa.setTotalePausaMillis(0);
+
+        // PAUSE
+        when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(mezzoIoTService.bloccoMezzoFisico(1L)).thenReturn(true);
+        service.sospensioneCorsa(1L);
+
+        assertTrue(corsa.isPaused());
+
+        // RESUME
+        mezzo.setStato(StatoMezzo.sospeso);
+        when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
+        service.sospensioneCorsa(1L);
+
+        assertFalse(corsa.isPaused());
+        assertTrue(corsa.getTotalePausaMillis() >= 0);
+        verify(corsaRepository, atLeast(2)).save(corsa);
+    }
+
+    @Test
+    void getCorsaAttiva_WithPausedRide_ReturnsIsPausedTrue() {
+        Corsa corsa = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento,
+                LocalDateTime.now().minusHours(1), 10.0f);
+        corsa.setOrarioFine(null);
+        corsa.setPaused(true);
+        corsa.setTotalePausaMillis(5000);
+
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of(corsa));
+
+        CorsaResponse response = service.getCorsaAttiva(1L);
+
+        assertNotNull(response);
+        assertTrue(response.isPaused());
+        assertTrue(response.getTotalePausaMillis() > 0);
+    }
 }

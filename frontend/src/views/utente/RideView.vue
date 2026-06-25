@@ -179,7 +179,8 @@ function calculateElapsedSeconds(): number {
   if (!rideStore.orarioInizio) return 0
   const startTime = new Date(rideStore.orarioInizio).getTime()
   if (isNaN(startTime)) return 0
-  return Math.max(0, Math.floor((Date.now() - startTime) / 1000))
+  const pauseMs = rideStore.totalePausaMillis || 0
+  return Math.max(0, Math.floor((Date.now() - startTime - pauseMs) / 1000))
 }
 
 function startTimers() {
@@ -190,7 +191,8 @@ function startTimers() {
 
   timerInterval = setInterval(() => {
     if (!isPaused.value) {
-      elapsedSeconds.value = Math.max(0, Math.floor((Date.now() - startTime) / 1000))
+      const pauseMs = rideStore.totalePausaMillis || 0
+      elapsedSeconds.value = Math.max(0, Math.floor((Date.now() - startTime - pauseMs) / 1000))
     }
   }, 1000)
 
@@ -248,11 +250,13 @@ onMounted(async () => {
 
   if (hasActiveOnServer) {
     corsaAvviata.value = true
-    isPaused.value = false
+    isPaused.value = rideStore.isPaused
     metodoPagamentoId.value = rideStore.metodoPagamentoId
     metodoPagamentoLabel.value = rideStore.metodoPagamentoLabel
     elapsedSeconds.value = calculateElapsedSeconds()
-    startTimers()
+    if (!isPaused.value) {
+      startTimers()
+    }
     await loadVehicleTariffa()
     await updateEstimate()
     startRidePolling()
@@ -329,7 +333,7 @@ async function startRideFlow() {
     localStorage.removeItem('pending_payment_method_id')
     await rideStore.fetchActiveRide()
     metodoPagamentoLabel.value = rideStore.metodoPagamentoLabel
-    isPaused.value = false
+    isPaused.value = rideStore.isPaused
     elapsedSeconds.value = calculateElapsedSeconds()
     startTimers()
     await updateEstimate()
