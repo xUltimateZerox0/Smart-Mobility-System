@@ -55,11 +55,11 @@ public class GestioneCorsaController {
     }
 
     @PostMapping("/{id}/end")
-    public ResponseEntity<Void> endRide(@PathVariable Long id,
-                                         @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<CorsaResponse> endRide(@PathVariable Long id,
+                                                  @RequestHeader(value = "Authorization", required = false) String authHeader) {
         securityHelper.requireAuth(authHeader);
-        gestioneCorsaService.terminaCorsa(id);
-        return ResponseEntity.ok().build();
+        CorsaResponse response = gestioneCorsaService.terminaCorsa(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/estimate")
@@ -92,8 +92,13 @@ public class GestioneCorsaController {
     }
 
     @PostMapping("/payment-method")
-    public ResponseEntity<Void> selectPaymentMethod(@Valid @RequestBody PaymentMethodSelectionRequest request) {
-        gestioneCorsaService.acquisisciSceltaMetodo(request.getIdMetodoPagamento());
+    public ResponseEntity<Void> selectPaymentMethod(@Valid @RequestBody PaymentMethodSelectionRequest request,
+                                                     @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Long userId = securityHelper.getCurrentUserId(authHeader);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        gestioneCorsaService.acquisisciSceltaMetodo(request.getIdMetodoPagamento(), userId);
         return ResponseEntity.ok().build();
     }
 

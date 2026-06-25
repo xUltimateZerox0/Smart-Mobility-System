@@ -102,7 +102,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
 
-        List<Corsa> corseAttive = corsaRepository.findByUtenteIdAndOrarioFineIsNull(utente.getId());
+        List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);
         if (!corseAttive.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Hai già una corsa attiva. Termina la corsa corrente prima di avviarne una nuova.");
         }
@@ -117,13 +117,15 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         corsa = corsaRepository.save(corsa);
 
         Long idMetodoPagamento = pendingPaymentMethods.remove(idUtente);
-        if (idMetodoPagamento != null) {
-            MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento).orElse(null);
-            if (metodo != null) {
-                corsa.setMetodoPagamento(metodo);
-                corsaRepository.save(corsa);
-            }
+        if (idMetodoPagamento == null) {
+            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
+                    "Nessun metodo di pagamento selezionato. Seleziona un metodo di pagamento prima di avviare la corsa.");
         }
+        MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Metodo di pagamento non valido o non trovato"));
+        corsa.setMetodoPagamento(metodo);
+        corsaRepository.save(corsa);
 
         boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(idMezzo);
         if (!sbloccato) {
@@ -160,13 +162,15 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
 
-        List<Corsa> corseAttive = corsaRepository.findByUtenteIdAndOrarioFineIsNull(utente.getId());
+        List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);
         if (corseAttive.isEmpty()) {
             return null;
         }
 
         if (corseAttive.size() > 1) {
-            log.warn("Utente {} ha {} corse attive. Restituita la prima.", idUtente, corseAttive.size());
+            log.error("Grave inconsistenza: utente {} ha {} corse attive multiple", idUtente, corseAttive.size());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Rilevate multiple corse attive per l'utente. Contattare l'assistenza.");
         }
 
         Corsa corsa = corseAttive.get(0);
@@ -201,16 +205,41 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
     @Override
     @Transactional
-    public void terminaCorsa(Long idCorsa) {
+    public CorsaResponse terminaCorsa(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
 
-        aggiornaStima(idCorsa);
+        if (corsa.getOrarioFine() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Corsa già terminata");
+        }
 
-        // Aggiunge costo fisso di sospensione una tantum se la corsa è stata sospesa
+        float cost = calcolaCosto(corsa);
         if (totalePausaMillis.getOrDefault(idCorsa, 0L) > 0) {
-            float costoSospensione = corsa.getCosto() + SOSPENSIONE_FISSO;
-            corsa.setCosto(costoSospensione);
+            cost += SOSPENSIONE_FISSO;
+        }
+
+        if (corsa.getUtente() != null && corsa.getMetodoPagamento() != null) {
+            boolean pagato = gestorePagamentoService.pagamentoCorsa(
+                    corsa.getUtente().getIdUtente(),
+                    corsa.getMetodoPagamento().getIdMetodoPagamento(),
+                    idCorsa,
+                    (double) cost);
+            if (!pagato) {
+                throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
+                        "Pagamento non riuscito. La corsa rimane aperta.");
+            }
+        }
+
+        corsa.setCosto(cost);
+        completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
+
+        Mezzo mezzo = corsa.getMezzo();
+        if (mezzo != null) {
+            if (mezzo.getStato() != StatoMezzo.sospeso) {
+                mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());
+            }
+            mezzo.setStato(StatoMezzo.disponibile);
+            mezzoRepository.save(mezzo);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -218,29 +247,34 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);
         corsaRepository.save(corsa);
 
-        if (corsa.getMetodoPagamento() != null) {
-            boolean pagato = gestorePagamentoService.pagamentoCorsa(
-                    corsa.getUtente().getIdUtente(),
-                    corsa.getMetodoPagamento().getIdMetodoPagamento(),
-                    idCorsa,
-                    (double) corsa.getCosto());
-            if (!pagato) {
-                throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
-                        "Pagamento non riuscito. La corsa rimane aperta.");
+        totalePausaMillis.remove(idCorsa);
+        pausaStartTimes.remove(idCorsa);
+
+        String metodoLabel = null;
+        Long idMetodo = null;
+        MetodoPagamento mp = corsa.getMetodoPagamento();
+        if (mp != null) {
+            idMetodo = mp.getIdMetodoPagamento();
+            String num = mp.getNumCarta();
+            if (num != null && num.length() >= 4) {
+                metodoLabel = num.substring(num.length() - 4) + " - " + mp.getIntestatarioCarta();
+            } else {
+                metodoLabel = mp.getIntestatarioCarta();
             }
         }
 
-        completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
-
-        Mezzo mezzo = corsa.getMezzo();
-        if (mezzo != null) {
-            mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());
-            mezzo.setStato(StatoMezzo.disponibile);
-            mezzoRepository.save(mezzo);
-        }
-
-        totalePausaMillis.remove(idCorsa);
-        pausaStartTimes.remove(idCorsa);
+        return new CorsaResponse(
+                corsa.getIdCorsa(),
+                corsa.getUtente() != null ? corsa.getUtente().getIdUtente() : null,
+                mezzo != null ? mezzo.getIdMezzo() : null,
+                corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,
+                now.toString(),
+                (double) corsa.getCosto(),
+                0.0,
+                "completata",
+                idMetodo,
+                metodoLabel
+        );
     }
 
     @Override
@@ -254,22 +288,27 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo associato alla corsa non trovato");
         }
 
-        LocalDateTime start = corsa.getOrarioInizio();
-        LocalDateTime now = LocalDateTime.now();
-
-        long secondiTotali = ChronoUnit.SECONDS.between(start, now);
-
-        long pausaMs = totalePausaMillis.getOrDefault(idCorsa, 0L);
-        long secondiPausa = pausaMs / 1000;
-        long secondiEffettivi = Math.max(0, secondiTotali - secondiPausa);
-
-        float ore = (float) secondiEffettivi / 3600;
-        float stima = mezzo.getCostoOrario() * ore;
-
+        float stima = calcolaCosto(corsa);
         corsa.setCosto(stima);
         corsaRepository.save(corsa);
 
         return new StimaCorsaResponse(stima, mezzo.getCostoOrario());
+    }
+
+    private float calcolaCosto(Corsa corsa) {
+        Mezzo mezzo = corsa.getMezzo();
+        if (mezzo == null) return 0;
+
+        LocalDateTime start = corsa.getOrarioInizio();
+        LocalDateTime end = corsa.getOrarioFine() != null ? corsa.getOrarioFine() : LocalDateTime.now();
+
+        long secondiTotali = ChronoUnit.SECONDS.between(start, end);
+        long pausaMs = totalePausaMillis.getOrDefault(corsa.getIdCorsa(), 0L);
+        long secondiPausa = pausaMs / 1000;
+        long secondiEffettivi = Math.max(0, secondiTotali - secondiPausa);
+
+        float ore = (float) secondiEffettivi / 3600;
+        return mezzo.getCostoOrario() * ore;
     }
 
     @Override
@@ -277,6 +316,10 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     public boolean sospensioneCorsa(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata. Verificare i dati."));
+
+        if (corsa.getOrarioFine() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Impossibile sospendere: corsa già terminata");
+        }
 
         Mezzo mezzo = corsa.getMezzo();
         if (mezzo == null) {
@@ -340,17 +383,40 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public PercorsoResponse richiediCalcoloPercorso(String coordinateUtente, String destinazione) {
-        Object percorso = servizioMappaService.getPercorso(coordinateUtente, destinazione, null);
+        Object result = servizioMappaService.getPercorso(coordinateUtente, destinazione, null);
+        if (!(result instanceof Map)) {
+            return new PercorsoResponse(coordinateUtente, destinazione, 0.0, 0, 0.0,
+                    "Percorso non disponibile");
+        }
+
+        Map<String, Object> percorso = (Map<String, Object>) result;
+        Double distanza = percorso.containsKey("distanza") ?
+                ((Number) percorso.get("distanza")).doubleValue() : 0.0;
+        Integer durata = percorso.containsKey("durata") ?
+                ((Number) percorso.get("durata")).intValue() : 0;
+        String messaggio = percorso.containsKey("messaggio") ?
+                (String) percorso.get("messaggio") : "Percorso calcolato con successo";
+
+        double tariffaStandard = 12.0;
+        double ore = durata / 60.0;
+        double tariffaOraria = Math.max(tariffaStandard, distanza > 0 ? (distanza * 1.5 / ore) : tariffaStandard);
+        double costoStimato = Math.round(tariffaOraria * ore * 100.0) / 100.0;
+
         return new PercorsoResponse(
-                percorso != null ? percorso.toString() : "Percorso non disponibile",
-                "Calcolo percorso completato"
+                coordinateUtente,
+                destinazione,
+                distanza,
+                durata,
+                costoStimato,
+                messaggio
         );
     }
 
     @Override
     @Transactional
-    public void acquisisciSceltaMetodo(Long idMetodoPagamento) {
+    public void acquisisciSceltaMetodo(Long idMetodoPagamento, Long idUtente) {
         MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Metodo di pagamento non trovato"));
 
@@ -359,9 +425,11 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Metodo di pagamento non associato ad un utente");
         }
 
-        Long utenteId = utente.getId();
+        if (!utente.getIdUtente().equals(idUtente)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Metodo di pagamento non appartiene all'utente corrente");
+        }
 
-        List<Corsa> corseAttive = corsaRepository.findByUtenteIdAndOrarioFineIsNull(utenteId);
+        List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(utente.getIdUtente());
         if (!corseAttive.isEmpty()) {
             Corsa corsa = corseAttive.get(0);
             corsa.setMetodoPagamento(metodo);

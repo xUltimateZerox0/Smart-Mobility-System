@@ -3,7 +3,9 @@ package com.smartmobility.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.NearbyVehiclesRequest;
 import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.RicercaMezziService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -14,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -30,6 +33,14 @@ class RicercaMezziControllerTest {
     @MockBean
     private RicercaMezziService ricercaMezziService;
 
+    @MockBean
+    private SecurityHelper securityHelper;
+
+    @BeforeEach
+    void setUp() {
+        doNothing().when(securityHelper).requireAuth(anyString());
+    }
+
     @Test
     void getNearbyVehicles_WithValidRequest_ReturnsMezzoList() throws Exception {
         NearbyVehiclesRequest request = new NearbyVehiclesRequest("41.9028,12.4964,0.0", 2.0f);
@@ -41,6 +52,7 @@ class RicercaMezziControllerTest {
                 .thenReturn(responseList);
 
         mockMvc.perform(post("/vehicles/nearby")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -57,6 +69,7 @@ class RicercaMezziControllerTest {
                 .thenReturn(List.of());
 
         mockMvc.perform(post("/vehicles/nearby")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -69,6 +82,7 @@ class RicercaMezziControllerTest {
         String invalidJson = "{\"coordinateUtente\": \"\", \"raggio\": -1}";
 
         mockMvc.perform(post("/vehicles/nearby")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
                 .andExpect(status().isBadRequest());
@@ -80,7 +94,8 @@ class RicercaMezziControllerTest {
 
         when(ricercaMezziService.visualizzaSpecifiche(1L)).thenReturn(response);
 
-        mockMvc.perform(get("/vehicles/1"))
+        mockMvc.perform(get("/vehicles/1")
+                        .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tipo").value("scooter"))
                 .andExpect(jsonPath("$.tariffa").value(8.0));
@@ -92,7 +107,8 @@ class RicercaMezziControllerTest {
                 .thenThrow(new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 
-        mockMvc.perform(get("/vehicles/999"))
+        mockMvc.perform(get("/vehicles/999")
+                        .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isNotFound());
     }
 }

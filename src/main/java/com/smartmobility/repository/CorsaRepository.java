@@ -10,7 +10,9 @@ import java.util.List;
 
 public interface CorsaRepository extends JpaRepository<Corsa, Long> {
     List<Corsa> findByUtenteId(Long idUtente);
-    List<Corsa> findByUtenteIdAndOrarioFineIsNull(Long idUtente);
+    @Query("SELECT c FROM Corsa c WHERE c.utente.idUtente = :idUtente AND c.orarioFine IS NULL")
+    List<Corsa> findByIdUtenteAndOrarioFineIsNull(@Param("idUtente") Long idUtente);
+
     List<Corsa> findByOrarioFineIsNull();
 
     @Query("SELECT c FROM Corsa c WHERE c.orarioInizio < :end AND (c.orarioFine IS NULL OR c.orarioFine > :start)")

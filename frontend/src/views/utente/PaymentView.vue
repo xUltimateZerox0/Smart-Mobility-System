@@ -1,8 +1,5 @@
 <template>
   <div>
-    <div v-if="activeRideId" style="margin-bottom:16px">
-      <button @click="goBackToRide" class="btn-primary" style="margin-bottom:8px">← Torna alla corsa in corso</button>
-    </div>
     <h1>Metodi di Pagamento</h1>
     <div v-if="metodi.length > 0" class="payment-list">
       <div v-for="m in metodi" :key="m.id" class="card" :class="{ 'selected-method': selectedMethodId === m.id }">
@@ -41,11 +38,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import * as paymentsApi from '../../api/payments'
 import * as ridesApi from '../../api/rides'
 import type { MetodoPagamentoResponse } from '../../types'
 
+const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 
 const metodi = ref<MetodoPagamentoResponse[]>([])
@@ -58,33 +58,16 @@ const cardError = ref('')
 const useLoading = ref(false)
 const useSuccess = ref('')
 const selectedMethodId = ref<number | null>(null)
-const activeRideId = ref<number | null>(null)
 
-const STORAGE_KEY = 'ride_state'
+const vehicleId = Number(route.query.vehicleId) || 0
+const qrCode = (route.query.qrCode as string) || ''
 
 onMounted(async () => {
   try {
     const res = await paymentsApi.getSavedMethods()
     metodi.value = res.data
   } catch (e) { console.error('getSavedMethods failed:', e) }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const state = JSON.parse(raw)
-      if (state.corsaId) activeRideId.value = state.corsaId
-    }
-  } catch { /* ignore */ }
 })
-
-function goBackToRide() {
-  const raw = localStorage.getItem(STORAGE_KEY)
-  if (!raw) return
-  try {
-    const state = JSON.parse(raw)
-    const vid = state.vehicleId || 1
-    window.location.href = `/utente/ride/${vid}`
-  } catch { /* ignore */ }
-}
 
 async function addCard() {
   if (!auth.userId) { cardError.value = 'Utente non autenticato'; return }
@@ -116,8 +99,13 @@ async function selectForRide(id: number) {
   try {
     await ridesApi.selectPaymentMethod(id)
     selectedMethodId.value = id
-    const metodo = metodi.value.find(m => m.id === id)
-    useSuccess.value = `Metodo selezionato: ${metodo?.numCarta} - ${metodo?.intestatarioCarta}`
+    localStorage.setItem('pending_payment_method_id', String(id))
+    if (vehicleId > 0) {
+      const qr = qrCode ? `?qrCode=${encodeURIComponent(qrCode)}` : ''
+      router.push(`/utente/ride/${vehicleId}${qr}`)
+    } else {
+      router.replace('/utente/bookings')
+    }
   } catch (e: any) {
     cardError.value = e.response?.data?.message || 'Errore nella selezione del metodo'
   } finally {

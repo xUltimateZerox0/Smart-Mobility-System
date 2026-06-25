@@ -125,7 +125,7 @@ class GestioneCorsaControllerTest {
     @Test
     void calculateRoute_WithValidRequest_ReturnsPercorso() throws Exception {
         RouteRequest request = new RouteRequest("41.9028,12.4964,0.0", "41.9030,12.4970,0.0");
-        PercorsoResponse response = new PercorsoResponse("route_data", "Calcolo percorso completato");
+        PercorsoResponse response = new PercorsoResponse("41.9028,12.4964", "41.9030,12.4970", 5.2, 15, 0.0, "Calcolo percorso completato");
 
         when(gestioneCorsaService.richiediCalcoloPercorso("41.9028,12.4964,0.0", "41.9030,12.4970,0.0"))
                 .thenReturn(response);
@@ -140,13 +140,14 @@ class GestioneCorsaControllerTest {
     @Test
     void selectPaymentMethod_WithValidId_ReturnsOk() throws Exception {
         PaymentMethodSelectionRequest request = new PaymentMethodSelectionRequest(1L);
+        when(securityHelper.getCurrentUserId(any())).thenReturn(1L);
 
         mockMvc.perform(post("/rides/payment-method")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
-        verify(gestioneCorsaService).acquisisciSceltaMetodo(1L);
+        verify(gestioneCorsaService).acquisisciSceltaMetodo(1L, 1L);
     }
 
     @Test

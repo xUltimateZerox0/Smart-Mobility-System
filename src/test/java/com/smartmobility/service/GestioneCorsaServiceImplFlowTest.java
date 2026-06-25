@@ -99,9 +99,9 @@ class GestioneCorsaServiceImplFlowTest {
         // PHASE 2: PRE-SELECT PAYMENT METHOD
         // =========================================================
         when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
 
-        service.acquisisciSceltaMetodo(1L);
+        service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
         verify(metodoPagamentoRepository).findById(1L);
 
         // =========================================================
@@ -110,7 +110,7 @@ class GestioneCorsaServiceImplFlowTest {
         when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
 
         Corsa savedCorsa = new Corsa();
         savedCorsa.setIdCorsa(100L);
@@ -140,7 +140,7 @@ class GestioneCorsaServiceImplFlowTest {
         // =========================================================
         // PHASE 4: GET ACTIVE RIDE
         // =========================================================
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of(savedCorsa));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of(savedCorsa));
 
         CorsaResponse activeRide = service.getCorsaAttiva(1L);
 
@@ -204,6 +204,51 @@ class GestioneCorsaServiceImplFlowTest {
     }
 
     @Test
+    void fullLifecycle_StartPauseResumeAndTerminateFromSuspended() {
+        mezzo.setStato(StatoMezzo.disponibile);
+        when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
+
+        when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
+        when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
+
+        Corsa savedCorsa = new Corsa();
+        savedCorsa.setIdCorsa(500L);
+        savedCorsa.setMezzo(mezzo);
+        savedCorsa.setUtente(utente);
+        savedCorsa.setMetodoPagamento(metodoPagamento);
+        savedCorsa.setOrarioInizio(LocalDateTime.now());
+        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
+        when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
+
+        Long corsaId = service.avviaCorsa(1L, 1L, "QR-1");
+        assertEquals(500L, corsaId);
+        assertEquals(StatoMezzo.in_uso, mezzo.getStato());
+
+        // PAUSE
+        when(corsaRepository.findById(500L)).thenReturn(Optional.of(savedCorsa));
+        when(mezzoIoTService.bloccoMezzoFisico(1L)).thenReturn(true);
+
+        boolean paused = service.sospensioneCorsa(500L);
+        assertTrue(paused);
+        assertEquals(StatoMezzo.sospeso, mezzo.getStato());
+
+        // TERMINATE WHILE SUSPENDED — should NOT call bloccoMezzoFisico again
+        savedCorsa.setOrarioFine(null);
+        when(corsaRepository.findById(500L)).thenReturn(Optional.of(savedCorsa));
+        when(gestorePagamentoService.pagamentoCorsa(anyLong(), anyLong(), anyLong(), anyDouble())).thenReturn(true);
+
+        service.terminaCorsa(500L);
+
+        assertNotNull(savedCorsa.getOrarioFine());
+        assertEquals(StatoMezzo.disponibile, mezzo.getStato());
+        verify(mezzoIoTService, times(1)).bloccoMezzoFisico(1L);
+    }
+
+    @Test
     void avviaCorsa_WithInvalidQrCode_ThrowsBadRequest() {
         assertThrows(ResponseStatusException.class,
                 () -> service.avviaCorsa(1L, 1L, ""));
@@ -228,10 +273,14 @@ class GestioneCorsaServiceImplFlowTest {
     @Test
     void avviaCorsa_WithDisponibileVehicle_StartsWithoutBooking() {
         mezzo.setStato(StatoMezzo.disponibile);
+        when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
+
         when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
 
         Corsa savedCorsa = new Corsa();
         savedCorsa.setIdCorsa(200L);
@@ -269,7 +318,7 @@ class GestioneCorsaServiceImplFlowTest {
     @Test
     void getCorsaAttiva_WithNoActiveRide_ReturnsNull() {
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
 
         CorsaResponse result = service.getCorsaAttiva(1L);
 
@@ -283,7 +332,7 @@ class GestioneCorsaServiceImplFlowTest {
         corsa.setOrarioFine(null);
 
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of(corsa));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of(corsa));
 
         CorsaResponse result = service.getCorsaAttiva(1L);
 
@@ -314,9 +363,9 @@ class GestioneCorsaServiceImplFlowTest {
     @Test
     void acquisisciSceltaMetodo_WithoutActiveRide_StoresAsPending() {
         when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
 
-        service.acquisisciSceltaMetodo(1L);
+        service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
 
         verify(metodoPagamentoRepository).findById(1L);
         verify(corsaRepository, never()).save(any(Corsa.class));
@@ -326,15 +375,15 @@ class GestioneCorsaServiceImplFlowTest {
     void avviaCorsa_WithPendingPaymentMethod_AssociatesMethod() {
         // First, store a pending payment method (no active ride)
         when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
-        service.acquisisciSceltaMetodo(1L);
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
 
         // Then start a ride — it should pick up the pending method
         mezzo.setStato(StatoMezzo.disponibile);
         when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
 
         Corsa savedCorsa = new Corsa();
         savedCorsa.setIdCorsa(300L);

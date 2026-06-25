@@ -116,7 +116,7 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
             r.setIdFlotta(m.getIdFlotta());
             if (m.getCoordinateMezzo() != null) {
                 String[] coords = m.getCoordinateMezzo().split(",");
-                if (coords.length == 2) {
+                if (coords.length >= 2) {
                     r.setLatitudine(Double.parseDouble(coords[0].trim()));
                     r.setLongitudine(Double.parseDouble(coords[1].trim()));
                 }

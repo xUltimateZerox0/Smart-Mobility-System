@@ -102,7 +102,13 @@ onMounted(async () => {
     const res = await adminApi.getUsers()
     users.value = res.data
   } catch (e: any) {
-    loadError.value = e.response?.data?.message || 'Errore nel caricamento degli utenti. Verifica i permessi di accesso.'
+    if (e.code === 'ECONNABORTED') {
+      loadError.value = 'Richiesta scaduta. Il server potrebbe non essere raggiungibile. Riprova.'
+    } else if (!e.response) {
+      loadError.value = 'Server non raggiungibile. Verifica che il backend sia in esecuzione.'
+    } else {
+      loadError.value = e.response?.data?.message || 'Errore nel caricamento degli utenti. Verifica i permessi di accesso.'
+    }
     console.error('getUsers failed:', e)
   } finally {
     usersLoading.value = false

@@ -10,7 +10,7 @@ export function startRide(idMezzo: number, idUtente: number, qrCode: string) {
 }
 
 export function endRide(id: number) {
-  return client.post<void>(`/rides/${id}/end`)
+  return client.post<CorsaResponse>(`/rides/${id}/end`)
 }
 
 export function getEstimate(id: number) {

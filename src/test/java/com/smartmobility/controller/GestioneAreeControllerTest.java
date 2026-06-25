@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.ConflictCheckRequest;
 import com.smartmobility.dto.request.UpdateZoneRequest;
 import com.smartmobility.dto.response.ZonaGeograficaResponse;
+import com.smartmobility.model.enums.RuoloAttore;
+import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneAreeService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -31,11 +34,21 @@ class GestioneAreeControllerTest {
     @MockBean
     private GestioneAreeService gestioneAreeService;
 
+    @MockBean
+    private SecurityHelper securityHelper;
+
+    @BeforeEach
+    void setUp() {
+        doNothing().when(securityHelper).requireAuth(anyString());
+        doNothing().when(securityHelper).requireRole(anyString(), eq(RuoloAttore.PA));
+    }
+
     @Test
     void updateZone_WithValidData_ReturnsOk() throws Exception {
         UpdateZoneRequest request = new UpdateZoneRequest("ZTL", "Divieto accesso", "41.9028,12.4964;41.9030,12.4970");
 
         mockMvc.perform(put("/zones/1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
@@ -52,6 +65,7 @@ class GestioneAreeControllerTest {
                 .when(gestioneAreeService).aggiornaRestrizione(1L, "INVALID_TYPE", "Note", "41.9028,12.4964");
 
         mockMvc.perform(put("/zones/1")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -63,6 +77,7 @@ class GestioneAreeControllerTest {
         when(gestioneAreeService.analisiConflitti("41.9030,12.4970;41.9040,12.4980")).thenReturn(true);
 
         mockMvc.perform(post("/zones/conflict-check")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -75,6 +90,7 @@ class GestioneAreeControllerTest {
         when(gestioneAreeService.analisiConflitti("90.0000,180.0000")).thenReturn(false);
 
         mockMvc.perform(post("/zones/conflict-check")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -88,7 +104,8 @@ class GestioneAreeControllerTest {
         );
         when(gestioneAreeService.getZoneGeografiche()).thenReturn(zones);
 
-        mockMvc.perform(get("/zones"))
+        mockMvc.perform(get("/zones")
+                        .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].tipoRestrizione").value("ZTL"));
@@ -98,7 +115,8 @@ class GestioneAreeControllerTest {
     void getZones_WhenEmpty_ReturnsEmptyList() throws Exception {
         when(gestioneAreeService.getZoneGeografiche()).thenReturn(List.of());
 
-        mockMvc.perform(get("/zones"))
+        mockMvc.perform(get("/zones")
+                        .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());

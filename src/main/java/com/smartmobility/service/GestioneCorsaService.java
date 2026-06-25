@@ -7,12 +7,12 @@ import com.smartmobility.dto.response.StimaCorsaResponse;
 public interface GestioneCorsaService {
     Long avviaCorsa(Long idMezzo, Long idUtente, String qrCode);
     CorsaResponse getCorsaAttiva(Long idUtente);
-    void terminaCorsa(Long idCorsa);
+    CorsaResponse terminaCorsa(Long idCorsa);
     StimaCorsaResponse aggiornaStima(Long idCorsa);
     boolean sospensioneCorsa(Long idCorsa);
     boolean richiediSblocco(String qrCode);
     PercorsoResponse richiediCalcoloPercorso(String coordinateUtente, String destinazione);
-    void acquisisciSceltaMetodo(Long idMetodoPagamento);
+    void acquisisciSceltaMetodo(Long idMetodoPagamento, Long idUtente);
     boolean controllaDisponibilita(Long idCorsa);
     boolean controllaDisponibilita(Long idCorsa, String info);
 }

@@ -74,7 +74,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
     public List<MetodoPagamentoResponse> recuperaMetodiSalvati(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
-        return metodoPagamentoRepository.findByUtenteId(utente.getId()).stream()
+        return metodoPagamentoRepository.findByIdUtente(utente.getIdUtente()).stream()
                 .map(m -> new MetodoPagamentoResponse(
                         m.getIdMetodoPagamento(),
                         maskCardNumber(m.getNumCarta()),

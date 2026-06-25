@@ -60,7 +60,7 @@ class CorsaRepositoryTest {
     }
 
     @Test
-    void findByUtenteIdAndOrarioFineIsNull_ReturnsActiveRides() {
+    void findByIdUtenteAndOrarioFineIsNull_ReturnsActiveRides() {
         Corsa corsa = new Corsa();
         corsa.setUtente(utente);
         corsa.setMezzo(mezzo);
@@ -69,7 +69,7 @@ class CorsaRepositoryTest {
         corsa.setCoordinatePartenza("41.9028,12.4964,0.0");
         corsaRepository.save(corsa);
 
-        List<Corsa> activeRides = corsaRepository.findByUtenteIdAndOrarioFineIsNull(utente.getId());
+        List<Corsa> activeRides = corsaRepository.findByIdUtenteAndOrarioFineIsNull(utente.getIdUtente());
 
         assertEquals(1, activeRides.size());
         assertNull(activeRides.get(0).getOrarioFine());

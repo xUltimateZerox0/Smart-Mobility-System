@@ -106,7 +106,7 @@ class GestorePagamentoServiceImplTest {
         MetodoPagamento metodo2 = TestDataFactory.createMetodoPagamento(2L, "5500000000000004", "Mario Rossi", utente);
 
         when(utenteRepository.findByIdUtente(utente.getIdUtente())).thenReturn(Optional.of(utente));
-        when(metodoPagamentoRepository.findByUtenteId(utente.getId())).thenReturn(List.of(metodo1, metodo2));
+        when(metodoPagamentoRepository.findByIdUtente(utente.getIdUtente())).thenReturn(List.of(metodo1, metodo2));
 
         List<MetodoPagamentoResponse> methods = service.recuperaMetodiSalvati(utente.getIdUtente());
 

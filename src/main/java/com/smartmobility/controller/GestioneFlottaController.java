@@ -1,12 +1,9 @@
 package com.smartmobility.controller;
 
 import com.smartmobility.dto.response.MezzoResponse;
-import com.smartmobility.model.Attore;
-import com.smartmobility.model.Operatore;
 import com.smartmobility.model.enums.RuoloAttore;
-import com.smartmobility.model.enums.TipoOperatore;
+import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneFlottaService;
-import com.smartmobility.service.SessionRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,85 +21,58 @@ import java.util.List;
 public class GestioneFlottaController {
 
     private final GestioneFlottaService gestioneFlottaService;
-    private final SessionRegistry sessionRegistry;
+    private final SecurityHelper securityHelper;
 
     public GestioneFlottaController(GestioneFlottaService gestioneFlottaService,
-                                     SessionRegistry sessionRegistry) {
+                                     SecurityHelper securityHelper) {
         this.gestioneFlottaService = gestioneFlottaService;
-        this.sessionRegistry = sessionRegistry;
-    }
-
-    private Attore getCurrentUser(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utente non autenticato");
-        }
-        String token = authHeader.substring(7);
-        Attore attore = sessionRegistry.getAttore(token);
-        if (attore == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sessione non valida");
-        }
-        return attore;
-    }
-
-    private void requirePaRole(String authHeader) {
-        Attore attore = getCurrentUser(authHeader);
-        if (attore.getRuolo() != RuoloAttore.PA) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo la PA può avviare la manutenzione");
-        }
-    }
-
-    private void requireOperatoreRole(String authHeader) {
-        Attore attore = getCurrentUser(authHeader);
-        if (attore.getRuolo() != RuoloAttore.Operatore) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo gli operatori possono eseguire questa operazione");
-        }
-    }
-
-    private void requireNotTecnico(String authHeader) {
-        Attore attore = getCurrentUser(authHeader);
-        if (attore instanceof Operatore o && o.getTipo() == TipoOperatore.OperatoreTecnico) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "L'operatore tecnico non può avviare la manutenzione");
-        }
+        this.securityHelper = securityHelper;
     }
 
     @PostMapping("/{flottaId}/analyze")
-    public ResponseEntity<Boolean> analyzeFleet(@PathVariable Long flottaId) {
+    public ResponseEntity<Boolean> analyzeFleet(@PathVariable Long flottaId,
+                                                  @RequestHeader("Authorization") String authHeader) {
+        securityHelper.requireAuth(authHeader);
         boolean result = gestioneFlottaService.analisiStatoFlotta(flottaId);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/vehicles/{id}/lock")
-    public ResponseEntity<Boolean> lockVehicle(@PathVariable Long id) {
+    public ResponseEntity<Boolean> lockVehicle(@PathVariable Long id,
+                                                @RequestHeader("Authorization") String authHeader) {
+        securityHelper.requireAuth(authHeader);
         boolean result = gestioneFlottaService.bloccaMezzo(id);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/vehicles/{id}/unlock")
-    public ResponseEntity<Boolean> unlockVehicle(@PathVariable Long id) {
+    public ResponseEntity<Boolean> unlockVehicle(@PathVariable Long id,
+                                                  @RequestHeader("Authorization") String authHeader) {
+        securityHelper.requireAuth(authHeader);
         boolean result = gestioneFlottaService.sbloccaMezzo(id);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/vehicles/{id}/maintenance")
     public ResponseEntity<Boolean> startVehicleMaintenance(@PathVariable Long id,
-                                                             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        requirePaRole(authHeader);
-        requireNotTecnico(authHeader);
+                                                            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
         boolean result = gestioneFlottaService.avviaManutenzioneVeicolo(id);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{flottaId}/maintenance")
     public ResponseEntity<Boolean> startMaintenance(@PathVariable Long flottaId,
-                                                      @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        requirePaRole(authHeader);
-        requireNotTecnico(authHeader);
+                                                     @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
         boolean result = gestioneFlottaService.avviaManutenzione(flottaId);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{flottaId}/conditions")
-    public ResponseEntity<List<MezzoResponse>> getVehicleConditions(@PathVariable Long flottaId) {
+    public ResponseEntity<List<MezzoResponse>> getVehicleConditions(@PathVariable Long flottaId,
+                                                                     @RequestHeader("Authorization") String authHeader) {
+        securityHelper.requireAuth(authHeader);
         List<MezzoResponse> conditions = gestioneFlottaService.getCondizioniMezzi(flottaId);
         return ResponseEntity.ok(conditions);
     }

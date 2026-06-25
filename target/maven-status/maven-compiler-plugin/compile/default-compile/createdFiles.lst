@@ -10,6 +10,7 @@ com/smartmobility/model/Operatore.class
 com/smartmobility/dto/request/ConflictCheckRequest.class
 com/smartmobility/repository/ZonaGeograficaRepository.class
 com/smartmobility/service/impl/GestioneStatisticheServiceImpl.class
+com/smartmobility/security/SecurityHelper.class
 com/smartmobility/integration/GatewayPagamentoService.class
 com/smartmobility/dto/response/MetodoPagamentoResponse.class
 com/smartmobility/dto/response/MezzoResponse.class
@@ -96,6 +97,7 @@ com/smartmobility/controller/GestioneCorsaController.class
 com/smartmobility/service/impl/GestioneAreeServiceImpl.class
 com/smartmobility/controller/GestioneFlottaController.class
 com/smartmobility/repository/CorsaRepository.class
+com/smartmobility/util/GeoUtils.class
 com/smartmobility/dto/response/AuthResponse.class
 com/smartmobility/model/Mezzo.class
 com/smartmobility/model/Corsa.class

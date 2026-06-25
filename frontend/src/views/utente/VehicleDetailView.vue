@@ -28,8 +28,12 @@
           </div>
           <button @click="calculateRoute" class="btn-primary" :disabled="routeLoading">{{ routeLoading ? 'Calcolo...' : 'Calcola Percorso' }}</button>
         </div>
-        <div v-if="percorso" class="card" style="margin-top:8px;font-size:13px">
-          <p><strong>Percorso:</strong> {{ percorso.percorso }}</p>
+        <div v-if="percorso" class="card percorso-detail" style="margin-top:8px;font-size:13px">
+          <p><strong>Partenza:</strong> {{ percorso.coordinatePartenza }}</p>
+          <p><strong>Destinazione:</strong> {{ percorso.coordinateDestinazione }}</p>
+          <p><strong>Distanza:</strong> {{ percorso.distanzaKm.toFixed(1) }} km</p>
+          <p><strong>Durata stimata:</strong> {{ percorso.durataMinuti }} min</p>
+          <p v-if="percorso.costoStimato > 0"><strong>Costo stimato:</strong> €{{ percorso.costoStimato.toFixed(2) }}</p>
           <p><strong>Messaggio:</strong> {{ percorso.messaggio }}</p>
         </div>
       </div>
@@ -296,5 +300,10 @@ function closeModal() {
   font-weight: bold;
   letter-spacing: 2px;
   color: var(--primary, #333);
+}
+
+.percorso-detail p {
+  margin-bottom: 4px;
+  font-size: 13px;
 }
 </style>

@@ -37,8 +37,8 @@ class GestorePagamentoControllerTest {
 
     @Test
     void processPayment_WithValidData_ReturnsTrue() throws Exception {
-        ProcessPaymentRequest request = new ProcessPaymentRequest(1L, 1L, 25.50);
-        when(gestorePagamentoService.pagamentoCorsa(1L, 1L, null, 25.50)).thenReturn(true);
+        ProcessPaymentRequest request = new ProcessPaymentRequest(1L, 1L, 10L, 25.50);
+        when(gestorePagamentoService.pagamentoCorsa(1L, 1L, 10L, 25.50)).thenReturn(true);
 
         mockMvc.perform(post("/payments/process")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -49,8 +49,8 @@ class GestorePagamentoControllerTest {
 
     @Test
     void processPayment_WhenPaymentFails_ReturnsFalse() throws Exception {
-        ProcessPaymentRequest request = new ProcessPaymentRequest(1L, 1L, 25.50);
-        when(gestorePagamentoService.pagamentoCorsa(1L, 1L, null, 25.50)).thenReturn(false);
+        ProcessPaymentRequest request = new ProcessPaymentRequest(1L, 1L, 10L, 25.50);
+        when(gestorePagamentoService.pagamentoCorsa(1L, 1L, 10L, 25.50)).thenReturn(false);
 
         mockMvc.perform(post("/payments/process")
                         .contentType(MediaType.APPLICATION_JSON)

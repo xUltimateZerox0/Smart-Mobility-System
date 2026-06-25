@@ -5,7 +5,9 @@ import com.smartmobility.dto.request.AnalyzeStatisticsRequest;
 import com.smartmobility.dto.request.ExportStatisticsRequest;
 import com.smartmobility.dto.response.CorsaResponse;
 import com.smartmobility.dto.response.StatisticheResponse;
+import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneStatisticheService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -16,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.hamcrest.Matchers.startsWith;
@@ -33,6 +37,14 @@ class GestioneStatisticheControllerTest {
     @MockBean
     private GestioneStatisticheService gestioneStatisticheService;
 
+    @MockBean
+    private SecurityHelper securityHelper;
+
+    @BeforeEach
+    void setUp() {
+        doNothing().when(securityHelper).requireAuth(anyString());
+    }
+
     @Test
     void analyzeStatistics_WithValidDates_ReturnsStatisticheResponse() throws Exception {
         AnalyzeStatisticsRequest request = new AnalyzeStatisticsRequest("2026-01-01T00:00:00", "2026-01-31T23:59:59");
@@ -42,6 +54,7 @@ class GestioneStatisticheControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(post("/statistics/analyze")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -59,6 +72,7 @@ class GestioneStatisticheControllerTest {
                         org.springframework.http.HttpStatus.BAD_REQUEST, "Formato data non valido"));
 
         mockMvc.perform(post("/statistics/analyze")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -73,6 +87,7 @@ class GestioneStatisticheControllerTest {
                 .thenReturn(emptyStats);
 
         mockMvc.perform(post("/statistics/analyze")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -90,6 +105,7 @@ class GestioneStatisticheControllerTest {
         when(gestioneStatisticheService.generaFileStatistiche(corse)).thenReturn(csvContent);
 
         mockMvc.perform(post("/statistics/export")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -106,6 +122,7 @@ class GestioneStatisticheControllerTest {
         when(gestioneStatisticheService.generaFileStatistiche(List.of())).thenReturn("idCorsa,idUtente,idMezzo,dataInizio,dataFine,costo,distanza,stato\n");
 
         mockMvc.perform(post("/statistics/export")
+                        .header("Authorization", "Bearer test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());

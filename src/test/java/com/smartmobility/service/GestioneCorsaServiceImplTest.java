@@ -73,11 +73,28 @@ class GestioneCorsaServiceImplTest {
     }
 
     @Test
+    void getCorsaAttiva_WithMultipleActiveRides_ThrowsError() {
+        Corsa corsa1 = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento, LocalDateTime.now(), 5.0f);
+        Corsa corsa2 = TestDataFactory.createCorsa(2L, utente, mezzo, metodoPagamento, LocalDateTime.now(), 3.0f);
+
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of(corsa1, corsa2));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.getCorsaAttiva(1L));
+        assertEquals(500, ex.getStatusCode().value());
+    }
+
+    @Test
     void avviaCorsa_WithValidData_StartsRide() {
+        when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
+
         when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
         Corsa savedCorsa = new Corsa();
         savedCorsa.setIdCorsa(1L);
         when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
@@ -85,7 +102,7 @@ class GestioneCorsaServiceImplTest {
         Long corsaId = service.avviaCorsa(1L, 1L, "QR-1");
 
         assertEquals(1L, corsaId);
-        verify(corsaRepository).save(any(Corsa.class));
+        verify(corsaRepository, atLeastOnce()).save(any(Corsa.class));
         verify(mezzoRepository).save(mezzo);
         assertEquals(StatoMezzo.in_uso, mezzo.getStato());
     }
@@ -100,10 +117,24 @@ class GestioneCorsaServiceImplTest {
     }
 
     @Test
+    void avviaCorsa_WithoutPaymentMethod_ThrowsPaymentRequired() {
+        when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
+        Corsa savedCorsa = new Corsa();
+        savedCorsa.setIdCorsa(1L);
+        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.avviaCorsa(1L, 1L, "QR-1"));
+        assertEquals(402, ex.getStatusCode().value());
+    }
+
+    @Test
     void avviaCorsa_WithExistingActiveRide_ThrowsConflict() {
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of(new Corsa()));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of(new Corsa()));
 
         assertThrows(ResponseStatusException.class,
                 () -> service.avviaCorsa(1L, 1L, "QR-1"));
@@ -123,6 +154,40 @@ class GestioneCorsaServiceImplTest {
         assertEquals(StatoMezzo.disponibile, mezzo.getStato());
         verify(corsaRepository, atLeastOnce()).save(corsa);
         verify(mezzoRepository).save(mezzo);
+    }
+
+    @Test
+    void terminaCorsa_WithSuspendedVehicle_DoesNotDoubleLock() {
+        mezzo.setStato(StatoMezzo.sospeso);
+        Corsa corsa = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento, LocalDateTime.now().minusHours(1), 5.0f);
+        corsa.setOrarioFine(null);
+
+        when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(gestorePagamentoService.pagamentoCorsa(anyLong(), anyLong(), anyLong(), anyDouble())).thenReturn(true);
+
+        service.terminaCorsa(1L);
+
+        assertNotNull(corsa.getOrarioFine());
+        assertEquals(StatoMezzo.disponibile, mezzo.getStato());
+        verify(mezzoIoTService, never()).bloccoMezzoFisico(anyLong());
+        verify(mezzoRepository).save(mezzo);
+    }
+
+    @Test
+    void terminaCorsa_WithPaymentFailure_DoesNotPersistNewCost() {
+        Corsa corsa = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento, LocalDateTime.now().minusHours(1), 5.0f);
+        corsa.setOrarioFine(null);
+
+        when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(gestorePagamentoService.pagamentoCorsa(anyLong(), anyLong(), anyLong(), anyDouble())).thenReturn(false);
+
+        assertThrows(ResponseStatusException.class,
+                () -> service.terminaCorsa(1L));
+
+        assertNull(corsa.getOrarioFine());
+        assertEquals(5.0f, corsa.getCosto(), 0.001);
+        verify(mezzoRepository, never()).save(any());
+        verify(corsaRepository, never()).save(any());
     }
 
     @Test
@@ -226,16 +291,16 @@ class GestioneCorsaServiceImplTest {
         PercorsoResponse response = service.richiediCalcoloPercorso("41.9028,12.4964,0.0", "41.9030,12.4970,0.0");
 
         assertNotNull(response);
-        assertEquals("Calcolo percorso completato", response.messaggio());
+        assertEquals("Percorso calcolato con successo", response.getMessaggio());
     }
 
     @Test
     void acquisisciSceltaMetodo_WithValidMethod_AssociatesToRide() {
         when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
         Corsa activeCorsa = TestDataFactory.createCorsa(1L, utente, mezzo, null, LocalDateTime.now(), 0f);
-        when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of(activeCorsa));
+        when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of(activeCorsa));
 
-        service.acquisisciSceltaMetodo(1L);
+        service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
 
         assertNotNull(activeCorsa.getMetodoPagamento());
         verify(corsaRepository).save(activeCorsa);

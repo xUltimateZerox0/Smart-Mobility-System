@@ -107,6 +107,23 @@ class GestioneAutenticazioneServiceImplTest {
     }
 
     @Test
+    void invioCredenziali_WithValidUtente_ReturnsIdUtente() {
+        Utente utente = TestDataFactory.createDefaultUtente();
+        utente.setPassword(new BCryptPasswordEncoder().encode("password"));
+
+        when(attoreRepository.findByEmail("mario.rossi@example.com")).thenReturn(Optional.of(utente));
+        when(sessionRegistry.createSession(utente)).thenReturn("token-789");
+
+        AuthResponse response = service.invioCredenziali("mario.rossi@example.com", "password");
+
+        assertNotNull(response);
+        assertEquals("mario.rossi@example.com", response.getEmail());
+        assertEquals("Utente", response.getRuolo());
+        assertEquals("token-789", response.getToken());
+        assertNotNull(response.getIdUtente());
+    }
+
+    @Test
     void login_SingleSessionConstraint_TerminatesPreviousSession() {
         Utente utente = TestDataFactory.createDefaultUtente();
         utente.setPassword(new BCryptPasswordEncoder().encode("password"));

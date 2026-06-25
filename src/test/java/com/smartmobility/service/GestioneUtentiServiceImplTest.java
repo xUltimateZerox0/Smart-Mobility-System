@@ -87,6 +87,63 @@ class GestioneUtentiServiceImplTest {
     }
 
     @Test
+    void bloccaUtente_WithValidId_SuspendsAndInvalidatesSession() {
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+
+        boolean result = service.bloccaUtente(1L);
+
+        assertTrue(result);
+        assertEquals(StatoUtente.sospeso, utente.getStatoUtente());
+        verify(sessionRegistry).invalidateByEmail(utente.getEmail());
+    }
+
+    @Test
+    void bloccaUtente_WithInvalidId_ThrowsNotFound() {
+        when(utenteRepository.findByIdUtente(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class,
+                () -> service.bloccaUtente(999L));
+    }
+
+    @Test
+    void sbloccaUtente_WithValidId_ActivatesUser() {
+        utente.setStatoUtente(StatoUtente.sospeso);
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+
+        boolean result = service.sbloccaUtente(1L);
+
+        assertTrue(result);
+        assertEquals(StatoUtente.attivo, utente.getStatoUtente());
+    }
+
+    @Test
+    void sbloccaUtente_WithInvalidId_ThrowsNotFound() {
+        when(utenteRepository.findByIdUtente(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class,
+                () -> service.sbloccaUtente(999L));
+    }
+
+    @Test
+    void disattivaUtente_WithValidId_DisablesAndInvalidatesSession() {
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+
+        boolean result = service.disattivaUtente(1L);
+
+        assertTrue(result);
+        assertEquals(StatoUtente.disattivato, utente.getStatoUtente());
+        verify(sessionRegistry).invalidateByEmail(utente.getEmail());
+    }
+
+    @Test
+    void disattivaUtente_WithInvalidId_ThrowsNotFound() {
+        when(utenteRepository.findByIdUtente(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class,
+                () -> service.disattivaUtente(999L));
+    }
+
+    @Test
     void azioneCorrettiva_AppendsToReport() {
         utente.setReportUtente("Previous report");
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));

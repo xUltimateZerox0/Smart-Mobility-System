@@ -20,9 +20,16 @@ public class Autenticazione {
         System.out.println("Mostra form registrazione");
     }
 
-    public void inserisciCredenziali(String nome, String cognome, String email, String password, String datanascita) {
+    public void registraUtente(String nome, String cognome, String email, String password, String datanascita) {
         AuthResponse result = gestioneAutenticazioneService.verificaValidita(nome, cognome, email, password, datanascita);
         System.out.println("Registrazione completata per: " + result.getEmail());
+        this.idAttore = result.getIdUtente();
+    }
+
+    public void accedi(String email, String password) {
+        AuthResponse result = gestioneAutenticazioneService.invioCredenziali(email, password);
+        System.out.println("Login effettuato per: " + result.getEmail() + " (ruolo: " + result.getRuolo() + ")");
+        this.idAttore = result.getIdUtente();
     }
 
     public void registrazioneUtente() {

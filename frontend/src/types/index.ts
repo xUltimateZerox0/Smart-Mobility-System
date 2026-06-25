@@ -84,7 +84,11 @@ export interface ZonaGeograficaResponse {
 }
 
 export interface PercorsoResponse {
-  percorso: string
+  coordinatePartenza: string
+  coordinateDestinazione: string
+  distanzaKm: number
+  durataMinuti: number
+  costoStimato: number
   messaggio: string
 }
 

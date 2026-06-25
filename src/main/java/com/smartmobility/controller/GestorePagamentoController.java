@@ -35,7 +35,7 @@ public class GestorePagamentoController {
                                                    @RequestHeader(value = "Authorization", required = false) String authHeader) {
         securityHelper.requireUserIdMatch(authHeader, request.getIdUtente());
         boolean result = gestorePagamentoService.pagamentoCorsa(
-                request.getIdUtente(), request.getIdMetodoPagamento(), null, request.getCosto());
+                request.getIdUtente(), request.getIdMetodoPagamento(), request.getIdCorsa(), request.getCosto());
         return ResponseEntity.ok(result);
     }
 

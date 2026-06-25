@@ -41,8 +41,7 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
         boolean foundIssue = false;
 
         for (Mezzo mezzo : mezzi) {
-            if ("danneggiato".equalsIgnoreCase(mezzo.getCondizione())
-                    || "danneggiata".equalsIgnoreCase(mezzo.getCondizione())
+            if (mezzo.getCondizione() != null && mezzo.getCondizione().toLowerCase().startsWith("danneggi")
                     || mezzo.getAutonomia() <= 0
                     || "manutenzione_necessaria".equalsIgnoreCase(mezzo.getCondizione())
                     || "manutenzione".equalsIgnoreCase(mezzo.getCondizione())) {
