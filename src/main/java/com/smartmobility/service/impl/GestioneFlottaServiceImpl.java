@@ -1,15 +1,21 @@
 package com.smartmobility.service.impl;
 
 import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.SegnalazioneResponse;
 import com.smartmobility.integration.MezzoIoTService;
+import com.smartmobility.model.Corsa;
 import com.smartmobility.model.Mezzo;
 import com.smartmobility.model.Segnalazione;
 import com.smartmobility.model.enums.StatoMezzo;
 import com.smartmobility.model.enums.StatoSegnalazione;
+import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.repository.SegnalazioneRepository;
+import com.smartmobility.service.GestioneCorsaService;
 import com.smartmobility.service.GestioneFlottaService;
 import com.smartmobility.util.GeoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,20 +24,29 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GestioneFlottaServiceImpl implements GestioneFlottaService {
 
+    private static final Logger log = LoggerFactory.getLogger(GestioneFlottaServiceImpl.class);
+
     private final MezzoRepository mezzoRepository;
     private final SegnalazioneRepository segnalazioneRepository;
     private final MezzoIoTService mezzoIoTService;
+    private final CorsaRepository corsaRepository;
+    private final GestioneCorsaService gestioneCorsaService;
 
     public GestioneFlottaServiceImpl(MezzoRepository mezzoRepository,
                                       SegnalazioneRepository segnalazioneRepository,
-                                      MezzoIoTService mezzoIoTService) {
+                                      MezzoIoTService mezzoIoTService,
+                                      CorsaRepository corsaRepository,
+                                      GestioneCorsaService gestioneCorsaService) {
         this.mezzoRepository = mezzoRepository;
         this.segnalazioneRepository = segnalazioneRepository;
         this.mezzoIoTService = mezzoIoTService;
+        this.corsaRepository = corsaRepository;
+        this.gestioneCorsaService = gestioneCorsaService;
     }
 
     @Override
@@ -41,16 +56,26 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
         boolean foundIssue = false;
 
         for (Mezzo mezzo : mezzi) {
-            if (mezzo.getCondizione() != null && mezzo.getCondizione().toLowerCase().startsWith("danneggi")
-                    || mezzo.getAutonomia() <= 0
-                    || "manutenzione_necessaria".equalsIgnoreCase(mezzo.getCondizione())
-                    || "manutenzione".equalsIgnoreCase(mezzo.getCondizione())) {
+            if (mezzo.getStato() == StatoMezzo.manutenzione) {
+                continue;
+            }
 
+            String motivazione = null;
+            if (mezzo.getCondizione() != null && mezzo.getCondizione().toLowerCase().startsWith("danneggi")) {
+                motivazione = "Veicolo danneggiato: " + mezzo.getCondizione();
+            } else if (mezzo.getAutonomia() <= 0) {
+                motivazione = "Autonomia esaurita";
+            } else if ("manutenzione_necessaria".equalsIgnoreCase(mezzo.getCondizione())) {
+                motivazione = "Manutenzione necessaria: " + mezzo.getCondizione();
+            }
+
+            if (motivazione != null) {
                 Segnalazione segnalazione = new Segnalazione();
                 segnalazione.setMezzo(mezzo);
                 segnalazione.setStato(StatoSegnalazione.aperta);
                 segnalazione.setData(LocalDate.now());
                 segnalazione.setOra(LocalTime.now());
+                segnalazione.setMotivazione(motivazione);
                 segnalazioneRepository.save(segnalazione);
 
                 mezzo.setStato(StatoMezzo.manutenzione);
@@ -69,6 +94,16 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
     public boolean bloccaMezzo(Long idMezzo) {
         Mezzo mezzo = mezzoRepository.findById(idMezzo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
+
+        List<Corsa> corseAttive = corsaRepository.findByMezzoIdAndOrarioFineIsNull(idMezzo);
+        for (Corsa corsa : corseAttive) {
+            try {
+                gestioneCorsaService.forzaTerminaCorsa(corsa.getIdCorsa());
+                log.info("Corsa {} terminata forzatamente per blocco veicolo {}", corsa.getIdCorsa(), idMezzo);
+            } catch (Exception e) {
+                log.error("Errore terminazione corsa {} per blocco veicolo: {}", corsa.getIdCorsa(), e.getMessage());
+            }
+        }
 
         if (!mezzoIoTService.bloccoMezzoFisico(idMezzo)) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Blocco remoto fallito");
@@ -118,6 +153,10 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
         Mezzo mezzo = mezzoRepository.findById(idMezzo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo non trovato"));
 
+        if (mezzo.getStato() == StatoMezzo.manutenzione) {
+            return true;
+        }
+
         mezzo.setStato(StatoMezzo.manutenzione);
         mezzo.setCondizione("manutenzione");
 
@@ -126,6 +165,7 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
         segnalazione.setStato(StatoSegnalazione.aperta);
         segnalazione.setData(LocalDate.now());
         segnalazione.setOra(LocalTime.now());
+        segnalazione.setMotivazione("Manutenzione manuale");
         segnalazioneRepository.save(segnalazione);
 
         mezzoRepository.save(mezzo);
@@ -140,6 +180,36 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
         return mezzi.stream()
                 .map(this::toMezzoResponse)
                 .toList();
+    }
+
+    @Override
+    public List<SegnalazioneResponse> getSegnalazioni() {
+        return segnalazioneRepository.findAll().stream()
+                .map(this::toSegnalazioneResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SegnalazioneResponse> getSegnalazioniByStato(String stato) {
+        try {
+            StatoSegnalazione statoEnum = StatoSegnalazione.valueOf(stato);
+            return segnalazioneRepository.findByStato(statoEnum).stream()
+                    .map(this::toSegnalazioneResponse)
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stato segnalazione non valido: " + stato);
+        }
+    }
+
+    private SegnalazioneResponse toSegnalazioneResponse(Segnalazione s) {
+        return new SegnalazioneResponse(
+                s.getIdSegnalazione(),
+                s.getMezzo() != null ? s.getMezzo().getIdMezzo() : null,
+                s.getStato() != null ? s.getStato().name() : null,
+                s.getOra() != null ? s.getOra().toString() : null,
+                s.getData() != null ? s.getData().toString() : null,
+                s.getMotivazione()
+        );
     }
 
     private MezzoResponse toMezzoResponse(Mezzo mezzo) {

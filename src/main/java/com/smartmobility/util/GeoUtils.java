@@ -7,14 +7,19 @@ public final class GeoUtils {
     private GeoUtils() {}
 
     public static double[] parseCoordinates(String coords) {
-        try {
-            String[] parts = coords.split(",");
-            double lat = Double.parseDouble(parts[0].trim());
-            double lon = Double.parseDouble(parts[1].trim());
-            return new double[]{lat, lon};
-        } catch (Exception e) {
-            return new double[]{0.0, 0.0};
+        if (coords == null || coords.isBlank()) {
+            throw new IllegalArgumentException("Coordinate non valide: stringa vuota");
         }
+        String[] parts = coords.split(",");
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Coordinate non valide: formato 'lat,lon' richiesto");
+        }
+        double lat = Double.parseDouble(parts[0].trim());
+        double lon = Double.parseDouble(parts[1].trim());
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            throw new IllegalArgumentException("Coordinate fuori dai limiti: lat=" + lat + ", lon=" + lon);
+        }
+        return new double[]{lat, lon};
     }
 
     public static double haversine(double lat1, double lon1, double lat2, double lon2) {

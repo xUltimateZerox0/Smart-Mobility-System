@@ -22,14 +22,20 @@
         <button @click="generateReport" class="btn-success" :disabled="reportLoading">{{ reportLoading ? 'Generazione...' : 'Genera Report' }}</button>
       </div>
       <div v-if="reportGenerated" class="report-success">
-        <span>✅ Report generato con successo</span>
+        <span>Report generato con successo</span>
       </div>
     </div>
     <p v-if="error" class="error-message">{{ error }}</p>
 
     <div class="card" style="margin-bottom:16px;margin-top:24px">
       <h2>Analisi Stato Flotta</h2>
-      <button @click="loadFleet" class="btn-primary" :disabled="fleetLoading">{{ fleetLoading ? 'Caricamento...' : 'Carica Dati Flotta' }}</button>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:8px">
+        L'analisi automatica verifica lo stato di ogni veicolo e, se necessario, lo pone in manutenzione creando una segnalazione.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button @click="loadFleet" class="btn-primary" :disabled="fleetLoading">{{ fleetLoading ? 'Caricamento...' : "Richiedi Stato Flotta" }}</button>
+        <button @click="analyzeFleetAction" class="btn-warning" :disabled="analyzeLoading">{{ analyzeLoading ? 'Analisi...' : 'Analisi Stato Flotta' }}</button>
+      </div>
     </div>
 
     <div v-if="fleetData" class="fleet-summary">
@@ -45,7 +51,7 @@
       <table class="fleet-table">
         <thead>
           <tr>
-            <th>ID</th><th>Tipo</th><th>Stato</th><th>Autonomia</th><th>Condizione</th><th>Azioni</th>
+            <th>ID</th><th>Tipo</th><th>Stato</th><th>Autonomia</th><th>Condizione</th>
           </tr>
         </thead>
         <tbody>
@@ -55,11 +61,34 @@
             <td><span class="badge" :class="badgeClass(v.stato)">{{ v.stato }}</span></td>
             <td>{{ v.autonomia }} km</td>
             <td>{{ v.condizione }}</td>
-            <td class="actions">
-              <button @click="lockVehicleAction(v.id)" class="btn-small">Lock</button>
-              <button @click="unlockVehicleAction(v.id)" class="btn-small">Unlock</button>
-              <button @click="maintenanceAction(v.id)" class="btn-small">Manutenzione</button>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div v-if="segnalazioni.length > 0" class="segnalazioni-card" style="margin-top:16px">
+      <h3>
+        Segnalazioni
+        <span class="segnalazioni-count">{{ segnalazioni.length }}</span>
+      </h3>
+      <table class="segnalazioni-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Veicolo</th><th>Stato</th><th>Data</th><th>Motivazione</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="s in segnalazioni" :key="s.idSegnalazione">
+            <td><span class="segnalazione-id">#{{ s.idSegnalazione }}</span></td>
+            <td><span class="vehicle-tag">Mezzo #{{ s.idMezzo }}</span></td>
+            <td>
+              <span class="status-badge" :class="s.stato === 'aperta' ? 'status-aperta' : 'status-chiusa'">
+                <span class="status-dot" :class="s.stato === 'aperta' ? 'dot-aperta' : 'dot-chiusa'"></span>
+                {{ s.stato === 'aperta' ? 'Aperta' : 'Chiusa' }}
+              </span>
             </td>
+            <td>{{ s.data }}</td>
+            <td class="motivazione-cell">{{ s.motivazione || '-' }}</td>
           </tr>
         </tbody>
       </table>
@@ -74,8 +103,9 @@
 import { ref } from 'vue'
 import { isAxiosError } from 'axios'
 import * as statisticsApi from '../../api/statistics'
-import { lockVehicle, unlockVehicle, startVehicleMaintenance } from '../../api/fleet'
-import type { StatisticheResponse, FleetAnalysisResponse } from '../../types'
+import { analyzeFleet } from '../../api/fleet'
+import type { StatisticheResponse, FleetAnalysisResponse, SegnalazioneResponse } from '../../types'
+import * as fleetApi from '../../api/fleet'
 
 const dataInizio = ref('')
 const dataFine = ref('')
@@ -87,6 +117,8 @@ const successMsg = ref('')
 const fleetData = ref<FleetAnalysisResponse | null>(null)
 const fleetLoading = ref(false)
 const fleetError = ref('')
+const segnalazioni = ref<SegnalazioneResponse[]>([])
+const analyzeLoading = ref(false)
 const reportGenerated = ref(false)
 const reportLoading = ref(false)
 
@@ -178,6 +210,8 @@ async function loadFleet() {
   try {
     const res = await statisticsApi.getFleetAnalysis()
     fleetData.value = res.data ?? null
+    const segRes = await fleetApi.getSegnalazioni()
+    segnalazioni.value = segRes.data ?? []
   } catch (e: unknown) {
     if (isAxiosError(e)) {
       fleetError.value = e.response?.data?.message || 'Errore caricamento flotta'
@@ -188,37 +222,21 @@ async function loadFleet() {
   finally { fleetLoading.value = false }
 }
 
-async function lockVehicleAction(id: number) {
-  try { await lockVehicle(id); await loadFleet() }
-  catch (e: unknown) {
+async function analyzeFleetAction() {
+  analyzeLoading.value = true; fleetError.value = ''
+  try {
+    const flottaId = 1
+    const res = await analyzeFleet(flottaId)
+    successMsg.value = res.data ? 'Analisi completata: veicoli messi in manutenzione' : 'Analisi completata: nessun intervento necessario'
+    await loadFleet()
+  } catch (e: unknown) {
     if (isAxiosError(e)) {
-      fleetError.value = e.response?.data?.message || 'Errore durante il lock'
+      fleetError.value = e.response?.data?.message || 'Errore durante l\'analisi'
     } else {
-      fleetError.value = 'Errore durante il lock'
+      fleetError.value = 'Errore durante l\'analisi'
     }
   }
-}
-
-async function unlockVehicleAction(id: number) {
-  try { await unlockVehicle(id); await loadFleet() }
-  catch (e: unknown) {
-    if (isAxiosError(e)) {
-      fleetError.value = e.response?.data?.message || 'Errore durante l\'unlock'
-    } else {
-      fleetError.value = 'Errore durante l\'unlock'
-    }
-  }
-}
-
-async function maintenanceAction(id: number) {
-  try { await startVehicleMaintenance(id); await loadFleet() }
-  catch (e: unknown) {
-    if (isAxiosError(e)) {
-      fleetError.value = e.response?.data?.message || 'Errore durante la manutenzione'
-    } else {
-      fleetError.value = 'Errore durante la manutenzione'
-    }
-  }
+  finally { analyzeLoading.value = false }
 }
 
 function badgeClass(stato: string): string {
@@ -258,7 +276,124 @@ function badgeClass(stato: string): string {
 .fleet-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .fleet-table th, .fleet-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border, #e0e0e0); }
 .fleet-table th { font-weight: 600; color: var(--gray); }
-.actions { display: flex; gap: 6px; }
-.btn-small { padding: 4px 10px; font-size: 12px; border: 1px solid var(--border, #ddd); border-radius: 4px; background: var(--bg-secondary, #f9f9f9); cursor: pointer; }
-.btn-small:hover { background: var(--bg-hover, #e9e9e9); }
+.btn-warning { background: #f0ad4e; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.btn-warning:hover { background: #ec971f; }
+
+.segnalazioni-card {
+  background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.segnalazioni-card h3 {
+  font-size: 16px;
+  color: #1e293b;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.segnalazioni-count {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+.segnalazioni-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+.segnalazioni-table thead th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+  background: #f8fafc;
+}
+.segnalazioni-table thead th:first-child { border-radius: 8px 0 0 0; }
+.segnalazioni-table thead th:last-child { border-radius: 0 8px 0 0; }
+.segnalazioni-table tbody tr {
+  transition: background 0.15s ease;
+}
+.segnalazioni-table tbody tr:hover {
+  background: #f1f5f9;
+}
+.segnalazioni-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+.segnalazioni-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.segnalazione-id {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #475569;
+  font-size: 12px;
+}
+.vehicle-tag {
+  display: inline-block;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.status-aperta {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  box-shadow: 0 1px 3px rgba(251, 191, 36, 0.2);
+}
+.status-chiusa {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-aperta {
+  background: #f59e0b;
+  animation: segnale-pulse 2s infinite;
+}
+.dot-chiusa {
+  background: #10b981;
+}
+@keyframes segnale-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.motivazione-cell {
+  color: #475569;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>

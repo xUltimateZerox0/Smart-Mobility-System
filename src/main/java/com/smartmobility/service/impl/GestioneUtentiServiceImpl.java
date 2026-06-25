@@ -1,11 +1,16 @@
 package com.smartmobility.service.impl;
 
 import com.smartmobility.dto.response.UtenteResponse;
+import com.smartmobility.model.Corsa;
 import com.smartmobility.model.Utente;
 import com.smartmobility.model.enums.StatoUtente;
+import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.UtenteRepository;
+import com.smartmobility.service.GestioneCorsaService;
 import com.smartmobility.service.GestioneUtentiService;
 import com.smartmobility.service.SessionRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +21,21 @@ import java.util.List;
 @Service
 public class GestioneUtentiServiceImpl implements GestioneUtentiService {
 
+    private static final Logger log = LoggerFactory.getLogger(GestioneUtentiServiceImpl.class);
+
     private final UtenteRepository utenteRepository;
     private final SessionRegistry sessionRegistry;
+    private final CorsaRepository corsaRepository;
+    private final GestioneCorsaService gestioneCorsaService;
 
-    public GestioneUtentiServiceImpl(UtenteRepository utenteRepository, SessionRegistry sessionRegistry) {
+    public GestioneUtentiServiceImpl(UtenteRepository utenteRepository,
+                                      SessionRegistry sessionRegistry,
+                                      CorsaRepository corsaRepository,
+                                      GestioneCorsaService gestioneCorsaService) {
         this.utenteRepository = utenteRepository;
         this.sessionRegistry = sessionRegistry;
+        this.corsaRepository = corsaRepository;
+        this.gestioneCorsaService = gestioneCorsaService;
     }
 
     @Override
@@ -54,6 +68,16 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
         if (utente.getStatoUtente() == StatoUtente.attivo) {
             utente.setStatoUtente(StatoUtente.sospeso);
             sessionRegistry.invalidateByEmail(utente.getEmail());
+
+            List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);
+            for (Corsa corsa : corseAttive) {
+                try {
+                    gestioneCorsaService.forzaTerminaCorsa(corsa.getIdCorsa());
+                    log.info("Corsa {} terminata forzatamente per moderazione utente {}", corsa.getIdCorsa(), idUtente);
+                } catch (Exception e) {
+                    log.error("Errore terminazione corsa {} per moderazione: {}", corsa.getIdCorsa(), e.getMessage());
+                }
+            }
         } else if (utente.getStatoUtente() == StatoUtente.sospeso) {
             utente.setStatoUtente(StatoUtente.attivo);
         } else {
@@ -72,6 +96,17 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
         utente.setStatoUtente(StatoUtente.sospeso);
         utenteRepository.save(utente);
         sessionRegistry.invalidateByEmail(utente.getEmail());
+
+        List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);
+        for (Corsa corsa : corseAttive) {
+            try {
+                gestioneCorsaService.forzaTerminaCorsa(corsa.getIdCorsa());
+                log.info("Corsa {} terminata forzatamente per blocco utente {}", corsa.getIdCorsa(), idUtente);
+            } catch (Exception e) {
+                log.error("Errore durante terminazione forzata corsa {} per utente {}: {}", corsa.getIdCorsa(), idUtente, e.getMessage());
+            }
+        }
+
         return true;
     }
 

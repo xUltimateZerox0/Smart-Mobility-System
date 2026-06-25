@@ -25,6 +25,9 @@ public class Segnalazione {
     @JoinColumn(name = "id_mezzo")
     private Mezzo mezzo;
 
+    @Column(name = "motivazione")
+    private String motivazione;
+
     public Segnalazione() {}
 
     public Long getIdSegnalazione() {
@@ -65,5 +68,13 @@ public class Segnalazione {
 
     public void setMezzo(Mezzo mezzo) {
         this.mezzo = mezzo;
+    }
+
+    public String getMotivazione() {
+        return motivazione;
+    }
+
+    public void setMotivazione(String motivazione) {
+        this.motivazione = motivazione;
     }
 }

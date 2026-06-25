@@ -209,7 +209,7 @@ class GestioneCorsaServiceImplTest {
         assertNotNull(stima);
         assertTrue(stima.getCosto() > 0);
         assertTrue(stima.getTariffa() > 0);
-        verify(corsaRepository).save(corsa);
+        verify(corsaRepository, never()).save(any());
     }
 
     @Test

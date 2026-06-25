@@ -5,5 +5,6 @@ public record SegnalazioneResponse(
     Long idMezzo,
     String stato,
     String ora,
-    String data
+    String data,
+    String motivazione
 ) {}

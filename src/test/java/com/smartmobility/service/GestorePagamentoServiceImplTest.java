@@ -50,7 +50,7 @@ class GestorePagamentoServiceImplTest {
     void pagamentoCorsa_WithValidData_ReturnsTrue() {
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
         when(metodoPagamentoRepository.findById(1L)).thenReturn(Optional.of(metodoPagamento));
-        when(gatewayPagamentoService.effettuaPagamento(1L, 10L)).thenReturn(true);
+        when(gatewayPagamentoService.effettuaPagamento(1L, 10L, 25.50)).thenReturn(true);
 
         boolean result = service.pagamentoCorsa(1L, 1L, 10L, 25.50);
 

@@ -7,6 +7,7 @@ import com.smartmobility.model.Mezzo;
 import com.smartmobility.model.Segnalazione;
 import com.smartmobility.model.enums.StatoMezzo;
 import com.smartmobility.model.enums.StatoSegnalazione;
+import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.repository.SegnalazioneRepository;
 import com.smartmobility.service.impl.GestioneFlottaServiceImpl;
@@ -36,11 +37,17 @@ class GestioneFlottaServiceImplTest {
     @Mock
     private MezzoIoTService mezzoIoTService;
 
+    @Mock
+    private CorsaRepository corsaRepository;
+
+    @Mock
+    private GestioneCorsaService gestioneCorsaService;
+
     private GestioneFlottaServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new GestioneFlottaServiceImpl(mezzoRepository, segnalazioneRepository, mezzoIoTService);
+        service = new GestioneFlottaServiceImpl(mezzoRepository, segnalazioneRepository, mezzoIoTService, corsaRepository, gestioneCorsaService);
     }
 
     @Test

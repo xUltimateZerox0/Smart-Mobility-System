@@ -3,6 +3,7 @@ package com.smartmobility.service;
 import com.smartmobility.config.TestDataFactory;
 import com.smartmobility.model.Utente;
 import com.smartmobility.model.enums.StatoUtente;
+import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.impl.GestioneUtentiServiceImpl;
 import com.smartmobility.service.SessionRegistry;
@@ -28,13 +29,19 @@ class GestioneUtentiServiceImplTest {
     @Mock
     private SessionRegistry sessionRegistry;
 
+    @Mock
+    private CorsaRepository corsaRepository;
+
+    @Mock
+    private GestioneCorsaService gestioneCorsaService;
+
     private GestioneUtentiServiceImpl service;
 
     private Utente utente;
 
     @BeforeEach
     void setUp() {
-        service = new GestioneUtentiServiceImpl(utenteRepository, sessionRegistry);
+        service = new GestioneUtentiServiceImpl(utenteRepository, sessionRegistry, corsaRepository, gestioneCorsaService);
         utente = TestDataFactory.createDefaultUtente();
     }
 

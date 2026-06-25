@@ -1,18 +1,18 @@
 package com.smartmobility.dto.response;
 
 public class StimaCorsaResponse {
-    private float costo;
-    private float tariffa;
+    private double costo;
+    private double tariffa;
 
     public StimaCorsaResponse() {}
 
-    public StimaCorsaResponse(float costo, float tariffa) {
+    public StimaCorsaResponse(double costo, double tariffa) {
         this.costo = costo;
         this.tariffa = tariffa;
     }
 
-    public float getCosto() { return costo; }
-    public void setCosto(float costo) { this.costo = costo; }
-    public float getTariffa() { return tariffa; }
-    public void setTariffa(float tariffa) { this.tariffa = tariffa; }
+    public double getCosto() { return costo; }
+    public void setCosto(double costo) { this.costo = costo; }
+    public double getTariffa() { return tariffa; }
+    public void setTariffa(double tariffa) { this.tariffa = tariffa; }
 }

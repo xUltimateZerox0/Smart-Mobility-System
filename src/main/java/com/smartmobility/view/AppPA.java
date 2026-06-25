@@ -60,10 +60,7 @@ public class AppPA {
     public void avviaIntervento(String idFlotta) {
         try {
             long id = Long.parseLong(idFlotta);
-            boolean needsMaintenance = gestioneFlottaService.analisiStatoFlotta(id);
-            if (needsMaintenance) {
-                gestioneFlottaService.avviaManutenzione(id);
-            }
+            gestioneFlottaService.analisiStatoFlotta(id);
         } catch (NumberFormatException e) {
             System.err.println("ERRORE: formato idFlotta non valido - " + idFlotta);
         }

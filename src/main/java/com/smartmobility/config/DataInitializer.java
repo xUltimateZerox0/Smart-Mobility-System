@@ -166,7 +166,6 @@ public class DataInitializer {
                     metodo.setNumCarta("4111111111111111");
                     metodo.setIntestatarioCarta("Mario Rossi");
                     metodo.setDsCarta("12/28");
-                    metodo.setCvv("123");
                     metodo.setUtente(utente);
                     metodoPagamentoRepository.save(metodo);
                 }

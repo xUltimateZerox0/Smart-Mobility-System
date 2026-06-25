@@ -36,7 +36,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
-    private static final float SOSPENSIONE_FISSO = 1.0f;
+    private static final double SOSPENSIONE_FISSO = 1.0;
+    private static final long PAYMENT_TTL_MS = 30 * 60 * 1000; // 30 minuti
     private static final Logger log = LoggerFactory.getLogger(GestioneCorsaServiceImpl.class);
 
     private final CorsaRepository corsaRepository;
@@ -48,9 +49,22 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     private final ServizioMappaService servizioMappaService;
     private final GestorePagamentoService gestorePagamentoService;
 
-    private final Map<Long, Long> pendingPaymentMethods = new ConcurrentHashMap<>();
+    private final Map<Long, PendingPayment> pendingPaymentMethods = new ConcurrentHashMap<>();
     private final Map<Long, Long> pausaStartTimes = new ConcurrentHashMap<>();
     private final Map<Long, Long> totalePausaMillis = new ConcurrentHashMap<>();
+    private final Object lock = new Object();
+
+    private static class PendingPayment {
+        final Long metodoId;
+        final long timestamp;
+        PendingPayment(Long metodoId, long timestamp) {
+            this.metodoId = metodoId;
+            this.timestamp = timestamp;
+        }
+        boolean isExpired() {
+            return System.currentTimeMillis() - timestamp > PAYMENT_TTL_MS;
+        }
+    }
 
     public GestioneCorsaServiceImpl(CorsaRepository corsaRepository,
                                      MezzoRepository mezzoRepository,
@@ -116,16 +130,19 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         corsa.setCoordinateArrivo(null);
         corsa = corsaRepository.save(corsa);
 
-        Long idMetodoPagamento = pendingPaymentMethods.remove(idUtente);
-        if (idMetodoPagamento == null) {
+        PendingPayment pending = pendingPaymentMethods.remove(idUtente);
+        if (pending == null || pending.isExpired()) {
+            if (pending != null) pendingPaymentMethods.remove(idUtente);
             throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
-                    "Nessun metodo di pagamento selezionato. Seleziona un metodo di pagamento prima di avviare la corsa.");
+                    "Nessun metodo di pagamento selezionato o selezione scaduta. Seleziona un metodo di pagamento prima di avviare la corsa.");
         }
-        MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)
+        MetodoPagamento metodo = metodoPagamentoRepository.findById(pending.metodoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Metodo di pagamento non valido o non trovato"));
         corsa.setMetodoPagamento(metodo);
-        corsaRepository.save(corsa);
+        corsa = corsaRepository.save(corsa);
+
+        totalePausaMillis.put(corsa.getIdCorsa(), 0L);
 
         boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(idMezzo);
         if (!sbloccato) {
@@ -136,8 +153,6 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         mezzoRepository.save(mezzo);
 
         completaPrenotazioniAttive(utente, mezzo);
-
-        totalePausaMillis.put(corsa.getIdCorsa(), 0L);
 
         return corsa.getIdCorsa();
     }
@@ -213,24 +228,24 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Corsa già terminata");
         }
 
-        float cost = calcolaCosto(corsa);
-        if (totalePausaMillis.getOrDefault(idCorsa, 0L) > 0) {
-            cost += SOSPENSIONE_FISSO;
-        }
+        double cost = calcolaCosto(corsa, true);
 
         if (corsa.getUtente() != null && corsa.getMetodoPagamento() != null) {
             boolean pagato = gestorePagamentoService.pagamentoCorsa(
                     corsa.getUtente().getIdUtente(),
                     corsa.getMetodoPagamento().getIdMetodoPagamento(),
                     idCorsa,
-                    (double) cost);
+                    cost);
             if (!pagato) {
                 throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
                         "Pagamento non riuscito. La corsa rimane aperta.");
             }
         }
 
-        corsa.setCosto(cost);
+        corsa.setCosto((float) cost);
+        corsa.setOrarioFine(LocalDateTime.now());
+        corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);
+        corsaRepository.save(corsa);
         completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
 
         Mezzo mezzo = corsa.getMezzo();
@@ -241,11 +256,6 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             mezzo.setStato(StatoMezzo.disponibile);
             mezzoRepository.save(mezzo);
         }
-
-        LocalDateTime now = LocalDateTime.now();
-        corsa.setOrarioFine(now);
-        corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);
-        corsaRepository.save(corsa);
 
         totalePausaMillis.remove(idCorsa);
         pausaStartTimes.remove(idCorsa);
@@ -268,7 +278,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 corsa.getUtente() != null ? corsa.getUtente().getIdUtente() : null,
                 mezzo != null ? mezzo.getIdMezzo() : null,
                 corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,
-                now.toString(),
+                corsa.getOrarioFine() != null ? corsa.getOrarioFine().toString() : null,
                 (double) corsa.getCosto(),
                 0.0,
                 "completata",
@@ -279,6 +289,88 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
     @Override
     @Transactional
+    public CorsaResponse forzaTerminaCorsa(Long idCorsa) {
+        Corsa corsa = corsaRepository.findById(idCorsa)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+
+        if (corsa.getOrarioFine() != null) {
+            return buildCorsaResponse(corsa);
+        }
+
+        double cost = calcolaCosto(corsa, true);
+
+        corsa.setCosto((float) cost);
+        corsa.setOrarioFine(LocalDateTime.now());
+        corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);
+
+        if (corsa.getUtente() != null && corsa.getMetodoPagamento() != null) {
+            try {
+                gestorePagamentoService.pagamentoCorsa(
+                        corsa.getUtente().getIdUtente(),
+                        corsa.getMetodoPagamento().getIdMetodoPagamento(),
+                        idCorsa,
+                        cost);
+            } catch (Exception e) {
+                log.warn("Pagamento forzato non riuscito per corsa {}: {}", idCorsa, e.getMessage());
+            }
+        }
+
+        corsaRepository.save(corsa);
+        completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
+
+        Mezzo mezzo = corsa.getMezzo();
+        if (mezzo != null) {
+            mezzo.setStato(StatoMezzo.disponibile);
+            mezzoRepository.save(mezzo);
+        }
+
+        totalePausaMillis.remove(idCorsa);
+        pausaStartTimes.remove(idCorsa);
+
+        return buildCorsaResponse(corsa);
+    }
+
+    @Override
+    @Transactional
+    public CorsaResponse terminaCorsaAttivaUtente(Long idUtente) {
+        List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);
+        if (corseAttive.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nessuna corsa attiva per l'utente");
+        }
+        return forzaTerminaCorsa(corseAttive.get(0).getIdCorsa());
+    }
+
+    private CorsaResponse buildCorsaResponse(Corsa corsa) {
+        Mezzo mezzo = corsa.getMezzo();
+        String metodoLabel = null;
+        Long idMetodo = null;
+        MetodoPagamento mp = corsa.getMetodoPagamento();
+        if (mp != null) {
+            idMetodo = mp.getIdMetodoPagamento();
+            String num = mp.getNumCarta();
+            if (num != null && num.length() >= 4) {
+                metodoLabel = num.substring(num.length() - 4) + " - " + mp.getIntestatarioCarta();
+            } else {
+                metodoLabel = mp.getIntestatarioCarta();
+            }
+        }
+
+        return new CorsaResponse(
+                corsa.getIdCorsa(),
+                corsa.getUtente() != null ? corsa.getUtente().getIdUtente() : null,
+                mezzo != null ? mezzo.getIdMezzo() : null,
+                corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,
+                corsa.getOrarioFine() != null ? corsa.getOrarioFine().toString() : null,
+                (double) corsa.getCosto(),
+                0.0,
+                corsa.getOrarioFine() != null ? "completata" : "in_corso",
+                idMetodo,
+                metodoLabel
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public StimaCorsaResponse aggiornaStima(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
@@ -288,14 +380,16 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo associato alla corsa non trovato");
         }
 
-        float stima = calcolaCosto(corsa);
-        corsa.setCosto(stima);
-        corsaRepository.save(corsa);
+        double stima = calcolaCosto(corsa, true);
 
         return new StimaCorsaResponse(stima, mezzo.getCostoOrario());
     }
 
-    private float calcolaCosto(Corsa corsa) {
+    private double calcolaCosto(Corsa corsa) {
+        return calcolaCosto(corsa, false);
+    }
+
+    private double calcolaCosto(Corsa corsa, boolean includeSospensione) {
         Mezzo mezzo = corsa.getMezzo();
         if (mezzo == null) return 0;
 
@@ -307,8 +401,14 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         long secondiPausa = pausaMs / 1000;
         long secondiEffettivi = Math.max(0, secondiTotali - secondiPausa);
 
-        float ore = (float) secondiEffettivi / 3600;
-        return mezzo.getCostoOrario() * ore;
+        double ore = secondiEffettivi / 3600.0;
+        double costo = mezzo.getCostoOrario() * ore;
+
+        if (includeSospensione && pausaMs > 0) {
+            costo += SOSPENSIONE_FISSO;
+        }
+
+        return costo;
     }
 
     @Override
@@ -326,29 +426,30 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Mezzo associato alla corsa non trovato");
         }
 
-        if (mezzo.getStato() == StatoMezzo.in_uso) {
-            boolean bloccato = mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());
-            if (!bloccato) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossibile bloccare il mezzo. Contattare assistenza.");
+        synchronized (lock) {
+            if (mezzo.getStato() == StatoMezzo.in_uso) {
+                boolean bloccato = mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());
+                if (!bloccato) {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossibile bloccare il mezzo. Contattare assistenza.");
+                }
+                mezzo.setStato(StatoMezzo.sospeso);
+                mezzoRepository.save(mezzo);
+                pausaStartTimes.put(idCorsa, System.currentTimeMillis());
+                return true;
+            } else if (mezzo.getStato() == StatoMezzo.sospeso) {
+                boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(mezzo.getIdMezzo());
+                if (!sbloccato) {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossibile sbloccare il mezzo. Contattare assistenza.");
+                }
+                mezzo.setStato(StatoMezzo.in_uso);
+                mezzoRepository.save(mezzo);
+                Long pStart = pausaStartTimes.remove(idCorsa);
+                if (pStart != null) {
+                    long durata = System.currentTimeMillis() - pStart;
+                    totalePausaMillis.merge(idCorsa, durata, Long::sum);
+                }
+                return true;
             }
-            mezzo.setStato(StatoMezzo.sospeso);
-            mezzoRepository.save(mezzo);
-            pausaStartTimes.put(idCorsa, System.currentTimeMillis());
-            return true;
-        } else if (mezzo.getStato() == StatoMezzo.sospeso) {
-            boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(mezzo.getIdMezzo());
-            if (!sbloccato) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Impossibile sbloccare il mezzo. Contattare assistenza.");
-            }
-            mezzo.setStato(StatoMezzo.in_uso);
-            mezzoRepository.save(mezzo);
-            Long pStart = pausaStartTimes.remove(idCorsa);
-            if (pStart != null) {
-                long durata = System.currentTimeMillis() - pStart;
-                totalePausaMillis.merge(idCorsa, durata, Long::sum);
-            }
-            aggiornaStima(idCorsa);
-            return true;
         }
 
         return false;
@@ -420,22 +521,21 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Metodo di pagamento non trovato"));
 
-        Utente utente = metodo.getUtente();
-        if (utente == null) {
+        if (metodo.getUtente() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Metodo di pagamento non associato ad un utente");
         }
 
-        if (!utente.getIdUtente().equals(idUtente)) {
+        if (!metodo.getUtente().getIdUtente().equals(idUtente)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Metodo di pagamento non appartiene all'utente corrente");
         }
 
-        List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(utente.getIdUtente());
+        List<Corsa> corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);
         if (!corseAttive.isEmpty()) {
             Corsa corsa = corseAttive.get(0);
             corsa.setMetodoPagamento(metodo);
             corsaRepository.save(corsa);
         } else {
-            pendingPaymentMethods.put(utente.getIdUtente(), idMetodoPagamento);
+            pendingPaymentMethods.put(idUtente, new PendingPayment(idMetodoPagamento, System.currentTimeMillis()));
         }
     }
 

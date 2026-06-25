@@ -7,6 +7,7 @@ import com.smartmobility.dto.request.UnlockRequest;
 import com.smartmobility.dto.response.CorsaResponse;
 import com.smartmobility.dto.response.PercorsoResponse;
 import com.smartmobility.dto.response.StimaCorsaResponse;
+import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneCorsaService;
 import jakarta.validation.Valid;
@@ -100,6 +101,14 @@ public class GestioneCorsaController {
         }
         gestioneCorsaService.acquisisciSceltaMetodo(request.getIdMetodoPagamento(), userId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/force-terminate")
+    public ResponseEntity<CorsaResponse> forceTerminateRide(@PathVariable Long id,
+                                                             @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);
+        CorsaResponse response = gestioneCorsaService.forzaTerminaCorsa(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/availability")

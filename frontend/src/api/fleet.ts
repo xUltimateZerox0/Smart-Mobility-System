@@ -1,5 +1,5 @@
 import client from './client'
-import type { MezzoResponse } from '../types'
+import type { MezzoResponse, SegnalazioneResponse } from '../types'
 
 export function analyzeFleet(flottaId: number) {
   return client.post<boolean>(`/fleet/${flottaId}/analyze`)
@@ -23,4 +23,9 @@ export function startMaintenance(flottaId: number) {
 
 export function getVehicleConditions(flottaId: number) {
   return client.get<MezzoResponse[]>(`/fleet/${flottaId}/conditions`)
+}
+
+export function getSegnalazioni(stato?: string) {
+  const url = stato ? `/fleet/segnalazioni/${stato}` : '/fleet/segnalazioni'
+  return client.get<SegnalazioneResponse[]>(url)
 }

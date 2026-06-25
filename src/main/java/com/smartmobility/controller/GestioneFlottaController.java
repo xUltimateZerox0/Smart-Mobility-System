@@ -1,6 +1,7 @@
 package com.smartmobility.controller;
 
 import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.SegnalazioneResponse;
 import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneFlottaService;
@@ -29,18 +30,10 @@ public class GestioneFlottaController {
         this.securityHelper = securityHelper;
     }
 
-    @PostMapping("/{flottaId}/analyze")
-    public ResponseEntity<Boolean> analyzeFleet(@PathVariable Long flottaId,
-                                                  @RequestHeader("Authorization") String authHeader) {
-        securityHelper.requireAuth(authHeader);
-        boolean result = gestioneFlottaService.analisiStatoFlotta(flottaId);
-        return ResponseEntity.ok(result);
-    }
-
     @PostMapping("/vehicles/{id}/lock")
     public ResponseEntity<Boolean> lockVehicle(@PathVariable Long id,
                                                 @RequestHeader("Authorization") String authHeader) {
-        securityHelper.requireAuth(authHeader);
+        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);
         boolean result = gestioneFlottaService.bloccaMezzo(id);
         return ResponseEntity.ok(result);
     }
@@ -48,7 +41,7 @@ public class GestioneFlottaController {
     @PostMapping("/vehicles/{id}/unlock")
     public ResponseEntity<Boolean> unlockVehicle(@PathVariable Long id,
                                                   @RequestHeader("Authorization") String authHeader) {
-        securityHelper.requireAuth(authHeader);
+        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);
         boolean result = gestioneFlottaService.sbloccaMezzo(id);
         return ResponseEntity.ok(result);
     }
@@ -56,7 +49,7 @@ public class GestioneFlottaController {
     @PostMapping("/vehicles/{id}/maintenance")
     public ResponseEntity<Boolean> startVehicleMaintenance(@PathVariable Long id,
                                                             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        securityHelper.requireRole(authHeader, RuoloAttore.PA);
+        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);
         boolean result = gestioneFlottaService.avviaManutenzioneVeicolo(id);
         return ResponseEntity.ok(result);
     }
@@ -64,9 +57,32 @@ public class GestioneFlottaController {
     @PostMapping("/{flottaId}/maintenance")
     public ResponseEntity<Boolean> startMaintenance(@PathVariable Long flottaId,
                                                      @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        securityHelper.requireRole(authHeader, RuoloAttore.PA);
+        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);
         boolean result = gestioneFlottaService.avviaManutenzione(flottaId);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{flottaId}/analyze")
+    public ResponseEntity<Boolean> analyzeFleet(@PathVariable Long flottaId,
+                                                  @RequestHeader("Authorization") String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
+        boolean result = gestioneFlottaService.analisiStatoFlotta(flottaId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/segnalazioni")
+    public ResponseEntity<List<SegnalazioneResponse>> getSegnalazioni(@RequestHeader("Authorization") String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
+        List<SegnalazioneResponse> segnalazioni = gestioneFlottaService.getSegnalazioni();
+        return ResponseEntity.ok(segnalazioni);
+    }
+
+    @GetMapping("/segnalazioni/{stato}")
+    public ResponseEntity<List<SegnalazioneResponse>> getSegnalazioniByStato(@PathVariable String stato,
+                                                                               @RequestHeader("Authorization") String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
+        List<SegnalazioneResponse> segnalazioni = gestioneFlottaService.getSegnalazioniByStato(stato);
+        return ResponseEntity.ok(segnalazioni);
     }
 
     @GetMapping("/{flottaId}/conditions")

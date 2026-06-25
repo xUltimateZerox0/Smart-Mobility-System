@@ -38,11 +38,11 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
         MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Metodo pagamento non trovato"));
 
-        if (!metodo.getUtente().getId().equals(utente.getId())) {
+        if (!metodo.getUtente().getIdUtente().equals(idUtente)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Metodo pagamento non appartiene all'utente");
         }
 
-        return gatewayPagamentoService.effettuaPagamento(idMetodoPagamento, idCorsa);
+        return gatewayPagamentoService.effettuaPagamento(idMetodoPagamento, idCorsa, costo);
     }
 
     @Override
@@ -63,7 +63,6 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
         metodo.setNumCarta(numCarta);
         metodo.setIntestatarioCarta(intestatarioCarta);
         metodo.setDsCarta(dsCarta);
-        metodo.setCvv(cvv);
         metodo.setUtente(utente);
         metodoPagamentoRepository.save(metodo);
 

@@ -99,10 +99,8 @@ class RicercaMezziServiceImplTest {
     }
 
     @Test
-    void visualizzaMezziVicini_WithMalformedCoordinates_ReturnsEmpty() {
-        when(mezzoRepository.findByStato(StatoMezzo.disponibile)).thenReturn(List.of());
-
-        List<MezzoResponse> results = service.visualizzaMezziVicini("invalid,coordinates", 2.0f);
-        assertTrue(results.isEmpty());
+    void visualizzaMezziVicini_WithMalformedCoordinates_ThrowsBadRequest() {
+        assertThrows(ResponseStatusException.class,
+                () -> service.visualizzaMezziVicini("invalid,coordinates", 2.0f));
     }
 }

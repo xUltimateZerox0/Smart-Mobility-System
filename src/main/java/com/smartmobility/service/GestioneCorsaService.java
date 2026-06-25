@@ -15,4 +15,6 @@ public interface GestioneCorsaService {
     void acquisisciSceltaMetodo(Long idMetodoPagamento, Long idUtente);
     boolean controllaDisponibilita(Long idCorsa);
     boolean controllaDisponibilita(Long idCorsa, String info);
+    CorsaResponse forzaTerminaCorsa(Long idCorsa);
+    CorsaResponse terminaCorsaAttivaUtente(Long idUtente);
 }

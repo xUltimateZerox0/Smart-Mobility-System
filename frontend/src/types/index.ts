@@ -155,6 +155,15 @@ export interface StimaCorsaResponse {
   tariffa: number
 }
 
+export interface SegnalazioneResponse {
+  idSegnalazione: number
+  idMezzo: number | null
+  stato: string
+  ora: string | null
+  data: string | null
+  motivazione: string | null
+}
+
 export const StatoPrenotazione = {
   Attiva: 'attiva',
   Scaduta: 'scaduta',

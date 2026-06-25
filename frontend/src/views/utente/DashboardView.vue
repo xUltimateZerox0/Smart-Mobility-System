@@ -52,16 +52,16 @@ const auth = useAuthStore()
 const activeBookings = ref<PrenotazioneResponse[]>([])
 const loadingBookings = ref(false)
 
-onMounted(async () => {
-  if (!auth.userId) { return }
+  onMounted(async () => {
+    if (!auth.userId) { return }
 
-  try {
-    const activeRideRes = await ridesApi.getActiveRide()
-    if (activeRideRes.data && activeRideRes.data.id) {
-      router.push(`/utente/ride/${activeRideRes.data.id}`)
-      return
-    }
-  } catch (e) { console.error('getActiveRide failed:', e) }
+    try {
+      const activeRideRes = await ridesApi.getActiveRide()
+      if (activeRideRes.data && activeRideRes.data.id) {
+        router.push(`/utente/ride/${activeRideRes.data.idMezzo}?corsaId=${activeRideRes.data.id}`)
+        return
+      }
+    } catch (e) { console.error('getActiveRide failed:', e) }
 
   loadingBookings.value = true
   try {

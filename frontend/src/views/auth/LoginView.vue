@@ -30,9 +30,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
+import { useRideStore } from '../../stores/ride'
+import * as ridesApi from '../../api/rides'
 
 const router = useRouter()
 const auth = useAuthStore()
+const rideStore = useRideStore()
 
 const email = ref('')
 const password = ref('')
@@ -44,6 +47,16 @@ async function handleLogin() {
   loading.value = true
   try {
     const data = await auth.login(email.value, password.value)
+    if (data.ruolo === 'Utente') {
+      try {
+        const activeRes = await ridesApi.getActiveRide()
+        if (activeRes.data && activeRes.data.id) {
+          await rideStore.fetchActiveRide()
+          router.push(`/utente/ride/${activeRes.data.idMezzo}?corsaId=${activeRes.data.id}`)
+          return
+        }
+      } catch {}
+    }
     redirectByRole(data.ruolo)
   } catch (e: any) {
     error.value = e.response?.data?.message || 'Errore durante il login'

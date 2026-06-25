@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 public class GatewayPagamentoServiceImpl implements GatewayPagamentoService {
 
     @Override
-    public boolean effettuaPagamento(Long idMetodoPagamento, Long idCorsa) {
+    public boolean effettuaPagamento(Long idMetodoPagamento, Long idCorsa, double costo) {
         return true;
     }
 
