@@ -9,27 +9,27 @@ sources:
   interface: interface_Spec.cgd.md v1.0 — contratti metodi
   uc03: UC.UT.03.cgd.md — use case attivante (include UC.UT.08)
 clarity-status: CLEAR
-hitl-status: PENDING
-hitl-pending-count: 2
+hitl-status: REVIEWED
+hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: PLACEHOLDER
 hitl-claims:
   - id: claim-uc08-cost-period
     text: "Il ciclo di aggiornamento del costo è periodico durante la corsa attiva. La frequenza di aggiornamento non è specificata nel diagramma di sequenza né in Master_Spec.cgd.md"
-    value: "DA CONFERMARE: frequenza di aggiornamento del costo (es. ogni 30s, ogni minuto, a ogni cambiamento di tariffa)"
+    value: "CONFERMATO: 30 secondi"
     source: "UC.UT.08-clean.uml + Master_Spec.cgd.md §3 GestioneCorsa.aggiornaStima()"
     location: "UC.UT.08/cost-update-cycle"
     round: A
-    confirmed-by: ""
-    confirmed-date: ""
+    confirmed-by: "Team Cofee Coders (HITL review)"
+    confirmed-date: "2026-06-25"
   - id: claim-uc08-trigger-mechanism
     text: "UC.UT.08 è attivato da UC.UT.03 (Gestione Corsa) dopo l'avvio della corsa. Il diagramma non specifica se l'attivazione è un timer lato Controller o un loop esplicito in AppUtente"
-    value: "DA CONFERMARE: meccanismo di attivazione del monitoraggio periodico (timer Controller vs polling View)"
+    value: "CONFERMATO: attivazione tramite flusso UC.UT.03 (quando l'utente inizia la corsa)"
     source: "UC.UT.03-clean.uml (messaggio 'Attivazione caso d'uso UC.UT.08') + UC.UT.08-clean.uml"
     location: "UC.UT.08/activation-mechanism"
     round: A
-    confirmed-by: ""
-    confirmed-date: ""
+    confirmed-by: "Team Cofee Coders (HITL review)"
+    confirmed-date: "2026-06-25"
 ---
 
 # UC.UT.08 — Monitoraggio Costo (Clarity-Gated Specification)
@@ -139,8 +139,8 @@ stimaCosto = costoOrario × oreUtilizzo + costo_sospensione(eventuale)
 ## 5. Ciclo di Aggiornamento
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│  Loop: ogni T secondi (frequenza da definire — vedi §12) │
+┌─────────────────────────────────────┐
+│  Loop: ogni 30 secondi              │
 │                                                          │
 │  1. GestioneCorsa.aggiornaStima(idCorsa)                 │
 │  2.   Mezzo.getCostoOrario() → costoOrario               │
@@ -256,15 +256,16 @@ stimaCosto = costoOrario × oreUtilizzo + costo_sospensione(eventuale)
 
 ## 12. Critical Checks
 
-### 12.1 Check 1: Frequenza di Aggiornamento ⚠
+### 12.1 Check 1: Frequenza di Aggiornamento ✅
 
 | Fonte | Specifica |
 |-------|-----------|
 | UC.UT.08-clean.uml | Ciclo di aggiornamento rappresentato — **frequenza non specificata** |
 | Master_Spec.cgd.md §3 | `aggiornaStima(idCorsa)` definito — **frequenza non specificata** |
 | documentazione.md §2.2.2 UC.UT.03 | "Il costo è in aggiornamento periodico" — **periodicità non quantificata** |
+| HITL claim-uc08-cost-period | **CONFERMATO: 30 secondi** |
 
-> **Risultato:** La frequenza di aggiornamento del costo (es. ogni 30 secondi, ogni minuto) non è specificata in nessuna fonte. *(Vedi HITL claim-uc08-cost-period)*
+> **Risultato:** Frequenza di aggiornamento confermata a 30 secondi dal team (HITL).
 
 ### 12.2 Check 2: Metodi Coinvolti — Consistenza con Master_Spec ✅
 
@@ -339,14 +340,11 @@ UC.UT.03 (Gestione Corsa)
 | Flusso principale | **HIGH** | Derivato da UC.UT.08-clean.uml (diagramma sorgente) |
 | Mapping metodi | **HIGH** | Cross-referenziato con Master_Spec.cgd.md §2-4 |
 | Relazioni Use Case | **MEDIUM** | UC.UT.08 come processo attivato — non include formale — da confermare con team |
-| Frequenza aggiornamento | **LOW** | Non specificata in nessuna fonte — HITL claim aperto |
+| Frequenza aggiornamento | **HIGH** | Confermata a 30 secondi dal team (HITL claim-uc08-cost-period) |
 
-### 16.2 Known Uncertainties (HITL Pending)
+### 16.2 Known Uncertainties (HITL Resolved)
 
-| ID | Incertezza | Impatto | Round |
-|----|-----------|---------|-------|
-| claim-uc08-cost-period | Frequenza del ciclo di aggiornamento costo non specificata | Medio — impatta implementazione timer | A |
-| claim-uc08-trigger-mechanism | Meccanismo di attivazione (timer Controller vs polling View) | Medio — impatta architettura | A |
+*Nessuna incertezza aperta — tutti i claim HITL Round A sono stati confermati dal team.*
 
 ---
 
@@ -393,16 +391,16 @@ UC.UT.03 (Gestione Corsa)
 
 | # | Claim ID | Claim | Rilevanza | Stato |
 |---|----------|-------|-----------|-------|
-| 1 | claim-uc08-cost-period | Frequenza del ciclo di aggiornamento costo non specificata | Implementazione timer — definire periodicità (es. 30s, 60s) | PENDING |
-| 2 | claim-uc08-trigger-mechanism | Meccanismo di attivazione: timer Controller vs polling View | Architettura del monitoraggio | PENDING |
+| 1 | claim-uc08-cost-period | Frequenza del ciclo di aggiornamento costo non specificata | Implementazione timer — definire periodicità (es. 30s, 60s) | **CONFERMATO: 30 secondi** |
+| 2 | claim-uc08-trigger-mechanism | Meccanismo di attivazione: timer Controller vs polling View | Architettura del monitoraggio | **CONFERMATO: attivazione tramite flusso UC.UT.03 (avvio corsa)** |
 
 ### Round B: True HITL Verification
 
-*Nessun claim richiede Round B — tutti i claim sono verificabili tramite decisione del team.*
+*Tutti i claim Round A confermati — nessun claim richiede Round B.*
 
 ---
 
-**Fine specifica UC.UT.08 — CGD generato il 2026-06-25. HITL Round A: 2/2 claim PENDING.**
+**Fine specifica UC.UT.08 — CGD aggiornato il 2026-06-25. HITL Round A: 2/2 claim CONFERMATI.**
 
 <!-- CLARITY_GATE_END -->
 Clarity Gate: CLEAR | PENDING

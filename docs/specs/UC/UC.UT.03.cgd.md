@@ -15,30 +15,30 @@ hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: 5418226c426907ee172da640dcad9810724fc0b4ea9b8afb844312c9d36cd851
 hitl-claims:
-  - id: claim-uc03-avviacorsa-params
+  - id: claim-uc03001
     text: "avviaCorsa() nel Controller non ha parametri in Master_Spec.cgd ma il SD usa avviaCorsa(idMezzo, idUtente)"
-    value: "CONFERMATO: con parametri (idMezzo, idUtente). MS needs updating."
+    value: "CONFERMATO: avviaCorsa(idMezzo, idUtente) come da diagramma di flusso"
     source: "Verificare nel Master_Spec.cgd linea 573 e confrontare con il sequence diagram UC.UT.03-clean.uml"
     location: "GestioneCorsa/avviaCorsa"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-uc03-lifeline-naming
+    confirmed-by: Team Cofee Coders (HITL review)
+    confirmed-date: 2026-06-25
+  - id: claim-uc03002
     text: "Il SD usa lifeline 'Vehicle' e 'User' (in inglese) alternati a 'Mezzo' e 'Utente' — artefatti XMI"
-    value: "CONFERMATO: Italian names (Mezzo/Utente) are correct."
+    value: "CONFERMATO: lifelines corrette: Utente, AppUtente:View, GestioneCorsa:controller, Mezzo:Model, Mezzo:IoT"
     source: "Confrontare le lifeline nel SD UC.UT.03-clean.uml con i nomi entità in Master_Spec.cgd §2-4"
     location: "Sequence Diagram/lifelines"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-uc03-descriptive-msgs
+    confirmed-by: Team Cofee Coders (HITL review)
+    confirmed-date: 2026-06-25
+  - id: claim-uc03003
     text: "I messaggi 'stimaCosto', 'calculate partial cost', 'start ride timer', 'activate cost update cycle' nel SD non corrispondono a metodi nominali del Master_Spec"
-    value: "CONFERMATO: stimaCosto is reply data from `aggiornaStima(idCorsa)`. Descriptive msgs are XMI artifacts."
+    value: "CONFERMATO: i nomi dei messaggi del diagramma di sequenza sono corretti"
     source: "Confrontare messaggi SD UC.UT.03-clean.uml con metodi GestioneCorsa e Corsa in Master_Spec.cgd §2-3"
     location: "Sequence Diagram/descriptive messages"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
+    confirmed-by: Team Cofee Coders (HITL review)
+    confirmed-date: 2026-06-25
 ---
 
 # UC.UT.03 — Gestione Corsa
@@ -92,7 +92,7 @@ hitl-claims:
 | 2 | Sistema | Verifica che il mezzo sia disponibile | `controllaDisponibilita(qrCode)` [overload String] | GestioneCorsa:576 |
 | 3 | Sistema | Richiede all'utente di selezionare un metodo di pagamento | `→ include UC.UT.05` | GestorePagamento |
 | 4 | Utente | Seleziona metodo di pagamento (da UC.UT.05) | `acquisisciSceltaMetodo(idMetodoPagamento)` | GestioneCorsa:581 |
-| 5 | Sistema | Richiede avvio corsa | `avviaCorsa()` | GestioneCorsa:573 |
+| 5 | Sistema | Richiede avvio corsa | `avviaCorsa(idMezzo, idUtente)` | GestioneCorsa:573 |
 | 6 | Sistema | Registra la nuova corsa nel DB | `creaCorsa(orarioInizio, coordinatePartenza, idUtente, idMezzo)` | Corsa:368 |
 | 7 | Sistema | Sblocca fisicamente il mezzo | `sbloccoMezzoFisico(idMezzo)` | Mezzo:IoT:836 |
 | 8 | Sistema | Imposta lo stato logico del mezzo a "in uso" | `setStato(StatoMezzo.in_uso)` | Mezzo:321 |
@@ -172,7 +172,7 @@ hitl-claims:
 | `controllaDisponibilita(qrCode)` | bool | qrCode: String | 2 | Overload String — usa QR code per verificare |
 | `controllaDisponibilita()` | bool | — | — | Overload no-args — disponibilità generica |
 | `acquisisciSceltaMetodo(idMetodoPagamento)` | void | idMetodoPagamento | 4 | Associa metodo alla sessione corsa |
-| `avviaCorsa()` | void | — | 5 | **Nessun parametro** — recupera ID da sessione/contesto |
+| `avviaCorsa(idMezzo, idUtente)` | void | idMezzo, idUtente | 5 | Parametri confermati da HITL claim-uc03001 |
 | `richiediSblocco(qrCode)` | bool | qrCode: String | 7a | Delega a Mezzo:IoT |
 | `aggiornaStima(idCorsa)` | float | idCorsa | 10 | Calcola costo parziale |
 | `terminaCorsa()` | void | — | (UC.UT.07) | Termina la corsa attiva |
@@ -254,17 +254,18 @@ hitl-claims:
 
 ### 10.1 Lifeline Mapping
 
-| Lifeline nel SD | Nome Canonico | Stato |
-|-----------------|---------------|-------|
-| `User` / `Utente` | Utente | **INCONSISTENTE:** nomi intercambiabili — artefatto XMI. Riferimento canonico: Utente. |
-| `AppUtente` / `App` | AppUtente | **INCONSISTENTE:** abbreviazione `App` è artefatto XMI. Riferimento canonico: AppUtente. |
-| `Vehicle` / `Mezzo` | Mezzo | **INCONSISTENTE:** `Vehicle` è artefatto XMI. Riferimento canonico: Mezzo. |
-| `GestioneCorsa` / `Controller` | GestioneCorsa | **INCONSISTENTE:** `Controller` generico è artefatto XMI. Riferimento canonico: GestioneCorsa. |
-| `GestorePagamento` | GestorePagamento | Corretto |
-| `Corsa` | Corsa | Corretto |
-| `DBMS` | DBMS | Corretto |
+| Lifeline nel SD | Nome Canonico | Ruolo MVC | Stato |
+|-----------------|---------------|-----------|-------|
+| `User` / `Utente` | Utente | Attore | **CONFERMATO (HITL claim-uc03002)** |
+| `AppUtente` / `App` | AppUtente | View | **CONFERMATO (HITL claim-uc03002)** |
+| `GestioneCorsa` / `Controller` | GestioneCorsa | Controller | **CONFERMATO (HITL claim-uc03002)** |
+| `Vehicle` / `Mezzo` | Mezzo | Model | **CONFERMATO (HITL claim-uc03002)** |
+| `Mezzo:IoT` | Mezzo:IoT | External System | **CONFERMATO (HITL claim-uc03002)** |
+| `GestorePagamento` | GestorePagamento | External System | Corretto |
+| `Corsa` | Corsa | Model | Corretto |
+| `DBMS` | DBMS | External System | Corretto |
 
-> **Root cause:** chiarimenti-vari.md punto 14 — "Potresti trovare metodi/classi/attributi al plurale piuttosto che al singolare... errori di esportazione XMI."
+> **Root cause:** chiarimenti-vari.md punto 14 — "Potresti trovare metodi/classi/attributi al plurale piuttosto che al singolare... errori di esportazione XMI." Le lifeline coinvolte sono: Utente, AppUtente:View, GestioneCorsa:controller, Mezzo:Model, Mezzo:IoT (confermato HITL).
 
 ### 10.2 Flusso SD vs Flusso documentazione.md
 
@@ -282,7 +283,7 @@ hitl-claims:
 | Metodo convalidato | `mostraMetodoConvalidato()` | `mostraMetodoConvalidato()` | Corretto |
 | Attivazione UC.UT.05 | `Attivazione caso d'uso UC.UT.05` (asynchCall) | — | **DESCRITTIVO:** attiva include UC.UT.05 |
 | Avvio corsa UI | `apriAvvioCorsa()` | AppUtente (View) | Corretto |
-| Avvio corsa | `avviaCorsa(idMezzo, idUtente)` | `avviaCorsa()` | **DISCREPANZA PARAMETRI:** Master_Spec ha no-args, SD ha (idMezzo, idUtente) |
+| Avvio corsa | `avviaCorsa(idMezzo, idUtente)` | `avviaCorsa(idMezzo, idUtente)` | **CORRETTO (HITL claim-uc03001):** parametri (idMezzo, idUtente) confermati |
 | Creazione corsa | `creaCorsa(orarioInizio, coordinatePartenza, idUtente, idMezzo)` | `creaCorsa(orarioinizio, coordinatePartenza, idUtente, idMezzo)` | Corretto |
 | Sblocco IoT | `sbloccoMezzoFisico(idMezzo)` | `sbloccoMezzoFisico(idMezzo)` | Corretto |
 | Set stato | `setStato(in_uso)` | `setStato(StatoMezzo.in_uso)` | Corretto |
@@ -447,7 +448,7 @@ hitl-claims:
 | `controllaDisponibilita()` | Step 2 | — | — | — | — |
 | `controllaDisponibilita(info)` | Step 2 | — | — | — | — |
 | `acquisisciSceltaMetodo(id)` | Step 4 | Step finale | — | — | — |
-| `avviaCorsa()` | Step 5 | — | — | — | — |
+| `avviaCorsa(idMezzo, idUtente)` | Step 5 | — | — | — | — |
 | `richiediSblocco(qrCode)` | Step 7a | — | Ripresa da sospensione | — | — |
 | `aggiornaStima(idCorsa)` | Step 10 | — | Incluso | — | — |
 | `terminaCorsa()` | — | — | — | Step 1 | — |
@@ -480,13 +481,15 @@ hitl-claims:
 | Tipi coordinate | **HIGH** | Confermati team (claim-7f2a5b013) |
 | Vincoli architetturali | **HIGH** | Master_Spec.cgd §8, chiarimenti-vari.md punti 2-3 |
 
-### 13.2 Known Uncertainties (HITL Pending)
+### 13.2 Known Uncertainties (HITL Resolved)
 
-| ID | Incertezza | Impatto | Round |
-|----|-----------|---------|-------|
-| claim-uc03001 | `avviaCorsa()` parametri SD vs Master_Spec | Basso — Master_Spec prevale | A |
-| claim-uc03002 | Lifeline naming SD (User/Vehicle/App) | Basso — artefatti XMI noti | A |
-| claim-uc03003 | Messaggi descrittivi SD vs nomi metodi canonici | Basso — chiarimenti-vari.md punto 14 | A |
+| ID | Incertezza | Esito HITL | Round |
+|----|-----------|------------|-------|
+| claim-uc03001 | `avviaCorsa()` parametri SD vs Master_Spec | **CONFERMATO:** avviaCorsa(idMezzo, idUtente) | A |
+| claim-uc03002 | Lifeline naming SD (User/Vehicle/App) | **CONFERMATO:** Utente, AppUtente:View, GestioneCorsa:controller, Mezzo:Model, Mezzo:IoT | A |
+| claim-uc03003 | Messaggi descrittivi SD vs nomi metodi canonici | **CONFERMATO:** i nomi dei messaggi del SD sono corretti | A |
+
+*Tutti i claim HITL Round A risolti — nessuna incertezza aperta.*
 
 ---
 
@@ -582,9 +585,9 @@ hitl-claims:
 | ERR-UT03-02 | External | GestorePagamento | `convalidaCarta()` via UC.UT.05 — Gateway non risponde o carta non valida (FA-02) | `mostraErrore("metodo non convalidato")` | L'utente reinserisce dati o sceglie metodo esistente | ERROR |
 | ERR-UT03-03 | External | Mezzo:IoT | `sbloccoMezzoFisico(idMezzo)` — IoT fallisce, restituisce `false` (FA-03) | Rollback `Corsa.creaCorsa()`, `mostraErrore("cannot unlock vehicle")` | Corsa annullata, mezzo resta prenotato, utente contatta supporto | ERROR |
 | ERR-UT03-04 | Input validation | GestioneCorsa | `controllaDisponibilita(qrCode)` — QR code non valido, scaduto o malformato | `mostraErrore("QR code non valido")` | L'utente rigenera QR da UC.UT.02 | WARN |
-| ERR-UT03-05 | Security | GestioneCorsa | `avviaCorsa()` — sessione utente scaduta o token non valido | Redirect a `UC.ATT.01` (Login) | L'utente si ri-autentica e ripete la scansione | ERROR |
+| ERR-UT03-05 | Security | GestioneCorsa | `avviaCorsa(idMezzo, idUtente)` — sessione utente scaduta o token non valido | Redirect a `UC.ATT.01` (Login) | L'utente si ri-autentica e ripete la scansione | ERROR |
 | ERR-UT03-06 | Business logic | GestioneCorsa | `acquisisciSceltaMetodo()` — nessun metodo pagamento selezionato (UC.UT.05 non completato) | Loop: mostra scelta metodi finché metodo valido selezionato | L'utente seleziona/aggiunge metodo pagamento | WARN |
-| ERR-UT03-07 | Business logic | GestioneCorsa | `avviaCorsa()` — P4 violata: utente già in corsa attiva (`orarioFine == null`) | `mostraErrore("Corsa già in corso")` | Reindirizzamento alla corsa attiva in corso | ERROR |
+| ERR-UT03-07 | Business logic | GestioneCorsa | `avviaCorsa(idMezzo, idUtente)` — P4 violata: utente già in corsa attiva (`orarioFine == null`) | `mostraErrore("Corsa già in corso")` | Reindirizzamento alla corsa attiva in corso | ERROR |
 | ERR-UT03-08 | Business logic | GestioneCorsa | `Attivazione caso d'uso UC.UT.08` — monitoraggio costo non si attiva (timer fallisce) | Log errore, riprovo attivazione | Il ciclo di monitoraggio potrebbe non partire — impatto su UT.03 | ERROR |
 
 ---
@@ -595,13 +598,13 @@ hitl-claims:
 
 | # | Claim ID | Claim | Source | Stato |
 |---|----------|-------|--------|-------|
-| 1 | claim-uc03-avviacorsa-params | avviaCorsa() parametri SD vs Master_Spec | Master_Spec.cgd:573 vs SD UC.UT.03 | PENDING |
-| 2 | claim-uc03-lifeline-naming | Lifeline naming SD (User/Vehicle/App) | SD UC.UT.03-clean.uml | PENDING |
-| 3 | claim-uc03-descriptive-msgs | Messaggi descrittivi SD vs nomi metodi canonici | SD vs Master_Spec.cgd GestioneCorsa/Corsa | PENDING |
+| 1 | claim-uc03001 | avviaCorsa() parametri SD vs Master_Spec | Master_Spec.cgd:573 vs SD UC.UT.03 | **CONFERMATO:** avviaCorsa(idMezzo, idUtente) |
+| 2 | claim-uc03002 | Lifeline naming SD (User/Vehicle/App) | SD UC.UT.03-clean.uml | **CONFERMATO:** Utente, AppUtente:View, GestioneCorsa:controller, Mezzo:Model, Mezzo:IoT |
+| 3 | claim-uc03003 | Messaggi descrittivi SD vs nomi metodi canonici | SD vs Master_Spec.cgd GestioneCorsa/Corsa | **CONFERMATO:** i nomi dei messaggi del SD sono corretti |
 
 ### Round B: True HITL Verification
 
-*Nessun claim richiede Round B — tutti i claim sono verificabili tramite fonti già presenti nel repository.*
+*Tutti i claim Round A confermati — nessun claim richiede Round B.*
 
 ---
 
@@ -618,7 +621,7 @@ Il diagramma di sequenza UC.UT.03 è stato aggiornato con le seguenti novità ri
 
 ---
 
-**Fine specifica UC.UT.03 — CGD aggiornato il 2026-06-25. HITL Round A: 3/3 claim REVIEWED. Nuovo use case UC.UT.08 documentato in specifica separata.**
+**Fine specifica UC.UT.03 — CGD aggiornato il 2026-06-25. HITL Round A: 3/3 claim CONFERMATI. Nuovo use case UC.UT.08 documentato in specifica separata.**
 
 <!-- CLARITY_GATE_END -->
 Clarity Gate: CLEAR | PENDING
