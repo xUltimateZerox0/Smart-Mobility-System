@@ -220,11 +220,12 @@ async function startRidePolling() {
   ridePollInterval = setInterval(async () => {
     const wasActive = rideStore.hasActiveRide
     const stillActive = await rideStore.fetchActiveRide()
+    if (stillActive) {
+      isPaused.value = rideStore.isPaused
+    }
     if (wasActive && !stillActive) {
       operatorBlocked.value = true
       successMsg.value = 'La corsa è stata interrotta dall\'operatore.'
-    }
-    if (!stillActive && wasActive) {
       stopTimers()
       corsaAvviata.value = false
       rideStore.clearRide()
@@ -263,8 +264,11 @@ onMounted(async () => {
   } else if (corsaFromQuery > 0) {
     rideStore.setRide(corsaFromQuery, vehicleId)
     corsaAvviata.value = true
+    isPaused.value = rideStore.isPaused
     elapsedSeconds.value = calculateElapsedSeconds()
-    startTimers()
+    if (!isPaused.value) {
+      startTimers()
+    }
     await loadVehicleTariffa()
     await updateEstimate()
     startRidePolling()
@@ -340,7 +344,13 @@ async function startRideFlow() {
     startRidePolling()
     successMsg.value = 'QR Code verificato! Veicolo sbloccato. Corsa avviata.'
   } catch (e: any) {
-    error.value = e.response?.data?.message || 'Errore durante l\'avvio della corsa. Verifica il QR Code e riprova.'
+    const status = e.response?.status
+    const msg = (e.response?.data?.message || '').toLowerCase()
+    if (status === 402 || msg.includes('pagamento')) {
+      error.value = 'Metodo di pagamento non valido o non selezionato. Seleziona un metodo di pagamento valido prima di avviare la corsa.'
+    } else {
+      error.value = e.response?.data?.message || 'Errore durante l\'avvio della corsa. Verifica il QR Code e riprova.'
+    }
     corsaAvviata.value = false
   } finally {
     startLoading.value = false

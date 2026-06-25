@@ -1,7 +1,7 @@
 <template>
   <div class="layout">
     <aside class="sidebar">
-      <div class="sidebar-header"><h2>Servizio Clienti</h2></div>
+      <div class="sidebar-header"><h2 class="sidebar-title">Servizio Clienti</h2></div>
       <nav class="sidebar-nav">
         <router-link to="/operatore-sc" class="nav-item">Moderazione</router-link>
       </nav>
@@ -26,6 +26,7 @@ async function handleLogout() { await auth.logout(); router.push('/login') }
 .sidebar { width: var(--sidebar-width); background: var(--dark); color: white; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; }
 .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .sidebar-header h2 { font-size: 18px; }
+.sidebar-title { color: white !important; font-weight: 700; letter-spacing: 0.5px; }
 .sidebar-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
 .nav-item { padding: 10px 14px; border-radius: 6px; color: rgba(255,255,255,0.7); font-size: 14px; }
 .nav-item:hover, .nav-item.router-link-exact-active { background: rgba(255,255,255,0.1); color: white; text-decoration: none; }

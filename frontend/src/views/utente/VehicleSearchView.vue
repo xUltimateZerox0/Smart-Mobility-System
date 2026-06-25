@@ -40,12 +40,16 @@
       </div>
     </div>
 
-    <div v-if="veicoli.length === 0 && searched && !showExpandPrompt && !error" class="empty-result">
+    <div v-if="stopMessage" class="stop-message" style="margin-top:12px">
+      {{ stopMessage }}
+    </div>
+
+    <div v-if="veicoli.length === 0 && searched && !showExpandPrompt && !error && !stopMessage" class="empty-result">
       <p>Nessun veicolo trovato entro {{ expanded ? 5 : 2 }} km dal punto indicato.</p>
     </div>
 
     <div v-if="error" class="error-message" style="margin-top:12px">
-      <strong>Errore durante la ricerca:</strong> {{ error }}
+      {{ error }}
     </div>
   </div>
 </template>
@@ -80,6 +84,7 @@ const expanded = ref(false)
 const showExpandPrompt = ref(false)
 const rangeNotification = ref('')
 const error = ref('')
+const stopMessage = ref('')
 
 function statusClass(stato: string) {
   if (stato === 'disponibile') return 'badge-success'
@@ -93,6 +98,7 @@ async function searchVehicles() {
   loading.value = true
   searched.value = true
   error.value = ''
+  stopMessage.value = ''
   try {
     const res = await vehiclesApi.getNearbyVehicles(`${latitudine.value},${longitudine.value}`, range)
     veicoli.value = res.data
@@ -102,9 +108,11 @@ async function searchVehicles() {
       showExpandPrompt.value = false
     }
   } catch (e: any) {
-    error.value = e.response?.data?.message || e.response?.data?.error || 'Errore durante la ricerca'
     veicoli.value = []
-    if (!expanded.value) {
+    if (expanded.value) {
+      error.value = ''
+    } else {
+      error.value = e.response?.data?.message || e.response?.data?.error || 'Errore durante la ricerca'
       showExpandPrompt.value = true
     }
   } finally {
@@ -122,6 +130,8 @@ function expandTo5km() {
 function stopSearch() {
   showExpandPrompt.value = false
   expanded.value = false
+  error.value = ''
+  stopMessage.value = 'Richiesta espansione rifiutata'
 }
 </script>
 
@@ -158,5 +168,14 @@ function stopSearch() {
   background: #fffde7;
   padding: 16px;
   border-radius: 8px;
+}
+.stop-message {
+  background: var(--bg-secondary, #e8f4fd);
+  color: var(--primary);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid var(--primary-light);
 }
 </style>

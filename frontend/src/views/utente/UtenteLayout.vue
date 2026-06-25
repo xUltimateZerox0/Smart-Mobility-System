@@ -2,7 +2,7 @@
   <div class="layout">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h2>Smart Mobility</h2>
+        <h2 class="sidebar-title">Smart Mobility</h2>
       </div>
       <nav class="sidebar-nav">
         <router-link to="/utente" class="nav-item">Dashboard</router-link>
@@ -69,6 +69,7 @@ async function handleLogout() {
 }
 .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .sidebar-header h2 { font-size: 18px; }
+.sidebar-title { color: white !important; font-weight: 700; letter-spacing: 0.5px; }
 .sidebar-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
 .nav-item {
   padding: 10px 14px;
@@ -102,38 +103,6 @@ async function handleLogout() {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
-}
-.sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
-.main-content { margin-left: var(--sidebar-width); flex: 1; padding: 24px; }
-</style>
-
-<style scoped>
-.layout { display: flex; min-height: 100vh; }
-.sidebar {
-  width: var(--sidebar-width);
-  background: var(--dark);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-}
-.sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.sidebar-header h2 { font-size: 18px; }
-.sidebar-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-.nav-item {
-  padding: 10px 14px;
-  border-radius: 6px;
-  color: rgba(255,255,255,0.7);
-  font-size: 14px;
-  transition: all 0.2s;
-}
-.nav-item:hover, .nav-item.router-link-exact-active {
-  background: rgba(255,255,255,0.1);
-  color: white;
-  text-decoration: none;
 }
 .sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
 .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 24px; }

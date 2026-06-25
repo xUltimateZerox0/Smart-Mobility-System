@@ -1,5 +1,6 @@
 package com.smartmobility.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class CorsaResponse {
@@ -61,6 +62,7 @@ public class CorsaResponse {
     public void setIdMetodoPagamento(Long idMetodoPagamento) { this.idMetodoPagamento = idMetodoPagamento; }
     public String getMetodoPagamentoLabel() { return metodoPagamentoLabel; }
     public void setMetodoPagamentoLabel(String metodoPagamentoLabel) { this.metodoPagamentoLabel = metodoPagamentoLabel; }
+    @JsonProperty("isPaused")
     public boolean isPaused() { return isPaused; }
     public void setPaused(boolean paused) { isPaused = paused; }
     public double getTotalePausaMillis() { return totalePausaMillis; }

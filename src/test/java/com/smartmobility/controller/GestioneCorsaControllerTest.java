@@ -2,10 +2,12 @@ package com.smartmobility.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.*;
+import com.smartmobility.dto.response.CorsaResponse;
 import com.smartmobility.dto.response.PercorsoResponse;
 import com.smartmobility.dto.response.StimaCorsaResponse;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneCorsaService;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -166,5 +168,25 @@ class GestioneCorsaControllerTest {
         mockMvc.perform(get("/rides/1/availability/bici"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void getActiveRide_WithPausedRide_ReturnsIsPausedTrue() throws Exception {
+        CorsaResponse corsaResponse = new CorsaResponse(
+                1L, 1L, 1L,
+                LocalDateTime.now().minusHours(1).toString(),
+                null, 10.0, 0.0, "in_corso",
+                1L, "1234 - Mario Rossi",
+                true, 5000.0
+        );
+
+        when(securityHelper.getCurrentUserId(anyString())).thenReturn(1L);
+        when(gestioneCorsaService.getCorsaAttiva(1L)).thenReturn(corsaResponse);
+
+        mockMvc.perform(get("/rides/active")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isPaused").value(true))
+                .andExpect(jsonPath("$.totalePausaMillis").value(5000.0));
     }
 }
