@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.smartmobility.service.SessionRegistryTest" time="0.003" tests="7" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.024" tests="12" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -60,11 +60,16 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="65.0"/>
   </properties>
-  <testcase name="invalidate_RemovesSession" classname="com.smartmobility.service.SessionRegistryTest" time="0.001"/>
-  <testcase name="getAttore_WithValidToken_ReturnsAttore" classname="com.smartmobility.service.SessionRegistryTest" time="0.001"/>
-  <testcase name="getAttore_WithInvalidToken_ReturnsNull" classname="com.smartmobility.service.SessionRegistryTest" time="0.0"/>
-  <testcase name="invalidateByEmail_RemovesAllSessionsForEmail" classname="com.smartmobility.service.SessionRegistryTest" time="0.0"/>
-  <testcase name="createSession_InvalidatesPreviousSession" classname="com.smartmobility.service.SessionRegistryTest" time="0.001"/>
-  <testcase name="singleSessionConstraint_LoginTerminatesPrevious" classname="com.smartmobility.service.SessionRegistryTest" time="0.0"/>
-  <testcase name="createSession_ReturnsToken" classname="com.smartmobility.service.SessionRegistryTest" time="0.0"/>
+  <testcase name="getCorsaAttiva_WithPaymentMethod_ReturnsMethodInfo" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.001"/>
+  <testcase name="avviaCorsa_WithDisponibileVehicle_StartsWithoutBooking" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.001"/>
+  <testcase name="avviaCorsa_WithPrenotatoVehicleAndNoBooking_ThrowsForbidden" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.001"/>
+  <testcase name="avviaCorsa_WithInvalidQrCode_ThrowsBadRequest" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.0"/>
+  <testcase name="acquisisciSceltaMetodo_WithoutActiveRide_StoresAsPending" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.002"/>
+  <testcase name="getCorsaAttiva_WithNoActiveRide_ReturnsNull" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.001"/>
+  <testcase name="fullBookingRidePaymentFlow" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.005"/>
+  <testcase name="avviaCorsa_WithPendingPaymentMethod_AssociatesMethod" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.002"/>
+  <testcase name="endRide_PaymentFailure_ThrowsPaymentRequired" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.001"/>
+  <testcase name="terminaCorsa_WithoutPaymentMethod_FinishesWithoutPayment" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.002"/>
+  <testcase name="avviaCorsa_WithWrongQrCode_ThrowsBadRequest" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.002"/>
+  <testcase name="terminaCorsa_WithPaymentMethod_CallsPaymentService" classname="com.smartmobility.service.GestioneCorsaServiceImplFlowTest" time="0.003"/>
 </testsuite>
