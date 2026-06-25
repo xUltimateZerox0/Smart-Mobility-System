@@ -14,13 +14,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazioneService {
 
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final AttoreRepository attoreRepository;
     private final UtenteRepository utenteRepository;
     private final SessionRegistry sessionRegistry;
@@ -38,7 +38,7 @@ public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazione
         Attore attore = attoreRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenziali non valide"));
 
-        if (!hashPassword(password).equals(attore.getPassword())) {
+        if (!passwordEncoder.matches(password, attore.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenziali non valide");
         }
 
@@ -63,6 +63,7 @@ public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazione
     }
 
     @Override
+    @Transactional
     public AuthResponse verificaValidita(String nome, String cognome, String email, String password, String datanascita) {
         if (attoreRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email già registrata");
@@ -96,12 +97,6 @@ public class GestioneAutenticazioneServiceImpl implements GestioneAutenticazione
     }
 
     private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes());
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 not available", e);
-        }
+        return passwordEncoder.encode(password);
     }
 }

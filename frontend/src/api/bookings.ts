@@ -9,8 +9,8 @@ export function getBookings() {
   return client.get<PrenotazioneResponse[]>('/bookings')
 }
 
-export function getUserBookings(idUtente: number) {
-  return client.get<PrenotazioneResponse[]>(`/bookings/user/${idUtente}`)
+export function getUserBookings() {
+  return client.get<PrenotazioneResponse[]>(`/bookings/user/me`)
 }
 
 export function cancelBooking(id: number) {

@@ -3,7 +3,7 @@
     <h1>Gestione Zone</h1>
     <div v-if="zone.length > 0" class="zone-list">
       <div v-for="z in zone" :key="z.id" class="card">
-        <h3>{{ z.nome }}</h3>
+        <h3>{{ z.tipoRestrizione }}</h3>
         <p><strong>Restrizione:</strong> {{ z.tipoRestrizione }}</p>
         <p><strong>Note:</strong> {{ z.noteRestrizione }}</p>
         <div class="form-group" style="margin-top:8px">
@@ -21,7 +21,7 @@
         </div>
         <div class="form-group" style="margin-top:8px">
           <label>Note</label>
-          <input v-model="editNote[z.id]" :placeholder="'Nuova nota per ' + z.nome" />
+          <input v-model="editNote[z.id]" :placeholder="'Nuova nota per ' + z.tipoRestrizione" />
         </div>
         <div style="display:flex;gap:8px;margin-top:4px">
           <button @click="checkAndUpdate(z)" class="btn-primary">Verifica Conflitti e Aggiorna</button>
@@ -65,8 +65,9 @@ onMounted(async () => {
     res.data.forEach(z => {
       editTipo[z.id] = z.tipoRestrizione || ''
       editZona[z.id] = z.zona || ''
+      editNote[z.id] = z.noteRestrizione || ''
     })
-  } catch {}
+  } catch (e) { console.error('getZones failed:', e) }
 })
 
 async function checkAndUpdate(z: ZonaGeograficaResponse) {

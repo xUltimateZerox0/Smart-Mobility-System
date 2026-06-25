@@ -11,6 +11,8 @@ public class CorsaResponse {
     private Double costo;
     private Double distanza;
     private String stato;
+    private Long idMetodoPagamento;
+    private String metodoPagamentoLabel;
 
     public CorsaResponse() {}
 
@@ -23,6 +25,12 @@ public class CorsaResponse {
         this.costo = costo;
         this.distanza = distanza;
         this.stato = stato;
+    }
+
+    public CorsaResponse(Long id, Long idUtente, Long idMezzo, String dataInizio, String dataFine, Double costo, Double distanza, String stato, Long idMetodoPagamento, String metodoPagamentoLabel) {
+        this(id, idUtente, idMezzo, dataInizio, dataFine, costo, distanza, stato);
+        this.idMetodoPagamento = idMetodoPagamento;
+        this.metodoPagamentoLabel = metodoPagamentoLabel;
     }
 
     public Long getId() { return id; }
@@ -41,18 +49,22 @@ public class CorsaResponse {
     public void setDistanza(Double distanza) { this.distanza = distanza; }
     public String getStato() { return stato; }
     public void setStato(String stato) { this.stato = stato; }
+    public Long getIdMetodoPagamento() { return idMetodoPagamento; }
+    public void setIdMetodoPagamento(Long idMetodoPagamento) { this.idMetodoPagamento = idMetodoPagamento; }
+    public String getMetodoPagamentoLabel() { return metodoPagamentoLabel; }
+    public void setMetodoPagamentoLabel(String metodoPagamentoLabel) { this.metodoPagamentoLabel = metodoPagamentoLabel; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CorsaResponse that = (CorsaResponse) o;
-        return Objects.equals(id, that.id) && Objects.equals(idUtente, that.idUtente) && Objects.equals(idMezzo, that.idMezzo) && Objects.equals(dataInizio, that.dataInizio) && Objects.equals(dataFine, that.dataFine) && Objects.equals(costo, that.costo) && Objects.equals(distanza, that.distanza) && Objects.equals(stato, that.stato);
+        return Objects.equals(id, that.id) && Objects.equals(idUtente, that.idUtente) && Objects.equals(idMezzo, that.idMezzo) && Objects.equals(dataInizio, that.dataInizio) && Objects.equals(dataFine, that.dataFine) && Objects.equals(costo, that.costo) && Objects.equals(distanza, that.distanza) && Objects.equals(stato, that.stato) && Objects.equals(idMetodoPagamento, that.idMetodoPagamento) && Objects.equals(metodoPagamentoLabel, that.metodoPagamentoLabel);
     }
 
     @Override
-    public int hashCode() { return Objects.hash(id, idUtente, idMezzo, dataInizio, dataFine, costo, distanza, stato); }
+    public int hashCode() { return Objects.hash(id, idUtente, idMezzo, dataInizio, dataFine, costo, distanza, stato, idMetodoPagamento, metodoPagamentoLabel); }
 
     @Override
-    public String toString() { return "CorsaResponse{id=" + id + ", idUtente=" + idUtente + ", idMezzo=" + idMezzo + ", dataInizio='" + dataInizio + "', dataFine='" + dataFine + "', costo=" + costo + ", distanza=" + distanza + ", stato='" + stato + "'}"; }
+    public String toString() { return "CorsaResponse{id=" + id + ", idUtente=" + idUtente + ", idMezzo=" + idMezzo + ", dataInizio='" + dataInizio + "', dataFine='" + dataFine + "', costo=" + costo + ", distanza=" + distanza + ", stato='" + stato + "', idMetodoPagamento=" + idMetodoPagamento + "}"; }
 }

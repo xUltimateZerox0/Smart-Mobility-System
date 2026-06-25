@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -43,25 +44,30 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String getQRCode(Long idPrenotazione) {
-        Prenotazione prenotazione = prenotazioneRepository.findById(idPrenotazione)
+        Prenotazione prenotazione = prenotazioneRepository.findByIdWithMezzo(idPrenotazione)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non trovata"));
+        if (prenotazione.getMezzo() == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non ha un mezzo associato");
+        }
         return "QR-" + prenotazione.getMezzo().getIdMezzo() + "-" + idPrenotazione + "-" + System.currentTimeMillis();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PrenotazioneResponse> richiediLista() {
-        return prenotazioneRepository.findAll().stream()
+        return prenotazioneRepository.findAllWithDetails().stream()
                 .map(this::toPrenotazioneResponse)
                 .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PrenotazioneResponse> richiediListaPerUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
-        return prenotazioneRepository.findAll().stream()
-                .filter(p -> p.getUtente() != null && p.getUtente().getId().equals(utente.getId()))
+        return prenotazioneRepository.findByUtenteIdWithDetails(utente.getId()).stream()
                 .map(this::toPrenotazioneResponse)
                 .toList();
     }
@@ -69,7 +75,7 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     @Override
     @Transactional
     public boolean annullaPrenotazione(Long idPrenotazione) {
-        Prenotazione prenotazione = prenotazioneRepository.findById(idPrenotazione)
+        Prenotazione prenotazione = prenotazioneRepository.findByIdWithMezzo(idPrenotazione)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non trovata"));
 
         if (prenotazione.getStato() != StatoPrenotazione.attiva) {
@@ -91,12 +97,13 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     @Override
     @Transactional
     public void gestisciTimeout() {
-        List<Prenotazione> prenotazioniAttive = prenotazioneRepository.findByStato(StatoPrenotazione.attiva);
-        LocalTime now = LocalTime.now();
+        List<Prenotazione> prenotazioniAttive = prenotazioneRepository.findByStatoWithDetails(StatoPrenotazione.attiva);
+        LocalDateTime now = LocalDateTime.now();
 
         for (Prenotazione p : prenotazioniAttive) {
-            if (p.getOrarioInizio() != null) {
-                long minutiPassati = java.time.Duration.between(p.getOrarioInizio(), now).toMinutes();
+            if (p.getOrarioInizio() != null && p.getData() != null) {
+                LocalDateTime inizio = LocalDateTime.of(p.getData(), p.getOrarioInizio());
+                long minutiPassati = Duration.between(inizio, now).toMinutes();
                 if (minutiPassati >= 15) {
                     p.setStato(StatoPrenotazione.scaduta);
                     prenotazioneRepository.save(p);
@@ -112,6 +119,7 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     }
 
     @Override
+    @Transactional
     public void notificaScadenzaTempo(Long idPrenotazione) {
         Prenotazione prenotazione = prenotazioneRepository.findById(idPrenotazione)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non trovata"));
@@ -179,8 +187,8 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
                 p.getIdPrenotazione(),
                 p.getUtente() != null ? p.getUtente().getIdUtente() : null,
                 p.getMezzo() != null ? p.getMezzo().getIdMezzo() : null,
-                p.getData() != null ? p.getData().toString() : null,
-                p.getOrarioInizio() != null ? p.getOrarioInizio().toString() : null,
+                p.getData() != null && p.getOrarioInizio() != null ? p.getData().toString() + "T" + p.getOrarioInizio().toString() : (p.getData() != null ? p.getData().toString() : null),
+                null,
                 p.getStato() != null ? p.getStato().name() : null,
                 nomeVeicolo,
                 tipoVeicolo,

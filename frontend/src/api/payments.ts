@@ -15,6 +15,6 @@ export function addPaymentMethod(data: {
   return client.post<boolean>('/payments/methods', data)
 }
 
-export function getSavedMethods(idUtente: number) {
-  return client.get<MetodoPagamentoResponse[]>('/payments/methods', { params: { idUtente } })
+export function getSavedMethods() {
+  return client.get<MetodoPagamentoResponse[]>('/payments/methods')
 }

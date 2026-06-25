@@ -56,6 +56,8 @@ export interface CorsaResponse {
   costo: number
   distanza: number
   stato: string
+  idMetodoPagamento?: number
+  metodoPagamentoLabel?: string
 }
 
 export interface MetodoPagamentoResponse {
@@ -127,7 +129,7 @@ export interface FleetVehicle {
   autonomia: number
   tariffa: number
   condizione: string
-  idFlotta: number
+  idFlotta: number | string
 }
 
 export interface FleetStatistics {

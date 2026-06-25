@@ -40,21 +40,34 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import * as bookingsApi from '../../api/bookings'
+import * as ridesApi from '../../api/rides'
 import type { PrenotazioneResponse } from '../../types'
 
+const router = useRouter()
 const auth = useAuthStore()
 
 const activeBookings = ref<PrenotazioneResponse[]>([])
 const loadingBookings = ref(false)
 
 onMounted(async () => {
+  if (!auth.userId) { return }
+
+  try {
+    const activeRideRes = await ridesApi.getActiveRide()
+    if (activeRideRes.data && activeRideRes.data.id) {
+      router.push(`/utente/ride/${activeRideRes.data.id}`)
+      return
+    }
+  } catch (e) { console.error('getActiveRide failed:', e) }
+
   loadingBookings.value = true
   try {
-    const res = await bookingsApi.getUserBookings(auth.userId!)
+    const res = await bookingsApi.getUserBookings()
     activeBookings.value = res.data.filter(b => b.stato === 'attiva')
-  } catch { activeBookings.value = [] }
+  } catch (e) { console.error('getUserBookings failed:', e); activeBookings.value = [] }
   finally { loadingBookings.value = false }
 })
 

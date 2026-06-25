@@ -103,7 +103,6 @@ public class GestioneAreeServiceImpl implements GestioneAreeService {
         return new ZonaGeograficaResponse(
                 z.getIdArea(),
                 z.getTipoRestrizione() != null ? z.getTipoRestrizione().name() : null,
-                z.getTipoRestrizione() != null ? z.getTipoRestrizione().name() : null,
                 z.getNoteRestrizione(),
                 z.getZona()
         );

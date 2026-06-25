@@ -7,18 +7,18 @@
       <p><strong>Autonomia:</strong> {{ veicolo.autonomia }} km</p>
       <p><strong>Posizione:</strong> {{ veicolo.latitudine }}, {{ veicolo.longitudine }}</p>
       <p v-if="veicolo.tempoDisponibilita"><strong>Disponibile dalle:</strong> {{ veicolo.tempoDisponibilita }}</p>
-      <p v-if="disponibile !== null"><strong>Disponibile:</strong> {{ disponibile ? 'Sì' : 'No' }}</p>
+
       <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
-        <button @click="startRide" class="btn-primary" :disabled="rideLoading">
+        <button v-if="hasActiveBooking" @click="startRide" class="btn-primary" :disabled="rideLoading">
           {{ rideLoading ? 'Avvio...' : 'Avvia Corsa' }}
         </button>
         <button @click="bookVehicle" class="btn-secondary" :disabled="bookingLoading">
           {{ bookingLoading ? 'Prenoto...' : 'Prenota' }}
         </button>
-        <button @click="checkAvailability" class="btn-secondary" :disabled="checkLoading">
-          {{ checkLoading ? 'Verifico...' : 'Verifica Disponibilità' }}
-        </button>
       </div>
+      <p v-if="!hasActiveBooking && veicolo" style="font-size:13px;color:var(--gray);margin-top:8px">
+        Prenota questo veicolo per poter avviare una corsa
+      </p>
       <div style="margin-top:16px">
         <h3>Calcolo Percorso</h3>
         <div class="form-group" style="display:flex;gap:8px;align-items:end">
@@ -29,8 +29,7 @@
           <button @click="calculateRoute" class="btn-primary" :disabled="routeLoading">{{ routeLoading ? 'Calcolo...' : 'Calcola Percorso' }}</button>
         </div>
         <div v-if="percorso" class="card" style="margin-top:8px;font-size:13px">
-          <p><strong>Distanza:</strong> {{ percorso.distanza }}</p>
-          <p><strong>Durata:</strong> {{ percorso.durata }}</p>
+          <p><strong>Percorso:</strong> {{ percorso.percorso }}</p>
           <p><strong>Messaggio:</strong> {{ percorso.messaggio }}</p>
         </div>
       </div>
@@ -102,7 +101,7 @@ import { useAuthStore } from '../../stores/auth'
 import * as vehiclesApi from '../../api/vehicles'
 import * as ridesApi from '../../api/rides'
 import * as bookingsApi from '../../api/bookings'
-import type { MezzoResponse } from '../../types'
+import type { MezzoResponse, PrenotazioneResponse, PercorsoResponse } from '../../types'
 
 const route = useRoute()
 const router = useRouter()
@@ -112,13 +111,12 @@ const veicolo = ref<MezzoResponse | null>(null)
 const loading = ref(true)
 const rideLoading = ref(false)
 const bookingLoading = ref(false)
-const checkLoading = ref(false)
 const routeLoading = ref(false)
 const rideError = ref('')
 const successMsg = ref('')
-const disponibile = ref<boolean | null>(null)
 const destinazione = ref('')
-const percorso = ref<any>(null)
+const percorso = ref<PercorsoResponse | null>(null)
+const hasActiveBooking = ref(false)
 
 const showBookingModal = ref(false)
 const selectedDate = ref('')
@@ -143,9 +141,28 @@ function setDefaultDateTime() {
 }
 
 onMounted(async () => {
+  if (!auth.userId) { return }
   try {
-    const res = await vehiclesApi.getVehicleDetails(Number(route.params.id))
-    veicolo.value = res.data
+    const vehicleId = Number(route.params.id)
+    if (isNaN(vehicleId)) { loading.value = false; return }
+
+    const [vehicleRes, activeRideRes] = await Promise.all([
+      vehiclesApi.getVehicleDetails(vehicleId),
+      ridesApi.getActiveRide().catch(() => ({ data: null }))
+    ])
+    veicolo.value = vehicleRes.data
+
+    if (activeRideRes.data && activeRideRes.data.id) {
+      router.push(`/utente/ride/${activeRideRes.data.idMezzo}?corsaId=${activeRideRes.data.id}`)
+      return
+    }
+
+    const bookingsRes = await bookingsApi.getUserBookings()
+    hasActiveBooking.value = bookingsRes.data.some(
+      (b: PrenotazioneResponse) =>
+        (b.idVeicolo === vehicleId || b.idMezzo === vehicleId) &&
+        b.stato === 'attiva'
+    )
   } catch {
     veicolo.value = null
   } finally {
@@ -159,21 +176,12 @@ function statusClass(stato: string) {
   return 'badge-warning'
 }
 
-async function checkAvailability() {
-  checkLoading.value = true; rideError.value = ''; successMsg.value = ''
-  try {
-    const res = await vehiclesApi.checkVehicleAvailability(veicolo.value!.id)
-    disponibile.value = res.data
-    successMsg.value = res.data ? 'Il mezzo è disponibile' : 'Il mezzo non è disponibile'
-  } catch (e: any) { rideError.value = e.response?.data?.message || 'Errore' }
-  finally { checkLoading.value = false }
-}
-
 async function calculateRoute() {
   if (!destinazione.value.trim()) { rideError.value = 'Inserisci una destinazione'; return }
+  if (!veicolo.value) { rideError.value = 'Veicolo non disponibile'; return }
   routeLoading.value = true; rideError.value = ''; successMsg.value = ''
   try {
-    const coord = `${veicolo.value!.latitudine},${veicolo.value!.longitudine}`
+    const coord = `${veicolo.value.latitudine},${veicolo.value.longitudine}`
     const res = await ridesApi.calculateRoute(coord, destinazione.value)
     percorso.value = res.data
     successMsg.value = 'Percorso calcolato'
@@ -181,16 +189,11 @@ async function calculateRoute() {
   finally { routeLoading.value = false }
 }
 
-async function startRide() {
+function startRide() {
+  if (!veicolo.value) { rideError.value = 'Veicolo non disponibile'; return }
   rideError.value = ''; successMsg.value = ''
-  rideLoading.value = true
-  try {
-    router.push(`/utente/ride/${veicolo.value!.id}`)
-  } catch (e: any) {
-    rideError.value = e.response?.data?.message || 'Errore'
-  } finally {
-    rideLoading.value = false
-  }
+  const qr = bookingResult.value?.qrCode ? `?qrCode=${encodeURIComponent(bookingResult.value.qrCode)}` : ''
+  router.push(`/utente/ride/${veicolo.value.id}${qr}`)
 }
 
 function bookVehicle() {
@@ -202,13 +205,14 @@ function bookVehicle() {
 }
 
 async function confirmBooking() {
+  if (!auth.userId || !veicolo.value) { bookingError.value = 'Dati utente o veicolo non disponibili'; return }
   confirmLoading.value = true
   bookingError.value = ''
   try {
     const orarioInizio = `${selectedDate.value}T${selectedTime.value}`
     const res = await bookingsApi.createBooking({
-      idMezzo: veicolo.value!.id,
-      idUtente: auth.userId!,
+      idMezzo: veicolo.value.id,
+      idUtente: auth.userId,
       orarioInizio
     })
     const bookingId = res.data.id
@@ -223,6 +227,9 @@ async function confirmBooking() {
 
 function closeModal() {
   showBookingModal.value = false
+  if (bookingResult.value) {
+    hasActiveBooking.value = true
+  }
   bookingResult.value = null
   bookingError.value = ''
 }

@@ -1,8 +1,12 @@
 import client from './client'
-import type { PercorsoResponse, StimaCorsaResponse } from '../types'
+import type { CorsaResponse, PercorsoResponse, StimaCorsaResponse } from '../types'
 
-export function startRide(idMezzo: number, idUtente: number) {
-  return client.post<number>('/rides/start', { idMezzo, idUtente })
+export function getActiveRide() {
+  return client.get<CorsaResponse>(`/rides/active`)
+}
+
+export function startRide(idMezzo: number, idUtente: number, qrCode: string) {
+  return client.post<number>('/rides/start', { idMezzo, idUtente, qrCode })
 }
 
 export function endRide(id: number) {

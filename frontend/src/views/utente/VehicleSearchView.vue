@@ -31,9 +31,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
 import * as vehiclesApi from '../../api/vehicles'
+import * as ridesApi from '../../api/rides'
 import type { MezzoResponse } from '../../types'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+onMounted(async () => {
+  if (!auth.userId) return
+  try {
+    const res = await ridesApi.getActiveRide()
+    if (res.data && res.data.id) {
+      router.push(`/utente/ride/${res.data.id}`)
+    }
+  } catch (e) { console.error('getActiveRide failed:', e) }
+})
 
 const latitudine = ref(45.4642)
 const longitudine = ref(9.1900)
@@ -54,7 +70,7 @@ async function searchVehicles() {
   try {
     const res = await vehiclesApi.getNearbyVehicles(`${latitudine.value},${longitudine.value}`, raggio.value)
     veicoli.value = res.data
-  } catch {
+  } catch (e) { console.error('searchVehicles failed:', e)
     veicoli.value = []
   } finally {
     loading.value = false

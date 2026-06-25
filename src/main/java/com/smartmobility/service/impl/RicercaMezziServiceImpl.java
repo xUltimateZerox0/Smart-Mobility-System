@@ -5,6 +5,7 @@ import com.smartmobility.model.Mezzo;
 import com.smartmobility.model.enums.StatoMezzo;
 import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.service.RicercaMezziService;
+import com.smartmobility.util.GeoUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -45,7 +46,7 @@ public class RicercaMezziServiceImpl implements RicercaMezziService {
     }
 
     private MezzoResponse toMezzoResponse(Mezzo mezzo) {
-        double[] coords = parseCoordinates(mezzo.getCoordinateMezzo());
+        double[] coords = GeoUtils.parseCoordinates(mezzo.getCoordinateMezzo());
         String tempoDisp = mezzo.getTempoDisponibilita() != null ? mezzo.getTempoDisponibilita().toString() : null;
         return new MezzoResponse(
                 mezzo.getIdMezzo(),
@@ -63,31 +64,11 @@ public class RicercaMezziServiceImpl implements RicercaMezziService {
     }
 
     private boolean isWithinRadius(String coord1, String coord2, float raggio) {
-        double[] c1 = parseCoordinates(coord1);
-        double[] c2 = parseCoordinates(coord2);
-        double distance = haversine(c1[0], c1[1], c2[0], c2[1]);
+        double[] c1 = GeoUtils.parseCoordinates(coord1);
+        double[] c2 = GeoUtils.parseCoordinates(coord2);
+        double distance = GeoUtils.haversine(c1[0], c1[1], c2[0], c2[1]);
         return distance <= raggio;
     }
 
-    private double[] parseCoordinates(String coords) {
-        try {
-            String[] parts = coords.split(",");
-            double lat = Double.parseDouble(parts[0].trim());
-            double lon = Double.parseDouble(parts[1].trim());
-            return new double[]{lat, lon};
-        } catch (Exception e) {
-            return new double[]{0.0, 0.0};
-        }
-    }
 
-    private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
 }

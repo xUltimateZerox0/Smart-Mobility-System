@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.*;
 import com.smartmobility.dto.response.PercorsoResponse;
 import com.smartmobility.dto.response.StimaCorsaResponse;
+import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneCorsaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,25 +30,28 @@ class GestioneCorsaControllerTest {
     @MockBean
     private GestioneCorsaService gestioneCorsaService;
 
+    @MockBean
+    private SecurityHelper securityHelper;
+
     @Test
     void startRide_WithValidRequest_ReturnsOk() throws Exception {
-        StartRideRequest request = new StartRideRequest(1L, 1L);
+        StartRideRequest request = new StartRideRequest(1L, 1L, "QR-1");
 
         mockMvc.perform(post("/rides/start")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
-        verify(gestioneCorsaService).avviaCorsa(1L, 1L);
+        verify(gestioneCorsaService).avviaCorsa(1L, 1L, "QR-1");
     }
 
     @Test
     void startRide_WhenMezzoNotAvailable_ReturnsConflict() throws Exception {
-        StartRideRequest request = new StartRideRequest(1L, 1L);
+        StartRideRequest request = new StartRideRequest(1L, 1L, "QR-1");
 
         doThrow(new org.springframework.web.server.ResponseStatusException(
                 org.springframework.http.HttpStatus.CONFLICT, "Mezzo non disponibile"))
-                .when(gestioneCorsaService).avviaCorsa(1L, 1L);
+                .when(gestioneCorsaService).avviaCorsa(1L, 1L, "QR-1");
 
         mockMvc.perform(post("/rides/start")
                         .contentType(MediaType.APPLICATION_JSON)

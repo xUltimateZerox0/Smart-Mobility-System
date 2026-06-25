@@ -74,6 +74,7 @@ class GestioneCorsaServiceImplTest {
 
     @Test
     void avviaCorsa_WithValidData_StartsRide() {
+        when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
         when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
         when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of());
@@ -81,7 +82,7 @@ class GestioneCorsaServiceImplTest {
         savedCorsa.setIdCorsa(1L);
         when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
 
-        Long corsaId = service.avviaCorsa(1L, 1L);
+        Long corsaId = service.avviaCorsa(1L, 1L, "QR-1");
 
         assertEquals(1L, corsaId);
         verify(corsaRepository).save(any(Corsa.class));
@@ -95,7 +96,7 @@ class GestioneCorsaServiceImplTest {
         when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
 
         assertThrows(ResponseStatusException.class,
-                () -> service.avviaCorsa(1L, 1L));
+                () -> service.avviaCorsa(1L, 1L, "QR-1"));
     }
 
     @Test
@@ -105,7 +106,7 @@ class GestioneCorsaServiceImplTest {
         when(corsaRepository.findByUtenteIdAndOrarioFineIsNull(1L)).thenReturn(List.of(new Corsa()));
 
         assertThrows(ResponseStatusException.class,
-                () -> service.avviaCorsa(1L, 1L));
+                () -> service.avviaCorsa(1L, 1L, "QR-1"));
     }
 
     @Test
@@ -114,6 +115,7 @@ class GestioneCorsaServiceImplTest {
         corsa.setOrarioFine(null);
 
         when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(gestorePagamentoService.pagamentoCorsa(anyLong(), anyLong(), anyLong(), anyDouble())).thenReturn(true);
 
         service.terminaCorsa(1L);
 
@@ -151,6 +153,7 @@ class GestioneCorsaServiceImplTest {
         Corsa corsa = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento, LocalDateTime.now(), 0f);
 
         when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(mezzoIoTService.bloccoMezzoFisico(1L)).thenReturn(true);
 
         boolean result = service.sospensioneCorsa(1L);
 
@@ -164,6 +167,7 @@ class GestioneCorsaServiceImplTest {
         Corsa corsa = TestDataFactory.createCorsa(1L, utente, mezzo, metodoPagamento, LocalDateTime.now(), 0f);
 
         when(corsaRepository.findById(1L)).thenReturn(Optional.of(corsa));
+        when(mezzoIoTService.sbloccoMezzoFisico(1L)).thenReturn(true);
 
         boolean result = service.sospensioneCorsa(1L);
 

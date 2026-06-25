@@ -9,6 +9,7 @@ import com.smartmobility.model.enums.StatoSegnalazione;
 import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.repository.SegnalazioneRepository;
 import com.smartmobility.service.GestioneFlottaService;
+import com.smartmobility.util.GeoUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -143,7 +144,7 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
     }
 
     private MezzoResponse toMezzoResponse(Mezzo mezzo) {
-        double[] coords = parseCoordinates(mezzo.getCoordinateMezzo());
+        double[] coords = GeoUtils.parseCoordinates(mezzo.getCoordinateMezzo());
         String tempoDisp = mezzo.getTempoDisponibilita() != null ? mezzo.getTempoDisponibilita().toString() : null;
         return new MezzoResponse(
                 mezzo.getIdMezzo(),
@@ -160,14 +161,5 @@ public class GestioneFlottaServiceImpl implements GestioneFlottaService {
         );
     }
 
-    private double[] parseCoordinates(String coords) {
-        try {
-            String[] parts = coords.split(",");
-            double lat = Double.parseDouble(parts[0].trim());
-            double lon = Double.parseDouble(parts[1].trim());
-            return new double[]{lat, lon};
-        } catch (Exception e) {
-            return new double[]{0.0, 0.0};
-        }
-    }
+
 }

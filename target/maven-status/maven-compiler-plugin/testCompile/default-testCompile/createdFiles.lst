@@ -3,7 +3,6 @@ com/smartmobility/service/GestioneAreeServiceImplTest.class
 com/smartmobility/controller/GestioneAutenticazioneControllerTest.class
 com/smartmobility/service/GestioneUtentiServiceImplTest.class
 com/smartmobility/service/SessionRegistryTest.class
-com/smartmobility/service/GestionePrenotazioneServiceImplTest.class
 com/smartmobility/config/TestDataFactory.class
 com/smartmobility/repository/CorsaRepositoryTest.class
 com/smartmobility/controller/GestioneAreeControllerTest.class
@@ -15,11 +14,9 @@ com/smartmobility/repository/MezzoRepositoryTest.class
 com/smartmobility/controller/GestioneFlottaControllerTest.class
 com/smartmobility/controller/GestioneUtentiControllerTest.class
 com/smartmobility/controller/GestionePrenotazioneControllerTest.class
-com/smartmobility/service/GestioneCorsaServiceImplTest.class
 com/smartmobility/controller/RicercaMezziControllerTest.class
 com/smartmobility/integration/AutenticazioneFlowIntegrationTest.class
 com/smartmobility/controller/GestioneCorsaControllerTest.class
 com/smartmobility/service/GestioneStatisticheServiceImplTest.class
 com/smartmobility/SmartMobilityApplicationTests.class
-com/smartmobility/repository/PrenotazioneRepositoryTest.class
 com/smartmobility/controller/GestorePagamentoControllerTest.class

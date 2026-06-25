@@ -7,6 +7,10 @@
     </div>
     <div class="form-group" style="display:flex;gap:8px;align-items:end;margin-bottom:16px">
       <div>
+        <label>ID Flotta</label>
+        <input v-model.number="fleetId" type="number" placeholder="ID flotta" />
+      </div>
+      <div>
         <label>ID Veicolo</label>
         <input v-model.number="lockVehicleId" type="number" placeholder="ID veicolo" />
       </div>
@@ -35,10 +39,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import * as fleetApi from '../../api/fleet'
+import type { FleetAnalysisResponse, MezzoResponse } from '../../types'
 
-const fleetData = ref<any>(null)
-const conditions = ref<any[]>([])
-const fleetId = 1
+const fleetData = ref<FleetAnalysisResponse | { message: string } | null>(null)
+const conditions = ref<MezzoResponse[]>([])
+// TODO: fleetId should come from user profile when multi-fleet support is active
+const fleetId = ref(1)
 const loading = ref(false)
 const lockLoading = ref(false)
 const unlockLoading = ref(false)
@@ -48,32 +54,59 @@ const error = ref('')
 async function loadConditions() {
   loading.value = true; error.value = ''
   try {
-    const res = await fleetApi.getVehicleConditions(fleetId)
+    const res = await fleetApi.getVehicleConditions(fleetId.value)
     conditions.value = res.data
-  } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
+  } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'response' in e) {
+      const axiosErr = e as { response: { data?: { message?: string } } }
+      error.value = axiosErr.response.data?.message || 'Errore'
+    } else {
+      error.value = 'Errore sconosciuto'
+    }
+  }
   finally { loading.value = false }
 }
 
 async function lockVehicle() {
   lockLoading.value = true; error.value = ''
-  try { await fleetApi.lockVehicle(lockVehicleId.value); fleetData.value = { message: `Mezzo ${lockVehicleId.value} bloccato` } } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
+  try { await fleetApi.lockVehicle(lockVehicleId.value); fleetData.value = { message: `Mezzo ${lockVehicleId.value} bloccato` } } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'response' in e) {
+      const axiosErr = e as { response: { data?: { message?: string } } }
+      error.value = axiosErr.response.data?.message || 'Errore'
+    } else { error.value = 'Errore sconosciuto' }
+  }
   finally { lockLoading.value = false }
 }
 
 async function unlockVehicle() {
   unlockLoading.value = true; error.value = ''
-  try { await fleetApi.unlockVehicle(lockVehicleId.value); fleetData.value = { message: `Mezzo ${lockVehicleId.value} sbloccato` } } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
+  try { await fleetApi.unlockVehicle(lockVehicleId.value); fleetData.value = { message: `Mezzo ${lockVehicleId.value} sbloccato` } } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'response' in e) {
+      const axiosErr = e as { response: { data?: { message?: string } } }
+      error.value = axiosErr.response.data?.message || 'Errore'
+    } else { error.value = 'Errore sconosciuto' }
+  }
   finally { unlockLoading.value = false }
 }
 
 async function lockSpecificVehicle(id: number) {
   error.value = ''
-  try { await fleetApi.lockVehicle(id); fleetData.value = { message: `Mezzo ${id} bloccato` }; await loadConditions() } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
+  try { await fleetApi.lockVehicle(id); fleetData.value = { message: `Mezzo ${id} bloccato` }; await loadConditions() } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'response' in e) {
+      const axiosErr = e as { response: { data?: { message?: string } } }
+      error.value = axiosErr.response.data?.message || 'Errore'
+    } else { error.value = 'Errore sconosciuto' }
+  }
 }
 
 async function unlockSpecificVehicle(id: number) {
   error.value = ''
-  try { await fleetApi.unlockVehicle(id); fleetData.value = { message: `Mezzo ${id} sbloccato` }; await loadConditions() } catch (e: any) { error.value = e.response?.data?.message || 'Errore' }
+  try { await fleetApi.unlockVehicle(id); fleetData.value = { message: `Mezzo ${id} sbloccato` }; await loadConditions() } catch (e: unknown) {
+    if (e && typeof e === 'object' && 'response' in e) {
+      const axiosErr = e as { response: { data?: { message?: string } } }
+      error.value = axiosErr.response.data?.message || 'Errore'
+    } else { error.value = 'Errore sconosciuto' }
+  }
 }
 
 </script>

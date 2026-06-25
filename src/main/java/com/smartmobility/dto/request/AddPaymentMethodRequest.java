@@ -53,5 +53,5 @@ public class AddPaymentMethodRequest {
     public int hashCode() { return Objects.hash(idUtente, numCarta, dsCarta, cvv, intestatarioCarta); }
 
     @Override
-    public String toString() { return "AddPaymentMethodRequest{idUtente=" + idUtente + ", numCarta='" + numCarta + "', dsCarta='" + dsCarta + "', cvv='" + cvv + "', intestatarioCarta='" + intestatarioCarta + "'}"; }
+    public String toString() { return "AddPaymentMethodRequest{idUtente=" + idUtente + ", numCarta='[REDACTED]', dsCarta='" + dsCarta + "', cvv='[REDACTED]', intestatarioCarta='" + intestatarioCarta + "'}"; }
 }

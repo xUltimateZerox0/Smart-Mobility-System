@@ -9,8 +9,10 @@ import com.smartmobility.model.enums.StatoMezzo;
 import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.service.GestioneStatisticheService;
+import com.smartmobility.util.GeoUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -33,6 +35,7 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
     }
 
     @Override
+    @Transactional(readOnly = true)
     public StatisticheResponse analisiTratte(String dataInizio, String dataFine) {
         LocalDateTime start;
         LocalDateTime end;
@@ -98,6 +101,7 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MezzoResponse> analisiStatoFlotta() {
         List<Mezzo> mezzi = mezzoRepository.findAll();
         List<MezzoResponse> responses = new ArrayList<>();
@@ -123,6 +127,7 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Map<String, Long> getStatisticheFlotta() {
         List<Mezzo> mezzi = mezzoRepository.findAll();
         Map<String, Long> stats = new HashMap<>();
@@ -137,30 +142,8 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
     }
 
     private double estimateDistance(String coord1, String coord2) {
-        double[] c1 = parseCoordinates(coord1);
-        double[] c2 = parseCoordinates(coord2);
-        return haversine(c1[0], c1[1], c2[0], c2[1]);
-    }
-
-    private double[] parseCoordinates(String coords) {
-        try {
-            String[] parts = coords.split(",");
-            double lat = Double.parseDouble(parts[0].trim());
-            double lon = Double.parseDouble(parts[1].trim());
-            return new double[]{lat, lon};
-        } catch (Exception e) {
-            return new double[]{0.0, 0.0};
-        }
-    }
-
-    private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+        double[] c1 = GeoUtils.parseCoordinates(coord1);
+        double[] c2 = GeoUtils.parseCoordinates(coord2);
+        return GeoUtils.haversine(c1[0], c1[1], c2[0], c2[1]);
     }
 }

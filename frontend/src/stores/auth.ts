@@ -57,8 +57,8 @@ export const useAuthStore = defineStore('auth', () => {
     if (user.value?.email) {
       try {
         await authApi.logout(user.value.email)
-      } catch {
-        // proceed with local logout even if API fails
+      } catch (e) {
+        console.error('Logout API failed:', e)
       }
     }
     user.value = null
