@@ -403,4 +403,4 @@ UC.UT.03 (Gestione Corsa)
 **Fine specifica UC.UT.08 — CGD aggiornato il 2026-06-25. HITL Round A: 2/2 claim CONFERMATI.**
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

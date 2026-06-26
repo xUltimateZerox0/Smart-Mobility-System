@@ -75,7 +75,7 @@ hitl-claims:
 | Step | Attore | Sistema | Note |
 |------|--------|---------|------|
 | 1 | L'utente ha inserito l'indirizzo di destinazione tramite `AppUtente.inserisciDestinazione(indirizzoArrivo)` | — | La View raccoglie l'input utente |
-| 2 | — | Il sistema ha inoltrato la richiesta a `GestioneCorsa.richiediCalcoloPercorso(coordinateUtente, destinazione)` | Controller riceve coordinate utente + destinazione |
+| 2 | — | Il sistema ha inoltrato la richiesta a `GestioneCorsa.richiediCalcoloPercorso(coordinateUtente, stringaDestinazione)` | Controller riceve coordinate utente + destinazione |
 | 3 | — | Il sistema ha interrogato `ZonaGeografica.getRestrizioniZona(coordinateUtente)` per recuperare le restrizioni attive nell'area | Restituisce zona/e con `tipoRestrizione` e `zona` (LineString) |
 | 4 | — | Il sistema ha invocato `ServizioMappa.getPercorso(coordinateIniziali, coordinateFinali, restrizioni)` passando: posizione utente, coordinate destinazione, restrizioni attive | Servizio esterno simulato |
 | 5 | — | Il servizio mappa ha restituito i `datiPercorso` con il tracciato ottimizzato *(tempo minimo, rispettando le restrizioni)* | `datiPercorso` — tipo segnaposto da API esterna *(external API placeholder)* |
@@ -95,8 +95,8 @@ hitl-claims:
 | Metodo | Classe/Componente | Ruolo | Layer | Firma (Master_Spec.cgd.md v4.0) | Fonte |
 |--------|-------------------|-------|-----------------------------------------|-------|
 | `inserisciDestinazione(indirizzoArrivo)` | AppUtente | Input destinazione | View | `indirizzoArrivo: String → void` | `Master_Spec.cgd.md` §4 AppUtente |
-| `richiediCalcoloPercorso(coordinateUtente, destinazione)` | GestioneCorsa | Orchestratore | Controller | `coordinateUtente: String, destinazione: String → percorso` | `Master_Spec.cgd.md` §3 GestioneCorsa |
-| `getRestrizioniZona(coordinateUtente)` | ZonaGeografica | Recupero restrizioni | Model | `coordinateUtente: String → ZonaGeografica` | `Master_Spec.cgd.md` §2 ZonaGeografica |
+| `richiediCalcoloPercorso(coordinateUtente, stringaDestinazione)` | GestioneCorsa | Orchestratore | Controller | `coordinateUtente: String, stringaDestinazione: String → percorso` | `Master_Spec.cgd.md` §3 GestioneCorsa |
+| `getRestrizioniZona(coordinateUtente)` | ZonaGeografica | Recupero restrizioni | Model | `coordinateUtente: String → List<ZonaGeografica>` | `Master_Spec.cgd.md` §2 ZonaGeografica |
 | `getPercorso(coordinateIniziali, coordinateFinali, restrizioni)` | ServizioMappa | Calcolo tracciato | External System | `coordinateIniziali: String, coordinateFinali: String, restrizioni: ZonaGeografica → datiPercorso` | `Master_Spec.cgd.md` §5 ServizioMappa |
 
 ### 2.2 Mappatura Step UC → Metodo
@@ -104,7 +104,7 @@ hitl-claims:
 | Step UC | Metodo Chiamante → Metodo Chiamato | Messaggio |
 |----------|-------------------------------------|-----------|
 | 1 | Utente → AppUtente.`inserisciDestinazione(indirizzoArrivo)` | Input utente raccolto dalla View |
-| 2 | AppUtente → GestioneCorsa.`richiediCalcoloPercorso(coordinateUtente, destinazione)` | Richiesta orchestrata dal Controller |
+| 2 | AppUtente → GestioneCorsa.`richiediCalcoloPercorso(coordinateUtente, stringaDestinazione)` | Richiesta orchestrata dal Controller |
 | 3 | GestioneCorsa → ZonaGeografica.`getRestrizioniZona(coordinateUtente)` | Recupero restrizioni (Model → Controller) |
 | 3r | ZonaGeografica → GestioneCorsa | Restituzione delle zone con restrizioni |
 | 4 | GestioneCorsa → ServizioMappa.`getPercorso(coordinateIniziali, coordinateFinali, restrizioni)` | Delegazione a sistema esterno |
@@ -122,10 +122,10 @@ hitl-claims:
 |---------|-------------------------------------|------------|----------|
 | Nome metodo | `richiediCalcoloPercorso` | `richiediCalcoloPercorso` | ✓ Match |
 | Parametro 1 | `coordinateUtente: String` | `coordinateUtente` | ✓ Match |
-| Parametro 2 | `destinazione: String` | `stringaDestinazione` | ⚠ Differenza nome parametro |
+| Parametro 2 | `stringaDestinazione: String` | `stringaDestinazione` | ✓ Match (confermato da chiarimentiUc) |
 | Tipo ritorno | `percorso` | *(non esplicitato in XMI)* | ⚠ Tipo dominio non definito |
 
-**Risoluzione:** Il nome parametro `destinazione` prevale perché derivato da Master_Spec.cgd.md (fonte cross-referenziata e REVIEWED). `stringaDestinazione` nell'XMI è verosimilmente un artefatto di esportazione *(chiarimenti-vari.md punto 14)*. *(HITL claim-uc04001)*
+**Risoluzione:** Il nome parametro `stringaDestinazione` è stato confermato come canonico da chiarimentiUc.md (priorità su Master_Spec). Il nome è coerente tra XMI e specifica confermata. *(HITL claim-uc04001)*
 
 ### 3.2 Check 2 — Firma `ServizioMappa.getPercorso()`
 
@@ -143,10 +143,10 @@ hitl-claims:
 
 | Metodo | Firma Master_Spec.cgd.md | Presenza in XMI UC.UT.04 | Ruolo in UC.UT.04 |
 |--------|--------------------------|---------------------------|-------------------|
-| `getRestrizioniZona(coordinateUtente)` | `coordinateUtente: String → ZonaGeografica` | ✓ Chiamato (step 3) | Recupera restrizioni attive nella zona dell'utente |
+| `getRestrizioniZona(coordinateUtente)` | `coordinateUtente: String → List<ZonaGeografica>` | ✓ Chiamato (step 3) | Recupera restrizioni attive nella zona dell'utente |
 | `checkArea(coordinateUtente)` | `coordinateUtente: String → bool` | ✗ Non chiamato in questo UC | Usato in UC.UT.07 (Termina Corsa) per validare zona di terminazione |
 
-**Nota:** Il tipo di ritorno di `getRestrizioniZona()` è `ZonaGeografica` (singolare) in Master_Spec.cgd.md, ma l'XMI etichetta il messaggio di ritorno come `lista<ZonaGeografica>`. La discordanza è stata sottoposta a HITL. *(HITL claim-uc04003)*
+**Nota:** Il tipo di ritorno di `getRestrizioniZona()` è `List<ZonaGeografica>` come confermato da chiarimentiUc.md. Il Master_Spec.cgd.md riporta `ZonaGeografica` (singolare) ma il comportamento a runtime confermato restituisce una lista. *(HITL claim-uc04003)*
 
 ### 3.4 Check 4 — Tipi delle Coordinate
 
@@ -255,7 +255,7 @@ I seguenti tipi compaiono come ritorni di metodi ma sono **segnaposto (placehold
 
 | # | Trovata in | Descrizione | Stato | Claim |
 |---|-----------|-------------|-------|-------|
-| 1 | XMI vs Master_Spec | Parametro `stringaDestinazione` vs `destinazione` | ✓ Risolta (Master_Spec prevale) | claim-uc04001 |
+| 1 | XMI vs Master_Spec | Parametro `stringaDestinazione` vs `destinazione` | ✓ Risolta (chiarimentiUc prevale: `stringaDestinazione`) | claim-uc04001 |
 | 2 | XMI vs Master_Spec | `getRestrizioniZona()` return type singolare vs lista | ✓ Risolta (confermata lista dal team) | claim-uc04003 |
 | 3 | Master_Spec v3.0 | Typo `coordinateFinali` → `coordinateFinali` | ✓ Risolta in v4.0 | claim-uc04002 |
 | 4 | Decisione architetturale 2026-06-23 | `percorso` e `datiPercorso` come segnaposto da API esterna | ✓ Risolta — segnaposto non blocca la generazione | claim-uc04004 |

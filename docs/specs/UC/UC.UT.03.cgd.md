@@ -624,4 +624,4 @@ Il diagramma di sequenza UC.UT.03 è stato aggiornato con le seguenti novità ri
 **Fine specifica UC.UT.03 — CGD aggiornato il 2026-06-25. HITL Round A: 3/3 claim CONFERMATI. Nuovo use case UC.UT.08 documentato in specifica separata.**
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

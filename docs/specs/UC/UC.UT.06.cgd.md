@@ -317,9 +317,9 @@ Utente          AppUtente       GestioneCorsa
 Tutti i claim sono derivati da fonti presenti nel repository (documentazione.md, Master_Spec.cgd.md, UC.UT.06-clean.uml). Due claim richiedono conferma umana:
 
 | # | Claim ID | Claim | Fonte | Stato |
-|---|----------|-------|-------|-------|
-| 1 | claim-a3f1b2c0 | Tariffa sospensione differenziata — `Corsa.aggiornaCosto()` gestisce il calcolo, formula esatta non nei requisiti | documentazione.md + Master_Spec.cgd.md | **PENDING** |
-| 2 | claim-d8e2f5a1 | Flusso QR: `mostraQRCode()` genera e visualizza, `scansionaQRCode()` raccoglie e inoltra a `richiediSblocco()` | documentazione.md + Master_Spec.cgd.md + XMI | **PENDING** |
+|:--|:---------|:------|:------|:------|
+| 1 | claim-a3f1b2c0 | Tariffa sospensione differenziata — `Corsa.aggiornaCosto()` gestisce il calcolo, formula esatta non nei requisiti | documentazione.md + Master_Spec.cgd.md | **REVIEWED** |
+| 2 | claim-d8e2f5a1 | Flusso QR: `mostraQRCode()` genera e visualizza, `scansionaQRCode()` raccoglie e inoltra a `richiediSblocco()` | documentazione.md + Master_Spec.cgd.md + XMI | **REVIEWED** |
 
 ### Round B: True HITL Verification
 
@@ -327,9 +327,9 @@ Tutti i claim sono derivati da fonti presenti nel repository (documentazione.md,
 
 ---
 
-**Verdict:** CLEAR | PENDING — 5/5 critical checks passed, 2 claims pending Round A confirmation.
+**Verdict:** CLEAR | REVIEWED — 5/5 critical checks passed, 2 claims confirmed Round A.
 
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

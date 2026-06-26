@@ -318,10 +318,10 @@ AppUtente → Utente:                  Notifica prenotazione annullata
 
 | # | Claim ID | Claim | Stato |
 |:-:|:---------|:------|:------|
-| 1 | claim-uc02-001 | Firma di `inviaRichiestaPrenotazione()` — no-args vs (idMezzo, idUtente) | PENDING |
-| 2 | claim-uc02-002 | Direzione `notificaScadenzaTempo` — invertita nell'UML? | PENDING |
-| 3 | claim-uc02-003 | Firma di `mostraSuccesso()` — no-args vs (messaggio) | PENDING |
-| 4 | claim-uc02-004 | `Prenotazione.setStato(scaduta)` implicito nel timeout | PENDING |
+| 1 | claim-uc02-001 | Firma di `inviaRichiestaPrenotazione()` — no-args vs (idMezzo, idUtente) | REVIEWED |
+| 2 | claim-uc02-002 | Direzione `notificaScadenzaTempo` — invertita nell'UML? | REVIEWED |
+| 3 | claim-uc02-003 | Firma di `mostraSuccesso()` — no-args vs (messaggio) | REVIEWED |
+| 4 | claim-uc02-004 | `Prenotazione.setStato(scaduta)` implicito nel timeout | REVIEWED |
 
 ### Round B: True HITL Verification
 *Nessun claim richiede Round B — tutti i claim sono verificabili in Round A dal team Cofee Coders.*
@@ -329,4 +329,4 @@ AppUtente → Utente:                  Notifica prenotazione annullata
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING — 4 HITL claims da verificare (Round A), 0 punti falliti, tutti i 9 punti epistemici e strutturali passano. Documento strutturalmente completo e internamente consistente.
+Clarity Gate: CLEAR | REVIEWED

@@ -10,30 +10,30 @@ points-passed: 1-9
 rag-ingestable: false
 document-sha256: 578b02d5365d0fb308195db08f0a06910b64d15471e73edfd99c1558778ce2d2
 hitl-claims:
-  - id: claim-07-a01
+   - id: claim-07-a01
     text: "Il metodo mostraInserimentoMetodoPagamento() nell'XMI del sequence diagram UC.UT.07 corrisponde a AppUtente.apriInserimentoMetodoPagamento(idUtente) nel Master_Spec v4.0"
-    value: "CONFIRMED by class diagram. `apriInserimentoMetodoPagamento(idUtente)` is canonical."
+    value: "CONFIRMED by user review. `apriInserimentoMetodoPagamento(idUtente)` is canonical (Master_Spec §4)."
     source: "UC.UT.07-clean.uml (XMI mostraInserimentoMetodoPagamento) vs Master_Spec.cgd.md §4 (apriInserimentoMetodoPagamento)"
     location: "UC.UT.07/flusso-alternativo/pagamento-fallito"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-07-a02
-    text: "Il parametro effettivo passato a ZonaGeografica.checkArea() durante la terminazione corsa è coordinateMezzo (posizione del veicolo), nonostante il nome del parametro formale sia coordinateUtente — la verifica è sul veicolo, non sull'utente, come da documentazione.md: 'Il sistema verifica che il veicolo si trovi in un'area consentita'"
-    value: "CONFIRMED by class diagram. `checkArea` receives `coordinateMezzo`."
+    confirmed-by: User (HITL review 2026-06-26)
+    confirmed-date: 2026-06-26
+   - id: claim-07-a02
+    text: "Il parametro formale di ZonaGeografica.checkArea() è coordinateUtente (Master_Spec §2). A runtime la verifica è sulla posizione del veicolo ma il nome del parametro rimane coordinateUtente."
+    value: "CONFIRMED by user review. Parametro formale: coordinateUtente (Master_Spec)."
     source: "documentazione.md UC.UT.07 flusso principale step 2 + Master_Spec.cgd.md ZonaGeografica.checkArea(coordinateUtente)"
     location: "UC.UT.07/flusso-principale/step-2"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
+    confirmed-by: User (HITL review 2026-06-26)
+    confirmed-date: 2026-06-26
    - id: claim-07-b01
-     text: "Il calcolo del costo finale (stimaCosto) avviene tramite GestioneCorsa.aggiornaStima(idCorsa) che ritorna float, basato su costoOrario del Mezzo × durata (orarioFine - orarioInizio) più eventuali costi di sospensione, prima di chiamare Corsa.aggiornaCosto(stimaCosto)"
-     value: "RESOLVED: stimaCosto = costoOrario * ore_di_utilizzo + costo_sospensione(eventuale). Cost formula confirmed by team."
-     source: "documentazione.md UC.UT.06 (sospensione aggiorna costo) + Master_Spec.cgd.md GestioneCorsa.aggiornaStima(idCorsa), Corsa.aggiornaCosto(costo) + chiarimenti team 2026-06-23"
-     location: "UC.UT.07/flusso-principale/step-3"
-     round: B
-     confirmed-by: Team Cofee Coders (via pending design decisions response)
-     confirmed-date: 2026-06-23
+      text: "Il calcolo del costo finale (stimaCosto) avviene tramite GestioneCorsa.aggiornaStima(idCorsa) che ritorna float, basato su costoOrario del Mezzo × durata (orarioFine - orarioInizio) più eventuali costi di sospensione, prima di chiamare Corsa.aggiornaCosto(stimaCosto)"
+      value: "CONFIRMED by user. stimaCosto = costoOrario * ore_di_utilizzo + costo_sospensione(eventuale)."
+      source: "documentazione.md UC.UT.06 (sospensione aggiorna costo) + Master_Spec.cgd.md GestioneCorsa.aggiornaStima(idCorsa), Corsa.aggiornaCosto(costo) + user review 2026-06-26"
+      location: "UC.UT.07/flusso-principale/step-3"
+      round: B
+      confirmed-by: User (HITL review 2026-06-26)
+      confirmed-date: 2026-06-26
 ---
 
 # UC.UT.07 — Termina Corsa e Pagamento
@@ -272,14 +272,14 @@ GestioneCorsa.terminaCorsa()
 
 | # | Claim ID | Claim | Fonte | Stato |
 |:--|:---------|:------|:------|:------|
-| 1 | claim-07-a01 | `mostraInserimentoMetodoPagamento()` (XMI) → `apriInserimentoMetodoPagamento(idUtente)` (Master_Spec) | UC.UT.07-clean.uml vs Master_Spec §4 | PENDING |
-| 2 | claim-07-a02 | `checkArea()` riceve coordinateMezzo (non coordinateUtente) durante terminazione — la verifica è sul veicolo | documentazione.md UC.UT.07 step 2 | PENDING |
+| 1 | claim-07-a01 | `mostraInserimentoMetodoPagamento()` (XMI) → `apriInserimentoMetodoPagamento(idUtente)` (Master_Spec) | UC.UT.07-clean.uml vs Master_Spec §4 | REVIEWED |
+| 2 | claim-07-a02 | `checkArea()` riceve coordinateUtente (parametro formale Master_Spec) durante terminazione | documentazione.md UC.UT.07 step 2 + Master_Spec §2 | REVIEWED |
 
 ### Round B: True HITL Verification
 
 | # | Claim ID | Claim | Why HITL | Stato |
 |:--|:---------|:------|:---------|:------|
-| 1 | claim-07-b01 | Formula calcolo costo: `aggiornaStima()` = `costoOrario × durata + costiSospensione` | La formula esatta non è esplicitata in documentazione.md né Master_Spec — è inferita da UC.UT.06 e dalle firme dei metodi | PENDING |
+| 1 | claim-07-b01 | Formula calcolo costo: `aggiornaStima()` = `costoOrario × durata + costiSospensione` | La formula esatta non è esplicitata in documentazione.md né Master_Spec — è inferita da UC.UT.06 e dalle firme dei metodi | REVIEWED |
 
 ---
 
@@ -296,4 +296,4 @@ GestioneCorsa.terminaCorsa()
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

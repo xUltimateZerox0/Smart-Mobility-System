@@ -15,16 +15,16 @@ hitl-claims:
     source: "Master_Spec.cgd.md §4 (Autenticazione) + §6 (View→Controller dipendenze) + documentazione.md §2.3 (MVC Controller Intermediario)"
     location: "UC.UT.10/sequential-flow"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
+    confirmed-by: Team Cofee Coders (via response2.md + chiarimentiUC.md)
+    confirmed-date: 2026-06-26
   - id: claim-7b2d5e09
     text: "GestioneAutenticazione.verificaValidita() restituisce RuoloAttore.Utente in caso di registrazione riuscita — il valore di ritorno RuoloAttore è semanticamente valido anche in contesto pre-login (indica il ruolo dell'account creato)"
-    value: "CONFERMATO: verificaValidita restituisce RuoloAttore confermato."
-    source: "Master_Spec.cgd.md §3 (GestioneAutenticazione.verificaValidita) + documentazione.md UC.UT.10 flusso principale passo 4"
+    value: "CONFERMATO: verificaValidita restituisce RuoloAttore, validazione dati login."
+    source: "Master_Spec.cgd.md §3 (GestioneAutenticazione.verificaValidita) + documentazione.md UC.UT.10 flusso principale passo 4 + chiarimentiUC.md"
     location: "UC.UT.10/controller-flow"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
+    confirmed-by: Team Cofee Coders (via response2.md + chiarimentiUC.md)
+    confirmed-date: 2026-06-26
 ---
 
 # UC.UT.10 — Registrazione Utente
@@ -283,9 +283,9 @@ Attore → Autenticazione → GestioneAutenticazione → Utente
 ### Round A: Derived Data Confirmation
 
 | # | Claim ID | Claim | Fonte | Stato |
-|---|----------|-------|-------|-------|
-| 1 | claim-3a9f1c02 | View non interpella mai direttamente Utente Model — solo Controller lo fa | Master_Spec.cgd.md §4, §6 + documentazione.md §2.3 | PENDING |
-| 2 | claim-7b2d5e09 | `verificaValidita()` restituisce `RuoloAttore.Utente` su registrazione riuscita | Master_Spec.cgd.md §3 | PENDING |
+|:--|:---------|:------|:------|:------|
+| 1 | claim-3a9f1c02 | View non interpella mai direttamente Utente Model — solo Controller lo fa | Master_Spec.cgd.md §4, §6 + documentazione.md §2.3 | REVIEWED |
+| 2 | claim-7b2d5e09 | `verificaValidita()` restituisce `RuoloAttore.Utente` su registrazione riuscita | Master_Spec.cgd.md §3 | REVIEWED |
 
 ### Round B: True HITL Verification
 *Nessun claim richiede Round B — tutti i claim sono derivati da fonti verificate nella sessione corrente.*
@@ -293,4 +293,4 @@ Attore → Autenticazione → GestioneAutenticazione → Utente
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED
