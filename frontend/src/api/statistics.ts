@@ -6,7 +6,7 @@ export function analyzeStatistics(dataInizio: string, dataFine: string) {
 }
 
 export function exportStatistics(corse: CorsaResponse[]) {
-  return client.post('/statistics/export', { corse }, { responseType: 'blob' })
+  return client.post<Blob>('/statistics/export', { corse }, { responseType: 'blob' })
 }
 
 export function getFleetAnalysis() {

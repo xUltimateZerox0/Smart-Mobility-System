@@ -24,7 +24,7 @@
             <td class="actions">
               <button v-if="m.stato !== 'bloccato'" @click="lockSpecificVehicle(m.id)" class="btn-small btn-danger">Blocca</button>
               <button v-if="m.stato === 'bloccato'" @click="unlockSpecificVehicle(m.id)" class="btn-small btn-secondary">Sblocca</button>
-              <button v-if="m.stato !== 'manutenzione'" @click="maintenanceSpecificVehicle(m.id)" class="btn-small btn-warning">Manutenzione</button>
+
             </td>
           </tr>
         </tbody>
@@ -81,20 +81,6 @@ async function unlockSpecificVehicle(id: number) {
   try {
     await fleetApi.unlockVehicle(id)
     successMsg.value = `Veicolo ${id} sbloccato con successo`
-    await loadConditions()
-  } catch (e: unknown) {
-    if (e && typeof e === 'object' && 'response' in e) {
-      const axiosErr = e as { response: { data?: { message?: string } } }
-      error.value = axiosErr.response.data?.message || 'Errore'
-    } else { error.value = 'Errore sconosciuto' }
-  }
-}
-
-async function maintenanceSpecificVehicle(id: number) {
-  error.value = ''; successMsg.value = ''
-  try {
-    await fleetApi.startVehicleMaintenance(id)
-    successMsg.value = `Veicolo ${id} posto in manutenzione`
     await loadConditions()
   } catch (e: unknown) {
     if (e && typeof e === 'object' && 'response' in e) {

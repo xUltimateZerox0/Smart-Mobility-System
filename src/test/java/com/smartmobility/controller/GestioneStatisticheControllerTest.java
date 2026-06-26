@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.AnalyzeStatisticsRequest;
 import com.smartmobility.dto.request.ExportStatisticsRequest;
 import com.smartmobility.dto.response.CorsaResponse;
+import java.util.Map;
 import com.smartmobility.dto.response.StatisticheResponse;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneStatisticheService;
@@ -48,7 +49,7 @@ class GestioneStatisticheControllerTest {
     @Test
     void analyzeStatistics_WithValidDates_ReturnsStatisticheResponse() throws Exception {
         AnalyzeStatisticsRequest request = new AnalyzeStatisticsRequest("2026-01-01T00:00:00", "2026-01-31T23:59:59");
-        StatisticheResponse response = new StatisticheResponse(10L, 150.0, 500.0, 30.0, "details");
+        StatisticheResponse response = new StatisticheResponse(10L, 150.0, 500.0, 30.0, Map.of("info", "details"));
 
         when(gestioneStatisticheService.analisiTratte("2026-01-01T00:00:00", "2026-01-31T23:59:59"))
                 .thenReturn(response);
@@ -81,7 +82,7 @@ class GestioneStatisticheControllerTest {
     @Test
     void analyzeStatistics_WithNoData_ReturnsEmptyStatistics() throws Exception {
         AnalyzeStatisticsRequest request = new AnalyzeStatisticsRequest("2025-01-01T00:00:00", "2025-01-01T01:00:00");
-        StatisticheResponse emptyStats = new StatisticheResponse(0L, 0.0, 0.0, 0.0, "empty");
+        StatisticheResponse emptyStats = new StatisticheResponse(0L, 0.0, 0.0, 0.0, Map.of("info", "empty"));
 
         when(gestioneStatisticheService.analisiTratte("2025-01-01T00:00:00", "2025-01-01T01:00:00"))
                 .thenReturn(emptyStats);

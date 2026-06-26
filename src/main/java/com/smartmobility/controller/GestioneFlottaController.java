@@ -48,16 +48,16 @@ public class GestioneFlottaController {
 
     @PostMapping("/vehicles/{id}/maintenance")
     public ResponseEntity<Boolean> startVehicleMaintenance(@PathVariable Long id,
-                                                            @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);
+                                                             @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
         boolean result = gestioneFlottaService.avviaManutenzioneVeicolo(id);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{flottaId}/maintenance")
     public ResponseEntity<Boolean> startMaintenance(@PathVariable Long flottaId,
-                                                     @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);
+                                                      @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
         boolean result = gestioneFlottaService.avviaManutenzione(flottaId);
         return ResponseEntity.ok(result);
     }

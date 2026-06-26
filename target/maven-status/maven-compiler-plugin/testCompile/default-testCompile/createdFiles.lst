@@ -1,4 +1,3 @@
-com/smartmobility/controller/GestioneStatisticheControllerTest.class
 com/smartmobility/service/GestioneAreeServiceImplTest.class
 com/smartmobility/controller/GestioneAutenticazioneControllerTest.class
 com/smartmobility/service/SessionRegistryTest.class

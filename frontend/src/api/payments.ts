@@ -1,8 +1,8 @@
 import client from './client'
 import type { MetodoPagamentoResponse } from '../types'
 
-export function processPayment(idUtente: number, idMetodoPagamento: number, costo: number) {
-  return client.post<boolean>('/payments/process', { idUtente, idMetodoPagamento, costo })
+export function processPayment(idUtente: number, idMetodoPagamento: number, idCorsa: number, costo: number) {
+  return client.post<boolean>('/payments/process', { idUtente, idMetodoPagamento, idCorsa, costo })
 }
 
 export function addPaymentMethod(data: {

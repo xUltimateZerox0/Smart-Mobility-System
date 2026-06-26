@@ -1,5 +1,6 @@
 package com.smartmobility.dto.response;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class StatisticheResponse {
@@ -7,11 +8,11 @@ public class StatisticheResponse {
     private Double totalKm;
     private Double totalRicavo;
     private Double mediaDurata;
-    private Object dettagli;
+    private Map<String, Object> dettagli;
 
     public StatisticheResponse() {}
 
-    public StatisticheResponse(Long totalCorse, Double totalKm, Double totalRicavo, Double mediaDurata, Object dettagli) {
+    public StatisticheResponse(Long totalCorse, Double totalKm, Double totalRicavo, Double mediaDurata, Map<String, Object> dettagli) {
         this.totalCorse = totalCorse;
         this.totalKm = totalKm;
         this.totalRicavo = totalRicavo;
@@ -27,8 +28,8 @@ public class StatisticheResponse {
     public void setTotalRicavo(Double totalRicavo) { this.totalRicavo = totalRicavo; }
     public Double getMediaDurata() { return mediaDurata; }
     public void setMediaDurata(Double mediaDurata) { this.mediaDurata = mediaDurata; }
-    public Object getDettagli() { return dettagli; }
-    public void setDettagli(Object dettagli) { this.dettagli = dettagli; }
+    public Map<String, Object> getDettagli() { return dettagli; }
+    public void setDettagli(Map<String, Object> dettagli) { this.dettagli = dettagli; }
 
     @Override
     public boolean equals(Object o) {

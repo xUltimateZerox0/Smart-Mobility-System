@@ -79,7 +79,6 @@ export interface StatisticheResponse {
 
 export interface ZonaGeograficaResponse {
   id: number
-  nome: string
   tipoRestrizione: string
   noteRestrizione: string
   zona: string

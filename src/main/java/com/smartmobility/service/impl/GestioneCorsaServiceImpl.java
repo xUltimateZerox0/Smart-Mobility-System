@@ -492,15 +492,12 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public PercorsoResponse richiediCalcoloPercorso(String coordinateUtente, String destinazione) {
-        Object result = servizioMappaService.getPercorso(coordinateUtente, destinazione, null);
-        if (!(result instanceof Map)) {
+        Map<String, Object> percorso = servizioMappaService.getPercorso(coordinateUtente, destinazione, null);
+        if (percorso == null || percorso.isEmpty()) {
             return new PercorsoResponse(coordinateUtente, destinazione, 0.0, 0, 0.0,
                     "Percorso non disponibile");
         }
-
-        Map<String, Object> percorso = (Map<String, Object>) result;
         Double distanza = percorso.containsKey("distanza") ?
                 ((Number) percorso.get("distanza")).doubleValue() : 0.0;
         Integer durata = percorso.containsKey("durata") ?

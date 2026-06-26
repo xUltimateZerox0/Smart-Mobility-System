@@ -110,9 +110,9 @@ async function searchVehicles() {
   } catch (e: any) {
     veicoli.value = []
     if (expanded.value) {
-      error.value = ''
-    } else {
       error.value = e.response?.data?.message || e.response?.data?.error || 'Errore durante la ricerca'
+    } else {
+      error.value = ''
       showExpandPrompt.value = true
     }
   } finally {

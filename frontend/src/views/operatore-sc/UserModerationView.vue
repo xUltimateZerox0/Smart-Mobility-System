@@ -84,7 +84,7 @@ import type { UtenteResponse } from '../../types'
 
 const users = ref<UtenteResponse[]>([])
 const userId = ref<number | null>(null)
-const report = ref<any>(null)
+const report = ref<string | null>(null)
 const loading = ref(false)
 const reportLoading = ref(false)
 const actionLoading = ref(false)

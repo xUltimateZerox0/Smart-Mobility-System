@@ -10,7 +10,7 @@ import java.util.Map;
 public class ServizioMappaServiceImpl implements ServizioMappaService {
 
     @Override
-    public Object getPercorso(String coordinateIniziali, String coordinateFinali, ZonaGeografica restrizioni) {
+    public Map<String, Object> getPercorso(String coordinateIniziali, String coordinateFinali, ZonaGeografica restrizioni) {
         Map<String, Object> percorso = new HashMap<>();
         percorso.put("coordinateIniziali", coordinateIniziali);
         percorso.put("coordinateFinali", coordinateFinali);

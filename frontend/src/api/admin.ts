@@ -18,15 +18,15 @@ export function correctiveAction(id: number, azione: string) {
 }
 
 export function blockUser(id: number) {
-  return client.post<void>(`/admin/users/${id}/block`)
+  return client.post<boolean>(`/admin/users/${id}/block`)
 }
 
 export function unblockUser(id: number) {
-  return client.post<void>(`/admin/users/${id}/unblock`)
+  return client.post<boolean>(`/admin/users/${id}/unblock`)
 }
 
 export function disableUser(id: number) {
-  return client.post<void>(`/admin/users/${id}/disable`)
+  return client.post<boolean>(`/admin/users/${id}/disable`)
 }
 
 export function clearUserReport(id: number) {
