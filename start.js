@@ -21,7 +21,7 @@ function run(cmd, args, opts = {}) {
   return spawn(
     isWin ? 'cmd.exe' : cmd,
     isWin ? ['/c', cmd, ...args] : args,
-    { ...opts, stdio: opts.stdio || ['ignore', 'inherit', 'inherit'], shell: !!isWin }
+    Object.assign({}, opts, { stdio: opts.stdio || ['ignore', 'inherit', 'inherit'], shell: !!isWin })
   );
 }
 
