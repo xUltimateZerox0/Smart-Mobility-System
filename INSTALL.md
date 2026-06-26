@@ -1,60 +1,60 @@
-# Smart Mobility System - Installation Guide
+# Smart Mobility System - Guida all'Installazione
 
-## Prerequisites
+## Prerequisiti
 
-| Tool        | Version   | Purpose                          |
-|-------------|-----------|----------------------------------|
-| Java JDK    | 21+       | Backend runtime & compilation    |
-| Apache Maven| 3.9+      | Backend build & dependency mgmt  |
-| Node.js     | 20+       | Frontend runtime & build         |
-| npm         | 10+       | Frontend dependency management   |
-| MySQL       | 8.0+      | Production database (optional)   |
+| Strumento    | Versione | Scopo                              |
+|-------------|----------|------------------------------------|
+| Java JDK    | 21+      | Runtime backend e compilazione     |
+| Apache Maven| 3.9+     | Build backend e gestione dipendenze |
+| Node.js     | 20+      | Runtime frontend e build           |
+| npm         | 10+      | Gestione dipendenze frontend       |
+| MySQL       | 8.0+     | Database di produzione (opzionale) |
 
 ---
 
-## Installing Dependencies
+## Installazione delle Dipendenze
 
 ### Windows
 
-#### Option A: Automatic (via `start.js`)
+#### Opzione A: Automatica (tramite `start.js`)
 
-The unified launcher (`node start.js`) detects missing tools and installs them
-via **winget** (built into Windows 10 1809+/Windows 11) or **Chocolatey**.
+Il launcher unificato (`node start.js`, presente nel repository) rileva gli strumenti mancanti e li installa
+tramite **winget** (integrato in Windows 10 1809+/Windows 11) o **Chocolatey**.
 
-#### Option B: Manual
+#### Opzione B: Manuale
 
 **Java 21**
 ```powershell
 # winget
 winget install --id EclipseAdoptium.Temurin.21.JDK
 
-# or Chocolatey
+# oppure Chocolatey
 choco install temurin21
 
-# or manual: download from https://adoptium.net/temurin/releases/?version=21
+# oppure manuale: scarica da https://adoptium.net/temurin/releases/?version=21
 ```
-After install, set `JAVA_HOME` and add `java` to `PATH`:
+Dopo l'installazione, imposta `JAVA_HOME` e aggiungi `java` al `PATH`:
 ```powershell
-# Check where Java was installed
-dir "C:\Program Files\Eclipse Adoptium\"  # or "C:\Program Files\Java\"
+# Verifica dove è stato installato Java
+dir "C:\Program Files\Eclipse Adoptium\"  # oppure "C:\Program Files\Java\"
 
-# Set environment variables (adjust path to match your install)
+# Imposta le variabili d'ambiente (regola il percorso in base alla tua installazione)
 [Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Eclipse Adoptium\jdk-21.0.xxxx-hotspot", "User")
 [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";%JAVA_HOME%\bin", "User")
 ```
-Restart your terminal, then verify: `java -version`
+Riavvia il terminale, poi verifica: `java -version`
 
 **Maven**
 ```powershell
 # winget
 winget install --id Apache.Maven
 
-# or Chocolatey
+# oppure Chocolatey
 choco install maven
 
-# or manual: download from https://maven.apache.org/download.cgi
-#   extract to C:\tools\apache-maven-3.9.x
-#   add C:\tools\apache-maven-3.9.x\bin to PATH
+# oppure manuale: scarica da https://maven.apache.org/download.cgi
+#   estrai in C:\tools\apache-maven-3.9.x
+#   aggiungi C:\tools\apache-maven-3.9.x\bin al PATH
 ```
 
 **Node.js 20 + npm**
@@ -62,29 +62,29 @@ choco install maven
 # winget
 winget install --id OpenJS.NodeJS.20
 
-# or Chocolatey
+# oppure Chocolatey
 choco install nodejs-lts
 
-# or manual: download from https://nodejs.org/ (LTS version 20.x)
+# oppure manuale: scarica da https://nodejs.org/ (versione LTS 20.x)
 ```
 
-**Verify all:**
+**Verifica tutto:**
 ```powershell
-java -version   # Must show 21+
-mvn -version    # Must show 3.9+
-node -v         # Must show v20+
-npm -v          # Must show 10+
+java -version   # Deve mostrare 21+
+mvn -version    # Deve mostrare 3.9+
+node -v         # Deve mostrare v20+
+npm -v          # Deve mostrare 10+
 ```
 
 ---
 
 ### macOS
 
-#### Option A: Automatic (via `start.js`)
+#### Opzione A: Automatica (tramite `start.js`)
 
-The unified launcher detects missing tools and installs them via **Homebrew**.
+Il launcher unificato (presente nel repository) rileva gli strumenti mancanti e li installa tramite **Homebrew**.
 
-#### Option B: Manual (Homebrew)
+#### Opzione B: Manuale (Homebrew)
 
 ```bash
 # Java 21
@@ -98,17 +98,17 @@ brew install maven
 brew install node
 ```
 
-**Verify all:**
+**Verifica tutto:**
 ```bash
-java -version   # Must show 21+
-mvn -version    # Must show 3.9+
-node -v         # Must show v20+
-npm -v          # Must show 10+
+java -version   # Deve mostrare 21+
+mvn -version    # Deve mostrare 3.9+
+node -v         # Deve mostrare v20+
+npm -v          # Deve mostrare 10+
 ```
 
-#### Option C: Manual (without Homebrew)
+#### Opzione C: Manuale (senza Homebrew)
 
-**Java 21:** Download from https://adoptium.net/temurin/releases/?version=21 (`.pkg` or `.tar.gz`)
+**Java 21:** Scarica da https://adoptium.net/temurin/releases/?version=21 (`.pkg` o `.tar.gz`)
 
 **Maven:**
 ```bash
@@ -117,18 +117,18 @@ tar -xzf apache-maven-3.9.9-bin.tar.gz -C /usr/local
 echo 'export PATH=/usr/local/apache-maven-3.9.9/bin:$PATH' >> ~/.zshrc
 ```
 
-**Node.js 20:** Download from https://nodejs.org/ (LTS 20.x `.pkg`)
+**Node.js 20:** Scarica da https://nodejs.org/ (LTS 20.x `.pkg`)
 
 ---
 
 ### Linux
 
-#### Option A: Automatic (via `start.js`)
+#### Opzione A: Automatica (tramite `start.js`)
 
-The unified launcher detects missing tools and installs them via **apt** /
-**dnf** / **yum** / **apk** with `sudo`.
+Il launcher unificato (presente nel repository) rileva gli strumenti mancanti e li installa
+tramite **apt** / **dnf** / **yum** / **apk** con `sudo`.
 
-#### Option B: Manual
+#### Opzione B: Manuale
 
 **Debian / Ubuntu (apt)**
 ```bash
@@ -139,7 +139,7 @@ sudo apt-get install -y openjdk-21-jdk
 # Maven
 sudo apt-get install -y maven
 
-# Node.js 20 + npm (NodeSource - recommended for latest 20.x)
+# Node.js 20 + npm (NodeSource - consigliato per l'ultima 20.x)
 sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -
@@ -178,7 +178,7 @@ sudo yum install -y java-21-openjdk-devel
 # Maven
 sudo yum install -y maven
 
-# Node.js 20 + npm (requires EPEL)
+# Node.js 20 + npm (richiede EPEL)
 sudo yum install -y epel-release
 sudo yum install -y nodejs
 ```
@@ -195,75 +195,76 @@ apk add maven
 apk add nodejs npm
 ```
 
-**Verify all:**
+**Verifica tutto:**
 ```bash
-java -version   # Must show 21+
-mvn -version    # Must show 3.9+
-node -v         # Must show v20+
-npm -v          # Must show 10+
+java -version   # Deve mostrare 21+
+mvn -version    # Deve mostrare 3.9+
+node -v         # Deve mostrare v20+
+npm -v          # Deve mostrare 10+
 ```
 
 ---
 
-## Quick Start (Development - H2 In-Memory)
+## Avvio Rapido (Sviluppo - H2 In-Memory)
 
-For local development, the backend uses H2 (zero-configuration in-memory
-database). No MySQL setup is needed.
+Per lo sviluppo locale, il backend utilizza H2 (database in-memory senza configurazione).
+Non è necessario configurare MySQL.
 
-### Using the Unified Launcher (recommended)
+### Utilizzo del Launcher Unificato (consigliato)
 
-The launcher checks dependencies, installs any missing tools, compiles the
-backend, starts both servers, and handles cleanup on Ctrl+C.
+Il launcher (script unificato presente nel repository) verifica le dipendenze, installa
+eventuali strumenti mancanti, compila il backend, avvia entrambi i server e gestisce
+la pulizia alla pressione di Ctrl+C.
 
 ```bash
 node start.js
 ```
 
-### Manual Start
+### Avvio Manuale
 
-**Terminal 1 - Backend:**
+**Terminale 1 - Backend:**
 ```bash
 cd Smart-Mobility-System
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-**Terminal 2 - Frontend:**
+**Terminale 2 - Frontend:**
 ```bash
 cd Smart-Mobility-System/frontend
 npm install
 npm run dev
 ```
 
-### Access the Application
+### Accesso all'Applicazione
 
-| Service       | URL                                          |
-|---------------|----------------------------------------------|
-| Frontend      | http://localhost:5173                        |
-| Backend API   | http://localhost:8080/api/v1                 |
-| Swagger UI    | http://localhost:8080/api/v1/swagger-ui.html |
-| OpenAPI spec  | http://localhost:8080/api/v1/api-docs        |
-| H2 Console    | http://localhost:8080/api/v1/h2-console      |
+| Servizio     | URL                                          |
+|--------------|----------------------------------------------|
+| Frontend     | http://localhost:5173                        |
+| Backend API  | http://localhost:8080/api/v1                 |
+| Swagger UI   | http://localhost:8080/api/v1/swagger-ui.html |
+| Specifica OpenAPI | http://localhost:8080/api/v1/api-docs   |
+| Console H2   | http://localhost:8080/api/v1/h2-console      |
 
-### Test Credentials (auto-seeded in dev profile)
+### Credenziali di Test (precaricate automaticamente nel profilo dev)
 
-| Role                   | Email                                      | Password |
-|------------------------|--------------------------------------------|----------|
-| User (Utente)          | test@smartmobility.com                     | password |
-| Tech Operator          | operatore.tecnico@smartmobility.com        | password |
-| Social Operator        | operatore.sc@smartmobility.com             | password |
-| Public Admin (PA)      | pa@smartmobility.com                       | password |
+| Ruolo                     | Email                                      | Password |
+|---------------------------|--------------------------------------------|----------|
+| Utente                    | test@smartmobility.com                     | password |
+| Operatore Tecnico         | operatore.tecnico@smartmobility.com        | password |
+| Operatore Sociale         | operatore.sc@smartmobility.com             | password |
+| Pubblica Amministrazione (PA) | pa@smartmobility.com                   | password |
 
 ---
 
-## Production Setup (MySQL)
+## Configurazione di Produzione (MySQL)
 
-1. Create the database:
+1. Crea il database:
 
 ```sql
 CREATE DATABASE smart_mobility CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-2. Set environment variables:
+2. Imposta le variabili d'ambiente:
 
 ```bash
 export DB_URL=jdbc:mysql://localhost:3306/smart_mobility
@@ -271,76 +272,76 @@ export DB_USER=root
 export DB_PASS=your_password
 ```
 
-3. Build and run:
+3. Compila ed esegui:
 
 ```bash
 mvn package -DskipTests
 java -jar target/smart-mobility-system-1.0.0.jar
 ```
 
-> **Note:** In production mode, JPA `ddl-auto` is set to `validate`. Manage
-> schema migrations manually (e.g., via Flyway, Liquibase, or SQL scripts).
+> **Nota:** In modalità produzione, JPA `ddl-auto` è impostato su `validate`. Gestisci
+> le migrazioni dello schema manualmente (es. tramite Flyway, Liquibase o script SQL).
 
 ---
 
-## Running Tests
+## Esecuzione dei Test
 
 ```bash
-# All tests
+# Tutti i test
 mvn test
 
-# Single test class
+# Singola classe di test
 mvn test -Dtest=SmartMobilityApplicationTests
 
-# With verbose output
+# Con output dettagliato
 mvn test -Dtest=GestioneAutenticazioneControllerTest -X
 ```
 
-## Full CI Pipeline
+## Pipeline CI Completa
 
 ```bash
 ./run_pipeline.sh
 ```
 
-Executes: `compile` -> `test` -> `package` -> `verify`
+Esegue: `compile` -> `test` -> `package` -> `verify`
 
 ---
 
-## Project Structure
+## Struttura del Progetto
 
 ```
 Smart-Mobility-System/
-  pom.xml                        # Maven root (backend build)
-  src/main/java/                 # Backend Java sources
-  src/main/resources/            # Backend config (application.yml)
-  src/test/java/                 # Backend unit/integration tests
+  pom.xml                        # Maven root (build backend)
+  src/main/java/                 # Sorgenti Java backend
+  src/main/resources/            # Configurazione backend (application.yml)
+  src/test/java/                 # Test unitari/integrazione backend
   frontend/
-    package.json                 # Frontend dependencies
-    vite.config.ts               # Vite dev server + proxy config
-    src/                         # Vue 3 + TypeScript sources
-    index.html                   # HTML entry point
-  docs/                          # UML diagrams and specs
-  scripts/                       # Utility scripts
-  start.js                       # Cross-platform unified launcher
-  run-backend.sh                 # Backend launcher (Linux/macOS)
-  run-frontend.sh                # Frontend launcher (Linux/macOS)
-  run_pipeline.sh                # CI pipeline
+    package.json                 # Dipendenze frontend
+    vite.config.ts               # Dev server Vite + configurazione proxy
+    src/                         # Sorgenti Vue 3 + TypeScript
+    index.html                   # Punto di ingresso HTML
+  docs/                          # Diagrammi UML e specifiche
+  scripts/                       # Script di utilità
+  start.js                       # Launcher unificato multipiattaforma (presente nel repository)
+  run-backend.sh                 # Launcher backend (Linux/macOS)
+  run-frontend.sh                # Launcher frontend (Linux/macOS)
+  run_pipeline.sh                # Pipeline CI
 ```
 
 ---
 
-## Troubleshooting
+## Risoluzione dei Problemi
 
-| Problem                           | Solution                                                     |
-|-----------------------------------|--------------------------------------------------------------|
-| `java: release 21 not supported`  | Install JDK 21 and set `JAVA_HOME` to point to it            |
-| `JAVA_HOME` not set (Windows)     | `[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Path\To\jdk-21", "User")` |
-| `mvn: command not found`          | Install Maven and add its `bin/` directory to `PATH`         |
-| `mvn` not found after winget      | Restart terminal -- winget may not update `PATH` for the current session |
-| Port 8080 already in use          | Kill the process: `lsof -ti:8080 \| xargs kill` (macOS/Linux) or `netstat -ano \| findstr :8080` then `taskkill /PID <id>` (Windows) |
-| Port 5173 already in use          | Vite auto-selects the next available port                    |
-| Frontend can't reach backend      | Ensure backend runs on port 8080; check Vite proxy in `vite.config.ts` |
-| `npm install` fails               | Verify Node.js 20+ (`node -v`); delete `node_modules` and `package-lock.json`, retry |
-| H2 Console not accessible         | Use `http://localhost:8080/api/v1/h2-console` with JDBC URL `jdbc:h2:mem:smart_mobility` (dev profile only) |
-| `start.js` on Windows blocked     | Run `powershell -File <script>` or open in VS Code terminal  |
-| `curl \| bash` security warning   | Review the NodeSource script at https://deb.nodesource.com/setup_20.x before piping to bash |
+| Problema                           | Soluzione                                                    |
+|------------------------------------|--------------------------------------------------------------|
+| `java: release 21 not supported`   | Installa JDK 21 e imposta `JAVA_HOME` puntando ad esso       |
+| `JAVA_HOME` non impostato (Windows)| `[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Path\To\jdk-21", "User")` |
+| `mvn: command not found`           | Installa Maven e aggiungi la directory `bin/` al `PATH`      |
+| `mvn` non trovato dopo winget      | Riavvia il terminale — winget potrebbe non aggiornare il `PATH` per la sessione corrente |
+| Porta 8080 già in uso              | Termina il processo: `lsof -ti:8080 \| xargs kill` (macOS/Linux) oppure `netstat -ano \| findstr :8080` poi `taskkill /PID <id>` (Windows) |
+| Porta 5173 già in uso              | Vite seleziona automaticamente la porta disponibile successiva |
+| Il frontend non raggiunge il backend | Verifica che il backend sia in esecuzione sulla porta 8080; controlla il proxy Vite in `vite.config.ts` |
+| `npm install` fallisce             | Verifica Node.js 20+ (`node -v`); elimina `node_modules` e `package-lock.json`, riprova |
+| Console H2 non accessibile         | Usa `http://localhost:8080/api/v1/h2-console` con URL JDBC `jdbc:h2:mem:smart_mobility` (solo profilo dev) |
+| `start.js` bloccato su Windows     | Esegui `powershell -File <script>` o apri in terminale VS Code |
+| Avviso di sicurezza `curl \| bash` | Controlla lo script NodeSource su https://deb.nodesource.com/setup_20.x prima di eseguire il pipe in bash |

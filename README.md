@@ -218,10 +218,7 @@ Smart-Mobility-System/
 │   └── specs/                      # specifiche CGD (Master_Spec, Component_Spec, Interface_Spec, Glossario)
 ├── scripts/                        # utility Python
 ├── start.js                        # launcher unificato cross-platform (auto-install dipendenze)
-├── INSTALL.md                      # guida all'installazione per piattaforma
-├── run-backend.sh
-├── run-frontend.sh
-└── run_pipeline.sh                 # compila → test → impacchetta → verifica
+└── INSTALL.md                      # guida all'installazione per piattaforma
 ```
 
 ---
