@@ -7,5 +7,5 @@ import jakarta.persistence.*;
 @PrimaryKeyJoinColumn(name = "id")
 public class PA extends Attore {
 
-    public PA() {}
+    public PA() { /* required by JPA */ }
 }

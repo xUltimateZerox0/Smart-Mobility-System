@@ -22,6 +22,7 @@ import java.util.List;
 public class GestioneUtentiServiceImpl implements GestioneUtentiService {
 
     private static final Logger log = LoggerFactory.getLogger(GestioneUtentiServiceImpl.class);
+    private static final String UTENTE_NON_TROVATO = "Utente non trovato";
 
     private final UtenteRepository utenteRepository;
     private final SessionRegistry sessionRegistry;
@@ -55,7 +56,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     @Override
     public String cercaReport(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
         return utente.getReportUtente();
     }
 
@@ -63,7 +64,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     @Transactional
     public boolean gestioneUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
 
         if (utente.getStatoUtente() == StatoUtente.attivo) {
             utente.setStatoUtente(StatoUtente.sospeso);
@@ -92,7 +93,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     @Transactional
     public boolean bloccaUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
         utente.setStatoUtente(StatoUtente.sospeso);
         utenteRepository.save(utente);
         sessionRegistry.invalidateByEmail(utente.getEmail());
@@ -114,7 +115,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     @Transactional
     public boolean sbloccaUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
         utente.setStatoUtente(StatoUtente.attivo);
         utenteRepository.save(utente);
         return true;
@@ -124,7 +125,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     @Transactional
     public boolean disattivaUtente(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
         utente.setStatoUtente(StatoUtente.disattivato);
         utenteRepository.save(utente);
         sessionRegistry.invalidateByEmail(utente.getEmail());
@@ -135,7 +136,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     @Transactional
     public void cancellaReport(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
         utente.setReportUtente(null);
         utenteRepository.save(utente);
     }
@@ -144,7 +145,7 @@ public class GestioneUtentiServiceImpl implements GestioneUtentiService {
     @Transactional
     public void azioneCorrettiva(Long idUtente, String azione) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
 
         String existing = utente.getReportUtente();
         String updated = existing == null || existing.isBlank()

@@ -2,6 +2,7 @@ package com.smartmobility.dto.response;
 
 import java.util.Objects;
 
+@SuppressWarnings("java:S107")
 public class PrenotazioneResponse {
     private Long id;
     private Long idUtente;

@@ -21,7 +21,7 @@ public abstract class Attore {
     @Enumerated(EnumType.STRING)
     private RuoloAttore ruolo;
 
-    protected Attore() {}
+    protected Attore() { /* required by JPA */ }
 
     public Long getId() {
         return id;

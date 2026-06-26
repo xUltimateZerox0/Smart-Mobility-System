@@ -28,7 +28,7 @@ public class Segnalazione {
     @Column(name = "motivazione")
     private String motivazione;
 
-    public Segnalazione() {}
+    public Segnalazione() { /* required by JPA */ }
 
     public Long getIdSegnalazione() {
         return idSegnalazione;

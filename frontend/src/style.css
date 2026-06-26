@@ -98,7 +98,7 @@ button:disabled {
 }
 
 .btn-success {
-  background: linear-gradient(135deg, var(--secondary), #059669);
+  background: linear-gradient(135deg, #0a7c55, #047350);
   color: white;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }

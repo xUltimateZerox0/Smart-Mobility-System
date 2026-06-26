@@ -19,7 +19,7 @@ const orarioInizio = computed(() => dataInizio.value)
 async function fetchActiveRide(): Promise<boolean> {
   try {
     const res = await ridesApi.getActiveRide()
-    if (res.data && res.data.id) {
+    if (res.data?.id) {
       corsaId.value = res.data.id
       idMezzo.value = res.data.idMezzo || 0
       dataInizio.value = res.data.dataInizio || null

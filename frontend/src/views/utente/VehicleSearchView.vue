@@ -76,7 +76,7 @@ onMounted(async () => {
 })
 
 const latitudine = ref(45.4642)
-const longitudine = ref(9.1900)
+const longitudine = ref(9.19)
 const veicoli = ref<MezzoResponse[]>([])
 const loading = ref(false)
 const searched = ref(false)

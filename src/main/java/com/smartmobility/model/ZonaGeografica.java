@@ -21,7 +21,7 @@ public class ZonaGeografica {
 
     private String zona;
 
-    public ZonaGeografica() {}
+    public ZonaGeografica() { /* required by JPA */ }
 
     public Long getIdArea() {
         return idArea;

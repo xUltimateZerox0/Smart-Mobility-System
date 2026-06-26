@@ -44,7 +44,7 @@ public class Corsa {
     @Column(name = "totale_pausa_millis")
     private long totalePausaMillis;
 
-    public Corsa() {}
+    public Corsa() { /* required by JPA */ }
 
     public Long getIdCorsa() {
         return idCorsa;

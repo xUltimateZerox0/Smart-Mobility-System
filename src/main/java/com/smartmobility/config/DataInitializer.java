@@ -30,6 +30,9 @@ import java.time.LocalTime;
 @Profile("dev")
 public class DataInitializer {
 
+    private static final String EMAIL_TEST = "test@smartmobility.com";
+    private static final String PASSWORD_DEFAULT = "password";
+
     @Bean
     CommandLineRunner seedData(AttoreRepository attoreRepository,
                                 UtenteRepository utenteRepository,
@@ -50,12 +53,12 @@ public class DataInitializer {
                            UtenteRepository utenteRepository,
                            OperatoreRepository operatoreRepository,
                            PARepository paRepository) {
-        if (attoreRepository.findByEmail("test@smartmobility.com").isEmpty()) {
+        if (attoreRepository.findByEmail(EMAIL_TEST).isEmpty()) {
             Utente utente = new Utente();
             utente.setNomeUtente("Mario");
             utente.setCognomeUtente("Rossi");
-            utente.setEmail("test@smartmobility.com");
-            utente.setPassword(hashPassword("password"));
+            utente.setEmail(EMAIL_TEST);
+            utente.setPassword(hashPassword(PASSWORD_DEFAULT));
             utente.setRuolo(RuoloAttore.Utente);
             utente.setStatoUtente(StatoUtente.attivo);
             utente.setReportUtente("");
@@ -69,7 +72,7 @@ public class DataInitializer {
         if (attoreRepository.findByEmail("pa@smartmobility.com").isEmpty()) {
             PA pa = new PA();
             pa.setEmail("pa@smartmobility.com");
-            pa.setPassword(hashPassword("password"));
+            pa.setPassword(hashPassword(PASSWORD_DEFAULT));
             pa.setRuolo(RuoloAttore.PA);
             paRepository.save(pa);
         }
@@ -77,7 +80,7 @@ public class DataInitializer {
         if (attoreRepository.findByEmail("tecnico@smartmobility.com").isEmpty()) {
             Operatore op = new Operatore();
             op.setEmail("tecnico@smartmobility.com");
-            op.setPassword(hashPassword("password"));
+            op.setPassword(hashPassword(PASSWORD_DEFAULT));
             op.setRuolo(RuoloAttore.Operatore);
             op.setTipo(TipoOperatore.OperatoreTecnico);
             operatoreRepository.save(op);
@@ -86,7 +89,7 @@ public class DataInitializer {
         if (attoreRepository.findByEmail("sc@smartmobility.com").isEmpty()) {
             Operatore op = new Operatore();
             op.setEmail("sc@smartmobility.com");
-            op.setPassword(hashPassword("password"));
+            op.setPassword(hashPassword(PASSWORD_DEFAULT));
             op.setRuolo(RuoloAttore.Operatore);
             op.setTipo(TipoOperatore.OperatoreSC);
             operatoreRepository.save(op);
@@ -160,7 +163,7 @@ public class DataInitializer {
     private void seedPaymentMethods(MetodoPagamentoRepository metodoPagamentoRepository,
                                      AttoreRepository attoreRepository) {
         if (metodoPagamentoRepository.count() == 0) {
-            attoreRepository.findByEmail("test@smartmobility.com").ifPresent(attore -> {
+            attoreRepository.findByEmail(EMAIL_TEST).ifPresent(attore -> {
                 if (attore instanceof Utente utente) {
                     MetodoPagamento metodo = new MetodoPagamento();
                     metodo.setNumCarta("4111111111111111");

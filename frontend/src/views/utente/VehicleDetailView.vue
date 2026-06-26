@@ -23,8 +23,8 @@
         <h3>Calcolo Percorso</h3>
         <div class="form-group" style="display:flex;gap:8px;align-items:end">
           <div>
-            <label>Destinazione</label>
-            <input v-model="destinazione" placeholder="Indirizzo o coordinate" style="min-width:250px" />
+            <label for="destinazione-input">Destinazione</label>
+            <input id="destinazione-input" v-model="destinazione" placeholder="Indirizzo o coordinate" style="min-width:250px" />
           </div>
           <button @click="calculateRoute" class="btn-primary" :disabled="routeLoading">{{ routeLoading ? 'Calcolo...' : 'Calcola Percorso' }}</button>
         </div>
@@ -49,18 +49,18 @@
       <template v-if="!bookingResult">
         <h2>Prenota {{ veicolo?.tipo }}</h2>
         <div class="form-group">
-          <label>Data</label>
-          <input type="date" v-model="selectedDate" />
+          <label for="booking-date">Data</label>
+          <input id="booking-date" type="date" v-model="selectedDate" />
         </div>
         <div class="form-group">
-          <label>Ora inizio</label>
-          <input type="time" v-model="selectedTime" />
+          <label for="booking-time">Ora inizio</label>
+          <input id="booking-time" type="time" v-model="selectedTime" />
         </div>
         <div class="form-group">
-          <label>Durata</label>
+          <label for="duration-1">Durata</label>
           <div class="duration-options">
             <label v-for="h in [1, 2, 4, 8]" :key="h" class="duration-option">
-              <input type="radio" name="duration" :value="h" v-model="selectedDuration" />
+              <input type="radio" name="duration" :value="h" v-model="selectedDuration" :id="h === 1 ? 'duration-1' : undefined" />
               {{ h }}h
             </label>
             <label class="duration-option">
@@ -148,7 +148,7 @@ onMounted(async () => {
   if (!auth.userId) { return }
   try {
     const vehicleId = Number(route.params.id)
-    if (isNaN(vehicleId)) { loading.value = false; return }
+    if (Number.isNaN(vehicleId)) { loading.value = false; return }
 
     const [vehicleRes, activeRideRes] = await Promise.all([
       vehiclesApi.getVehicleDetails(vehicleId),

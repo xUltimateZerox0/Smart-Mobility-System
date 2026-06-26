@@ -4,9 +4,13 @@ import com.smartmobility.dto.response.AuthResponse;
 import com.smartmobility.service.GestioneAutenticazioneService;
 import org.springframework.stereotype.Component;
 
+import java.util.logging.Logger;
+
 @Component
 @SuppressWarnings("unused")
 public class Autenticazione {
+
+    private static final Logger LOG = Logger.getLogger(Autenticazione.class.getName());
 
     private final GestioneAutenticazioneService gestioneAutenticazioneService;
     private Long idAttore;
@@ -17,23 +21,23 @@ public class Autenticazione {
     }
 
     public void mostraFormRegistrazione() {
-        System.out.println("Mostra form registrazione");
+        LOG.info("Mostra form registrazione");
     }
 
     public void registraUtente(String nome, String cognome, String email, String password, String datanascita) {
         AuthResponse result = gestioneAutenticazioneService.verificaValidita(nome, cognome, email, password, datanascita);
-        System.out.println("Registrazione completata per: " + result.getEmail());
+        LOG.info("Registrazione completata per: " + result.getEmail());
         this.idAttore = result.getIdUtente();
     }
 
     public void accedi(String email, String password) {
         AuthResponse result = gestioneAutenticazioneService.invioCredenziali(email, password);
-        System.out.println("Login effettuato per: " + result.getEmail() + " (ruolo: " + result.getRuolo() + ")");
+        LOG.info("Login effettuato per: " + result.getEmail() + " (ruolo: " + result.getRuolo() + ")");
         this.idAttore = result.getIdUtente();
     }
 
     public void registrazioneUtente() {
-        System.out.println("Registrazione utente completata");
+        LOG.info("Registrazione utente completata");
     }
 
     public Long getIdAttore() {

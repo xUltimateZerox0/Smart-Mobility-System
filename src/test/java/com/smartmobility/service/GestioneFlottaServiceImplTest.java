@@ -46,6 +46,7 @@ class GestioneFlottaServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new GestioneFlottaServiceImpl(mezzoRepository, segnalazioneRepository, mezzoIoTService, corsaRepository, gestioneCorsaService);
+        service.setSelfProxy(service);
     }
 
     @Test

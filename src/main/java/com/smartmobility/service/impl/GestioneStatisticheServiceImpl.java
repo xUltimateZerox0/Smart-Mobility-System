@@ -110,8 +110,8 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
             r.setId(m.getIdMezzo());
             r.setTipo(m.getTipo());
             r.setStato(m.getStato() != null ? m.getStato().name() : null);
-            r.setAutonomia((double) m.getAutonomia());
-            r.setTariffa((double) m.getCostoOrario());
+            r.setAutonomia(m.getAutonomia());
+            r.setTariffa(m.getCostoOrario());
             r.setCondizione(m.getCondizione());
             r.setIdFlotta(m.getIdFlotta());
             if (m.getCoordinateMezzo() != null) {

@@ -24,7 +24,7 @@ public class MetodoPagamento {
     @JoinColumn(name = "id_utente")
     private Utente utente;
 
-    public MetodoPagamento() {}
+    public MetodoPagamento() { /* required by JPA */ }
 
     public Long getIdMetodoPagamento() {
         return idMetodoPagamento;

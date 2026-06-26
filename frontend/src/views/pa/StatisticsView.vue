@@ -3,12 +3,12 @@
     <h1>Statistiche</h1>
     <div class="card" style="margin-bottom:16px">
       <div class="form-group">
-        <label>Data inizio</label>
-        <input v-model="dataInizio" type="date" />
+        <label for="stats-data-inizio">Data inizio</label>
+        <input id="stats-data-inizio" v-model="dataInizio" type="date" />
       </div>
       <div class="form-group">
-        <label>Data fine</label>
-        <input v-model="dataFine" type="date" />
+        <label for="stats-data-fine">Data fine</label>
+        <input id="stats-data-fine" v-model="dataFine" type="date" />
       </div>
       <button @click="analyze" class="btn-primary" :disabled="loading">{{ loading ? 'Analisi...' : 'Analizza' }}</button>
     </div>
@@ -276,7 +276,7 @@ function badgeClass(stato: string): string {
 .fleet-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .fleet-table th, .fleet-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border, #e0e0e0); }
 .fleet-table th { font-weight: 600; color: var(--gray); }
-.btn-warning { background: #f0ad4e; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.btn-warning { background: #f0ad4e; color: #333; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
 .btn-warning:hover { background: #ec971f; }
 
 .segnalazioni-card {
@@ -295,7 +295,7 @@ function badgeClass(stato: string): string {
   gap: 10px;
 }
 .segnalazioni-count {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #5a5ad0, #8b5cf6);
   color: white;
   font-size: 12px;
   font-weight: 700;

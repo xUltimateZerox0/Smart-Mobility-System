@@ -28,9 +28,9 @@
         </div>
 
         <div v-if="metodoPagamentoId && showQrInput" style="margin-top:12px" class="qr-input-section">
-          <label style="font-size:13px;font-weight:600">Inserisci il QR Code del veicolo</label>
+          <label for="qr-code-input" style="font-size:13px;font-weight:600">Inserisci il QR Code del veicolo</label>
           <div style="display:flex;gap:8px;margin-top:4px">
-            <input v-model="qrCode" type="text" placeholder="Es. QR-12345" style="flex:1;padding:8px;border:1px solid var(--border-color,#ccc);border-radius:6px" />
+            <input id="qr-code-input" v-model="qrCode" type="text" placeholder="Es. QR-12345" style="flex:1;padding:8px;border:1px solid var(--border-color,#ccc);border-radius:6px" />
             <button @click="startRideFlow" class="btn-primary" :disabled="startLoading || !qrCode.trim()">{{ startLoading ? 'Sblocco...' : 'Avvia Corsa' }}</button>
           </div>
           <p style="font-size:12px;color:var(--gray);margin-top:4px">Il QR Code si trova sul veicolo o nella tua prenotazione attiva</p>
@@ -135,7 +135,7 @@ const auth = useAuthStore()
 const rideStore = useRideStore()
 
 const vehicleId = Number(route.params.id)
-if (isNaN(vehicleId)) {
+if (Number.isNaN(vehicleId)) {
   router.replace('/utente')
 }
 
@@ -178,7 +178,7 @@ const timerOffset = computed(() => {
 function calculateElapsedSeconds(): number {
   if (!rideStore.orarioInizio) return 0
   const startTime = new Date(rideStore.orarioInizio).getTime()
-  if (isNaN(startTime)) return 0
+  if (Number.isNaN(startTime)) return 0
   const pauseMs = rideStore.totalePausaMillis || 0
   return Math.max(0, Math.floor((Date.now() - startTime - pauseMs) / 1000))
 }
@@ -187,7 +187,7 @@ function startTimers() {
   stopTimers()
   if (!rideStore.orarioInizio) return
   const startTime = new Date(rideStore.orarioInizio).getTime()
-  if (isNaN(startTime)) return
+  if (Number.isNaN(startTime)) return
 
   timerInterval = setInterval(() => {
     if (!isPaused.value) {
@@ -290,7 +290,7 @@ onUnmounted(() => {
 })
 
 async function loadVehicleTariffa() {
-  if (!vehicleId || isNaN(vehicleId)) return
+  if (!vehicleId || Number.isNaN(vehicleId)) return
   try {
     const res = await vehiclesApi.getVehicleDetails(vehicleId)
     if (res.data && res.data.tariffa !== undefined) {
@@ -544,7 +544,7 @@ async function selectPayment() {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--success, #28a745);
+  background: var(--success, #1a7a30);
   color: white;
   font-size: 32px;
   display: flex;

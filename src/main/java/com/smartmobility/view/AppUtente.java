@@ -13,10 +13,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 @SuppressWarnings("unused")
 public class AppUtente {
+
+    private static final Logger LOG = Logger.getLogger(AppUtente.class.getName());
 
     private final GestioneCorsaService gestioneCorsaService;
     private final GestorePagamentoService gestorePagamentoService;
@@ -35,13 +39,13 @@ public class AppUtente {
     }
 
     public void mostraErrore(String msg) {
-        System.err.println("ERRORE: " + msg);
+        LOG.log(Level.SEVERE, "ERRORE: {0}", msg);
     }
 
     public void mostraStima(Long idCorsa) {
         StimaCorsaResponse result = gestioneCorsaService.aggiornaStima(idCorsa);
         if (result != null) {
-            System.out.println("Costo stimato: " + result.getCosto() + " (tariffa: " + result.getTariffa() + " €/h)");
+            LOG.log(Level.INFO, "Costo stimato: {0} (tariffa: {1} €/h)", new Object[]{result.getCosto(), result.getTariffa()});
         }
     }
 
@@ -49,14 +53,14 @@ public class AppUtente {
         try {
             CorsaResponse corsa = gestioneCorsaService.getCorsaAttiva(this.idUtente);
             if (corsa != null) {
-                System.out.println(">>> SEZIONE CORSA <<<");
-                System.out.println("ID Corsa: " + corsa.getId());
-                System.out.println("Mezzo: " + corsa.getIdMezzo());
-                System.out.println("Inizio: " + corsa.getDataInizio());
-                System.out.println("Costo: " + corsa.getCosto());
-                System.out.println("Stato: " + corsa.getStato());
+                LOG.info(">>> SEZIONE CORSA <<<");
+                LOG.log(Level.INFO, "ID Corsa: {0}", corsa.getId());
+                LOG.log(Level.INFO, "Mezzo: {0}", corsa.getIdMezzo());
+                LOG.log(Level.INFO, "Inizio: {0}", corsa.getDataInizio());
+                LOG.log(Level.INFO, "Costo: {0}", corsa.getCosto());
+                LOG.log(Level.INFO, "Stato: {0}", corsa.getStato());
             } else {
-                System.out.println(">>> NESSUNA CORSA ATTIVA <<<");
+                LOG.info(">>> NESSUNA CORSA ATTIVA <<<");
             }
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore nel recupero corsa attiva");
@@ -64,34 +68,34 @@ public class AppUtente {
     }
 
     public void mostraSuccesso() {
-        System.out.println("Operazione completata con successo");
+        LOG.info("Operazione completata con successo");
     }
 
     public void mostraFineCorsa() {
-        System.out.println("Corsa terminata");
+        LOG.info("Corsa terminata");
     }
 
     public void mostraQRCode() {
-        System.out.println("QR Code generato");
+        LOG.info("QR Code generato");
     }
 
     public void mostraRipresaCorsa() {
-        System.out.println("Corsa ripresa");
+        LOG.info("Corsa ripresa");
     }
 
     public void mostraMezzi(List<MezzoResponse> mezzi) {
-        System.out.println("Mezzi trovati: " + mezzi.size());
+        LOG.log(Level.INFO, "Mezzi trovati: {0}", mezzi.size());
     }
 
     public void renderizzaDettagliVeicolo(MezzoResponse mezzo) {
-        System.out.println("Dettagli: " + mezzo.getTipo());
+        LOG.log(Level.INFO, "Dettagli: {0}", mezzo.getTipo());
     }
 
     public boolean scansionaQRCode(String qrCode) {
         try {
             boolean sbloccato = gestioneCorsaService.richiediSblocco(qrCode);
             if (sbloccato) {
-                System.out.println("QR Code validato: " + qrCode);
+                LOG.log(Level.INFO, "QR Code validato: {0}", qrCode);
                 return true;
             } else {
                 mostraErrore("Impossibile sbloccare il veicolo con il QR Code fornito");
@@ -106,7 +110,7 @@ public class AppUtente {
     public void selezionaMetodo(Long idMetodoPagamento) {
         try {
             gestioneCorsaService.acquisisciSceltaMetodo(idMetodoPagamento, this.idUtente);
-            System.out.println("Metodo di pagamento selezionato e convalidato: " + idMetodoPagamento);
+            LOG.log(Level.INFO, "Metodo di pagamento selezionato e convalidato: {0}", idMetodoPagamento);
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore nella selezione del metodo");
         }
@@ -124,7 +128,7 @@ public class AppUtente {
         try {
             gestioneCorsaService.acquisisciSceltaMetodo(idMetodoPagamento, this.idUtente);
             Long idCorsa = gestioneCorsaService.avviaCorsa(idMezzo, this.idUtente, qrCode);
-            System.out.println("CORSA AVVIATA con ID: " + idCorsa);
+            LOG.log(Level.INFO, "CORSA AVVIATA con ID: {0}", idCorsa);
             mostraCorsaAttiva();
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore durante l'avvio della corsa");
@@ -134,7 +138,7 @@ public class AppUtente {
     public void terminazioneCorsa(Long idCorsa) {
         try {
             CorsaResponse response = gestioneCorsaService.terminaCorsa(idCorsa);
-            System.out.println("Corsa terminata. Costo finale: " + response.getCosto());
+            LOG.log(Level.INFO, "Corsa terminata. Costo finale: {0}", response.getCosto());
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore durante la terminazione della corsa");
         }
@@ -143,18 +147,18 @@ public class AppUtente {
     public void sospendiCorsa(Long idCorsa) {
         try {
             boolean sospesa = gestioneCorsaService.sospensioneCorsa(idCorsa);
-            System.out.println(sospesa ? "Corsa sospesa/ripresa" : "Impossibile sospendere la corsa");
+            LOG.info(sospesa ? "Corsa sospesa/ripresa" : "Impossibile sospendere la corsa");
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore durante la sospensione della corsa");
         }
     }
 
     public void selezionaMezzo(Long idMezzo) {
-        System.out.println("Mezzo selezionato: " + idMezzo);
+        LOG.log(Level.INFO, "Mezzo selezionato: {0}", idMezzo);
     }
 
     public void inserisciDestinazione(String indirizzoArrivo) {
-        System.out.println("Destinazione: " + indirizzoArrivo);
+        LOG.log(Level.INFO, "Destinazione: {0}", indirizzoArrivo);
     }
 
     public void avviaRicercaMezzi(String coordinateUtente, float raggio) {
@@ -163,19 +167,19 @@ public class AppUtente {
     }
 
     public void confermaEspansione() {
-        System.out.println("Espansione confermata");
+        LOG.info("Espansione confermata");
     }
 
     public void notificaAzione(Long idUtente, String azione) {
-        System.out.println("Notifica a " + idUtente + ": " + azione);
+        LOG.log(Level.INFO, "Notifica a {0}: {1}", new Object[]{idUtente, azione});
     }
 
     public void ottieniMetodiSalvati() {
         try {
             List<MetodoPagamentoResponse> metodi = gestorePagamentoService.recuperaMetodiSalvati(this.idUtente);
-            System.out.println("METODI DI PAGAMENTO SALVATI (" + metodi.size() + "):");
+            LOG.log(Level.INFO, "METODI DI PAGAMENTO SALVATI ({0}):", metodi.size());
             for (MetodoPagamentoResponse m : metodi) {
-                System.out.println("  ID=" + m.getId() + " | carta=" + m.getNumCarta() + " | intestatario=" + m.getIntestatarioCarta());
+                LOG.log(Level.INFO, "  ID={0} | carta={1} | intestatario={2}", new Object[]{m.getId(), m.getNumCarta(), m.getIntestatarioCarta()});
             }
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore nel recupero metodi");

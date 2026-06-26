@@ -19,6 +19,8 @@ import com.smartmobility.repository.PrenotazioneRepository;
 import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.GestioneCorsaService;
 import com.smartmobility.service.GestorePagamentoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
     private static final double SOSPENSIONE_FISSO = 1.0;
-    private static final long PAYMENT_TTL_MS = 30 * 60 * 1000; // 30 minuti
+    private static final String CORSA_NON_TROVATA = "Corsa non trovata";
+    private static final long PAYMENT_TTL_MS = 30L * 60 * 1000; // 30 minuti
     private static final Logger log = LoggerFactory.getLogger(GestioneCorsaServiceImpl.class);
 
     private final CorsaRepository corsaRepository;
@@ -47,6 +50,8 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     private final MezzoIoTService mezzoIoTService;
     private final ServizioMappaService servizioMappaService;
     private final GestorePagamentoService gestorePagamentoService;
+
+    private GestioneCorsaService selfProxy;
 
     private final Map<Long, PendingPayment> pendingPaymentMethods = new ConcurrentHashMap<>();
     private final Map<Long, Long> pausaStartTimes = new ConcurrentHashMap<>();
@@ -80,6 +85,12 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         this.mezzoIoTService = mezzoIoTService;
         this.servizioMappaService = servizioMappaService;
         this.gestorePagamentoService = gestorePagamentoService;
+    }
+
+    @Autowired
+    @Lazy
+    public void setSelfProxy(GestioneCorsaService selfProxy) {
+        this.selfProxy = selfProxy;
     }
 
     @Override
@@ -220,25 +231,14 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     @Transactional
     public CorsaResponse terminaCorsa(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));
 
         if (corsa.getOrarioFine() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Corsa già terminata");
         }
 
         double cost = calcolaCosto(corsa, true);
-
-        if (corsa.getUtente() != null && corsa.getMetodoPagamento() != null) {
-            boolean pagato = gestorePagamentoService.pagamentoCorsa(
-                    corsa.getUtente().getIdUtente(),
-                    corsa.getMetodoPagamento().getIdMetodoPagamento(),
-                    idCorsa,
-                    cost);
-            if (!pagato) {
-                throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
-                        "Pagamento non riuscito. La corsa rimane aperta.");
-            }
-        }
+        elaboraPagamentoCorsa(corsa, cost, idCorsa);
 
         corsa.setCosto((float) cost);
         corsa.setOrarioFine(LocalDateTime.now());
@@ -247,14 +247,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         corsaRepository.save(corsa);
         completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());
 
-        Mezzo mezzo = corsa.getMezzo();
-        if (mezzo != null) {
-            if (mezzo.getStato() != StatoMezzo.sospeso) {
-                mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());
-            }
-            mezzo.setStato(StatoMezzo.disponibile);
-            mezzoRepository.save(mezzo);
-        }
+        aggiornaStatoVeicoloDopoCorsa(corsa);
 
         pausaStartTimes.remove(idCorsa);
 
@@ -274,7 +267,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         return new CorsaResponse(
                 corsa.getIdCorsa(),
                 corsa.getUtente() != null ? corsa.getUtente().getIdUtente() : null,
-                mezzo != null ? mezzo.getIdMezzo() : null,
+                corsa.getMezzo() != null ? corsa.getMezzo().getIdMezzo() : null,
                 corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,
                 corsa.getOrarioFine() != null ? corsa.getOrarioFine().toString() : null,
                 (double) corsa.getCosto(),
@@ -291,7 +284,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     @Transactional
     public CorsaResponse forzaTerminaCorsa(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));
 
         if (corsa.getOrarioFine() != null) {
             return buildCorsaResponse(corsa);
@@ -337,7 +330,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         if (corseAttive.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Nessuna corsa attiva per l'utente");
         }
-        return forzaTerminaCorsa(corseAttive.get(0).getIdCorsa());
+        return selfProxy.forzaTerminaCorsa(corseAttive.get(0).getIdCorsa());
     }
 
     private CorsaResponse buildCorsaResponse(Corsa corsa) {
@@ -375,7 +368,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     @Transactional(readOnly = true)
     public StimaCorsaResponse aggiornaStima(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));
 
         Mezzo mezzo = corsa.getMezzo();
         if (mezzo == null) {
@@ -486,6 +479,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     }
 
     @Override
+    @SuppressWarnings("java:S3518")
     public PercorsoResponse richiediCalcoloPercorso(String coordinateUtente, String destinazione) {
         Map<String, Object> percorso = servizioMappaService.getPercorso(coordinateUtente, destinazione, null);
         if (percorso == null || percorso.isEmpty()) {
@@ -501,6 +495,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
         double tariffaStandard = 12.0;
         double ore = durata / 60.0;
+        if (ore <= 0) ore = 1.0 / 60.0;
         double tariffaOraria = Math.max(tariffaStandard, distanza > 0 ? (distanza * 1.5 / ore) : tariffaStandard);
         double costoStimato = Math.round(tariffaOraria * ore * 100.0) / 100.0;
 
@@ -542,7 +537,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     @Transactional(readOnly = true)
     public boolean controllaDisponibilita(Long idCorsa) {
         Corsa corsa = corsaRepository.findById(idCorsa)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));
 
         Mezzo mezzo = corsa.getMezzo();
         if (mezzo == null) return false;
@@ -556,7 +551,7 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
     @Transactional(readOnly = true)
     public boolean controllaDisponibilita(Long idCorsa, String info) {
         Corsa corsa = corsaRepository.findById(idCorsa)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Corsa non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));
         Mezzo mezzo = corsa.getMezzo();
         if (mezzo == null) return false;
 
@@ -580,6 +575,31 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
                 p.setStato(StatoPrenotazione.completata);
                 prenotazioneRepository.save(p);
             }
+        }
+    }
+
+    private void elaboraPagamentoCorsa(Corsa corsa, double cost, Long idCorsa) {
+        if (corsa.getUtente() != null && corsa.getMetodoPagamento() != null) {
+            boolean pagato = gestorePagamentoService.pagamentoCorsa(
+                    corsa.getUtente().getIdUtente(),
+                    corsa.getMetodoPagamento().getIdMetodoPagamento(),
+                    idCorsa,
+                    cost);
+            if (!pagato) {
+                throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
+                        "Pagamento non riuscito. La corsa rimane aperta.");
+            }
+        }
+    }
+
+    private void aggiornaStatoVeicoloDopoCorsa(Corsa corsa) {
+        Mezzo mezzo = corsa.getMezzo();
+        if (mezzo != null) {
+            if (mezzo.getStato() != StatoMezzo.sospeso) {
+                mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());
+            }
+            mezzo.setStato(StatoMezzo.disponibile);
+            mezzoRepository.save(mezzo);
         }
     }
 }

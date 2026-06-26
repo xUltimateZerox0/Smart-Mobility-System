@@ -80,12 +80,12 @@ async function handleLogout() {
 }
 .nav-item:hover, .nav-item.router-link-exact-active {
   background: rgba(255,255,255,0.1);
-  color: white;
+  color: #212529;
   text-decoration: none;
 }
 .nav-ride {
   background: rgba(40, 167, 69, 0.2);
-  color: #28a745;
+  color: #1a7a30;
   font-weight: 600;
   display: flex;
   align-items: center;

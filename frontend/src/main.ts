@@ -9,6 +9,6 @@ app.use(createPinia())
 app.use(router)
 app.mount('#app')
 
-window.addEventListener('auth:unauthorized', () => {
+globalThis.addEventListener('auth:unauthorized', () => {
   router.push('/login')
 })

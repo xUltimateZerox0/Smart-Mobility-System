@@ -16,7 +16,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -36,6 +35,7 @@ class GestioneUtentiControllerTest {
     @MockBean
     private SecurityHelper securityHelper;
 
+    @SuppressWarnings("java:S116")
     private final String AUTH_HEADER = "Bearer test-token";
 
     private Attore createPA() {

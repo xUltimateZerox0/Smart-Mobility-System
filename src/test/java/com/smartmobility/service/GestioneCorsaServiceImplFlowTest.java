@@ -87,13 +87,7 @@ class GestioneCorsaServiceImplFlowTest {
                 10L, utente, mezzo, StatoPrenotazione.attiva, LocalTime.now());
         when(prenotazioneRepository.save(any())).thenReturn(savedPrenotazione);
 
-        // Simulate inviaRichiestaPrenotazione via GestionePrenotazioneServiceImpl
-        // (we test the prenotazione service's effect on mezzo state here)
-        assertDoesNotThrow(() -> {
-            // Verify that setting the booking also sets the vehicle state:
-            mezzo.setStato(StatoMezzo.prenotato);
-        });
-        assertEquals(StatoMezzo.prenotato, mezzo.getStato());
+        assertBookingState(mezzo);
 
         // =========================================================
         // PHASE 2: PRE-SELECT PAYMENT METHOD
@@ -127,15 +121,7 @@ class GestioneCorsaServiceImplFlowTest {
 
         Long corsaId = service.avviaCorsa(1L, 1L, "QR-1");
 
-        assertNotNull(corsaId);
-        assertEquals(100L, corsaId);
-        assertEquals(StatoMezzo.in_uso, mezzo.getStato());
-        verify(mezzoIoTService).sbloccoMezzoFisico(1L);
-        verify(mezzoRepository, atLeastOnce()).save(mezzo);
-
-        // Verify booking was completed
-        assertEquals(StatoPrenotazione.completata, attivaBooking.getStato());
-        verify(prenotazioneRepository, atLeastOnce()).save(attivaBooking);
+        assertRideStarted(corsaId, mezzo, attivaBooking);
 
         // =========================================================
         // PHASE 4: GET ACTIVE RIDE
@@ -144,11 +130,7 @@ class GestioneCorsaServiceImplFlowTest {
 
         CorsaResponse activeRide = service.getCorsaAttiva(1L);
 
-        assertNotNull(activeRide);
-        assertEquals(100L, activeRide.getId());
-        assertEquals(1L, activeRide.getIdMezzo());
-        assertEquals(1L, activeRide.getIdUtente());
-        assertEquals("in_corso", activeRide.getStato());
+        assertActiveRide(activeRide);
 
         // =========================================================
         // PHASE 5: UPDATE ESTIMATE
@@ -157,9 +139,7 @@ class GestioneCorsaServiceImplFlowTest {
 
         StimaCorsaResponse stima = service.aggiornaStima(100L);
 
-        assertNotNull(stima);
-        assertTrue(stima.getCosto() >= 0);
-        assertEquals(5.0f, stima.getTariffa(), 0.01);
+        assertEstimate(stima);
 
         // =========================================================
         // PHASE 6: PAUSE RIDE
@@ -169,9 +149,7 @@ class GestioneCorsaServiceImplFlowTest {
 
         boolean paused = service.sospensioneCorsa(100L);
 
-        assertTrue(paused);
-        assertEquals(StatoMezzo.sospeso, mezzo.getStato());
-        verify(mezzoIoTService).bloccoMezzoFisico(1L);
+        assertPaused(paused, mezzo);
 
         // =========================================================
         // PHASE 7: RESUME RIDE
@@ -181,9 +159,7 @@ class GestioneCorsaServiceImplFlowTest {
 
         boolean resumed = service.sospensioneCorsa(100L);
 
-        assertTrue(resumed);
-        assertEquals(StatoMezzo.in_uso, mezzo.getStato());
-        verify(mezzoIoTService, times(2)).sbloccoMezzoFisico(1L);
+        assertResumed(resumed, mezzo);
 
         // =========================================================
         // PHASE 8: END RIDE WITH PAYMENT
@@ -196,6 +172,51 @@ class GestioneCorsaServiceImplFlowTest {
 
         service.terminaCorsa(100L);
 
+        assertRideEnded(savedCorsa, mezzo);
+    }
+
+    private void assertBookingState(Mezzo mezzo) {
+        assertDoesNotThrow(() -> mezzo.setStato(StatoMezzo.prenotato));
+        assertEquals(StatoMezzo.prenotato, mezzo.getStato());
+    }
+
+    private void assertRideStarted(Long corsaId, Mezzo mezzo, Prenotazione attivaBooking) {
+        assertNotNull(corsaId);
+        assertEquals(100L, corsaId);
+        assertEquals(StatoMezzo.in_uso, mezzo.getStato());
+        verify(mezzoIoTService).sbloccoMezzoFisico(1L);
+        verify(mezzoRepository, atLeastOnce()).save(mezzo);
+        assertEquals(StatoPrenotazione.completata, attivaBooking.getStato());
+        verify(prenotazioneRepository, atLeastOnce()).save(attivaBooking);
+    }
+
+    private void assertActiveRide(CorsaResponse activeRide) {
+        assertNotNull(activeRide);
+        assertEquals(100L, activeRide.getId());
+        assertEquals(1L, activeRide.getIdMezzo());
+        assertEquals(1L, activeRide.getIdUtente());
+        assertEquals("in_corso", activeRide.getStato());
+    }
+
+    private void assertEstimate(StimaCorsaResponse stima) {
+        assertNotNull(stima);
+        assertTrue(stima.getCosto() >= 0);
+        assertEquals(5.0f, stima.getTariffa(), 0.01);
+    }
+
+    private void assertPaused(boolean paused, Mezzo mezzo) {
+        assertTrue(paused);
+        assertEquals(StatoMezzo.sospeso, mezzo.getStato());
+        verify(mezzoIoTService).bloccoMezzoFisico(1L);
+    }
+
+    private void assertResumed(boolean resumed, Mezzo mezzo) {
+        assertTrue(resumed);
+        assertEquals(StatoMezzo.in_uso, mezzo.getStato());
+        verify(mezzoIoTService, times(2)).sbloccoMezzoFisico(1L);
+    }
+
+    private void assertRideEnded(Corsa savedCorsa, Mezzo mezzo) {
         assertNotNull(savedCorsa.getOrarioFine());
         assertEquals(StatoMezzo.disponibile, mezzo.getStato());
         verify(gestorePagamentoService).pagamentoCorsa(eq(1L), eq(1L), eq(100L), anyDouble());

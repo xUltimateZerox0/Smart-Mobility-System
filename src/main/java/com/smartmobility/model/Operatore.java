@@ -11,7 +11,7 @@ public class Operatore extends Attore {
     @Enumerated(EnumType.STRING)
     private TipoOperatore tipo;
 
-    public Operatore() {}
+    public Operatore() { /* required by JPA */ }
 
     public TipoOperatore getTipo() {
         return tipo;

@@ -29,7 +29,7 @@ async function handleLogout() { await auth.logout(); router.push('/login') }
 .sidebar-title { color: white !important; font-weight: 700; letter-spacing: 0.5px; }
 .sidebar-nav { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
 .nav-item { padding: 10px 14px; border-radius: 6px; color: rgba(255,255,255,0.7); font-size: 14px; }
-.nav-item:hover, .nav-item.router-link-exact-active { background: rgba(255,255,255,0.1); color: white; text-decoration: none; }
+.nav-item:hover, .nav-item.router-link-exact-active { background: rgba(255,255,255,0.1); color: #212529; text-decoration: none; }
 .sidebar-footer { padding: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
 .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 24px; }
 </style>

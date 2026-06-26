@@ -8,10 +8,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 @SuppressWarnings("unused")
 public class AppOperatoreSC {
+
+    private static final Logger LOG = Logger.getLogger(AppOperatoreSC.class.getName());
+    private static final String ERRORE_GENERICO = "Errore";
 
     private final GestioneUtentiService gestioneUtentiService;
     private final GestionePrenotazioneService gestionePrenotazioneService;
@@ -30,20 +35,22 @@ public class AppOperatoreSC {
     }
 
     public void mostraErrore(String msg) {
-        System.err.println("ERRORE: " + msg);
+        LOG.log(Level.SEVERE, "ERRORE: {0}", msg);
     }
 
     public void mostraSuccesso(String msg) {
-        System.out.println("SUCCESSO: " + msg);
+        LOG.log(Level.INFO, "SUCCESSO: {0}", msg);
     }
 
     public void mostraReport(Long idUtente) {
         try {
             String report = gestioneUtentiService.cercaReport(idUtente);
             if (report != null && !report.isBlank()) {
-                System.out.println("REPORT per utente " + idUtente + ": " + report);
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.log(Level.INFO, String.format("REPORT per utente %s: %s", idUtente, report));
+                }
             } else {
-                System.out.println("REPORT per utente " + idUtente + ": Nessun report presente");
+                LOG.log(Level.INFO, "REPORT per utente {0}: Nessun report presente", idUtente);
             }
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore nel recupero report");
@@ -53,48 +60,48 @@ public class AppOperatoreSC {
     public void mostraElencoUtenti() {
         try {
             List<UtenteResponse> utenti = gestioneUtentiService.getElencoUtenti();
-            System.out.println("ELENCO UTENTI:");
+            LOG.info("ELENCO UTENTI:");
             for (UtenteResponse u : utenti) {
-                System.out.println("  ID=" + u.getIdUtente() + " | " + u.getNome() + " " + u.getCognome() + " | " + u.getEmail() + " | stato=" + u.getStato());
+                LOG.info("  ID=" + u.getIdUtente() + " | " + u.getNome() + " " + u.getCognome() + " | " + u.getEmail() + " | stato=" + u.getStato());
             }
         } catch (ResponseStatusException e) {
-            mostraErrore(e.getReason() != null ? e.getReason() : "Errore");
+            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);
         }
     }
 
     public void moderazioneUtente(Long idUtente) {
         try {
             boolean result = gestioneUtentiService.gestioneUtente(idUtente);
-            System.out.println("MODERAZIONE utente " + idUtente + ": " + (result ? "completata" : "fallita"));
+            LOG.log(Level.INFO, "MODERAZIONE utente {0}: {1}", new Object[]{idUtente, result ? "completata" : "fallita"});
         } catch (ResponseStatusException e) {
-            mostraErrore(e.getReason() != null ? e.getReason() : "Errore");
+            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);
         }
     }
 
     public void bloccaUtente(Long idUtente) {
         try {
             boolean result = gestioneUtentiService.bloccaUtente(idUtente);
-            System.out.println("BLOCCO utente " + idUtente + ": " + (result ? "completato" : "fallito"));
+            LOG.log(Level.INFO, "BLOCCO utente {0}: {1}", new Object[]{idUtente, result ? "completato" : "fallito"});
         } catch (ResponseStatusException e) {
-            mostraErrore(e.getReason() != null ? e.getReason() : "Errore");
+            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);
         }
     }
 
     public void sbloccaUtente(Long idUtente) {
         try {
             boolean result = gestioneUtentiService.sbloccaUtente(idUtente);
-            System.out.println("SBLOCCO utente " + idUtente + ": " + (result ? "completato" : "fallito"));
+            LOG.log(Level.INFO, "SBLOCCO utente {0}: {1}", new Object[]{idUtente, result ? "completato" : "fallito"});
         } catch (ResponseStatusException e) {
-            mostraErrore(e.getReason() != null ? e.getReason() : "Errore");
+            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);
         }
     }
 
     public void disattivaUtente(Long idUtente) {
         try {
             boolean result = gestioneUtentiService.disattivaUtente(idUtente);
-            System.out.println("DISATTIVAZIONE utente " + idUtente + ": " + (result ? "completata" : "fallita"));
+            LOG.log(Level.INFO, "DISATTIVAZIONE utente {0}: {1}", new Object[]{idUtente, result ? "completata" : "fallita"});
         } catch (ResponseStatusException e) {
-            mostraErrore(e.getReason() != null ? e.getReason() : "Errore");
+            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);
         }
     }
 
@@ -103,13 +110,13 @@ public class AppOperatoreSC {
     }
 
     public void selezionaPrenotazione(Long idPrenotazione) {
-        System.out.println("Prenotazione selezionata: " + idPrenotazione);
+        LOG.log(Level.INFO, "Prenotazione selezionata: {0}", idPrenotazione);
     }
 
     public void aggiornaReport(Long idUtente, String azione) {
         try {
             gestioneUtentiService.azioneCorrettiva(idUtente, azione);
-            System.out.println("AZIONE CORRETTIVA per utente " + idUtente + ": " + azione);
+            LOG.log(Level.INFO, "AZIONE CORRETTIVA per utente {0}: {1}", new Object[]{idUtente, azione});
         } catch (ResponseStatusException e) {
             mostraErrore(e.getReason() != null ? e.getReason() : "Errore nell'aggiornamento report");
         }

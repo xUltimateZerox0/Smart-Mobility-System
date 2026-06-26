@@ -6,7 +6,7 @@ import com.smartmobility.model.enums.StatoUtente;
 import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.impl.GestioneUtentiServiceImpl;
-import com.smartmobility.service.SessionRegistry;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

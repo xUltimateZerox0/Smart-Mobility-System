@@ -37,7 +37,7 @@ public class Mezzo {
     @Column(name = "tempo_disponibilita")
     private LocalTime tempoDisponibilita;
 
-    public Mezzo() {}
+    public Mezzo() { /* required by JPA */ }
 
     public Long getIdMezzo() {
         return idMezzo;

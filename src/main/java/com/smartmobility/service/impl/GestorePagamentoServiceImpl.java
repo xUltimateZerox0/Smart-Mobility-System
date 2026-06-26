@@ -17,6 +17,8 @@ import java.util.List;
 @Service
 public class GestorePagamentoServiceImpl implements GestorePagamentoService {
 
+    private static final String UTENTE_NON_TROVATO = "Utente non trovato";
+
     private final MetodoPagamentoRepository metodoPagamentoRepository;
     private final UtenteRepository utenteRepository;
     private final GatewayPagamentoService gatewayPagamentoService;
@@ -33,7 +35,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
     @Transactional
     public boolean pagamentoCorsa(Long idUtente, Long idMetodoPagamento, Long idCorsa, double costo) {
         utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
 
         MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Metodo pagamento non trovato"));
@@ -57,7 +59,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
         }
 
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
 
         MetodoPagamento metodo = new MetodoPagamento();
         metodo.setNumCarta(numCarta);
@@ -72,7 +74,7 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
     @Override
     public List<MetodoPagamentoResponse> recuperaMetodiSalvati(Long idUtente) {
         Utente utente = utenteRepository.findByIdUtente(idUtente)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));
         return metodoPagamentoRepository.findByIdUtente(utente.getIdUtente()).stream()
                 .map(m -> new MetodoPagamentoResponse(
                         m.getIdMetodoPagamento(),

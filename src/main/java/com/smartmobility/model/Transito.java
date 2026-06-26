@@ -9,7 +9,7 @@ public class Transito {
     @EmbeddedId
     private TransitoId id;
 
-    public Transito() {}
+    public Transito() { /* required by JPA */ }
 
     public TransitoId getId() {
         return id;

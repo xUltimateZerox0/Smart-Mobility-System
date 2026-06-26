@@ -6,10 +6,14 @@ import com.smartmobility.service.GestioneFlottaService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 @SuppressWarnings("unused")
 public class AppOperatoreTecnico {
+
+    private static final Logger LOG = Logger.getLogger(AppOperatoreTecnico.class.getName());
 
     private final GestioneFlottaService gestioneFlottaService;
     private final GestioneAutenticazioneService gestioneAutenticazioneService;
@@ -22,15 +26,15 @@ public class AppOperatoreTecnico {
     }
 
     public void mostraSuccesso(String msg) {
-        System.out.println("SUCCESSO: " + msg);
+        LOG.log(Level.INFO, "SUCCESSO: {0}", msg);
     }
 
     public void mostraErrore(String msg) {
-        System.err.println("ERRORE: " + msg);
+        LOG.log(Level.SEVERE, "ERRORE: {0}", msg);
     }
 
     public void visualizzaMezzi(List<MezzoResponse> mezzi) {
-        System.out.println("Mezzi in flotta: " + mezzi.size());
+        LOG.log(Level.INFO, "Mezzi in flotta: {0}", mezzi.size());
     }
 
     public void richiedeStatoFlotta(String idFlotta) {
@@ -38,7 +42,7 @@ public class AppOperatoreTecnico {
     }
 
     public void selezionaVeicolo(Long idMezzo) {
-        System.out.println("Veicolo selezionato: " + idMezzo);
+        LOG.log(Level.INFO, "Veicolo selezionato: {0}", idMezzo);
     }
 
     public void richiestaLogout(String email) {

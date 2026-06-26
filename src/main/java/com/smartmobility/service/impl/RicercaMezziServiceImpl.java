@@ -63,7 +63,8 @@ public class RicercaMezziServiceImpl implements RicercaMezziService {
     }
 
     private MezzoResponse toMezzoResponse(Mezzo mezzo) {
-        double lat = 0, lon = 0;
+        double lat = 0;
+        double lon = 0;
         try {
             double[] coords = GeoUtils.parseCoordinates(mezzo.getCoordinateMezzo());
             lat = coords[0];
@@ -78,8 +79,8 @@ public class RicercaMezziServiceImpl implements RicercaMezziService {
                 mezzo.getStato().name(),
                 lat,
                 lon,
-                (double) mezzo.getAutonomia(),
-                (double) mezzo.getCostoOrario(),
+                mezzo.getAutonomia(),
+                mezzo.getCostoOrario(),
                 "MEZZO-" + mezzo.getIdMezzo(),
                 tempoDisp,
                 mezzo.getCondizione(),

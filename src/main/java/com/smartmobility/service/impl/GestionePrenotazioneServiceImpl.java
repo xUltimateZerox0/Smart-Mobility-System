@@ -11,6 +11,8 @@ import com.smartmobility.repository.PrenotazioneRepository;
 import com.smartmobility.repository.UtenteRepository;
 import com.smartmobility.service.GestionePrenotazioneService;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,9 +26,13 @@ import java.util.List;
 @Service
 public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneService {
 
+    private static final String PRENOTAZIONE_NON_TROVATA = "Prenotazione non trovata";
+
     private final PrenotazioneRepository prenotazioneRepository;
     private final MezzoRepository mezzoRepository;
     private final UtenteRepository utenteRepository;
+
+    private GestionePrenotazioneService selfProxy;
 
     public GestionePrenotazioneServiceImpl(PrenotazioneRepository prenotazioneRepository,
                                             MezzoRepository mezzoRepository,
@@ -34,6 +40,12 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
         this.prenotazioneRepository = prenotazioneRepository;
         this.mezzoRepository = mezzoRepository;
         this.utenteRepository = utenteRepository;
+    }
+
+    @Autowired
+    @Lazy
+    public void setSelfProxy(GestionePrenotazioneService selfProxy) {
+        this.selfProxy = selfProxy;
     }
 
     @Override
@@ -47,7 +59,7 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     @Transactional(readOnly = true)
     public String getQRCode(Long idPrenotazione) {
         Prenotazione prenotazione = prenotazioneRepository.findByIdWithMezzo(idPrenotazione)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, PRENOTAZIONE_NON_TROVATA));
         if (prenotazione.getMezzo() == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non ha un mezzo associato");
         }
@@ -76,7 +88,7 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     @Transactional
     public boolean annullaPrenotazione(Long idPrenotazione) {
         Prenotazione prenotazione = prenotazioneRepository.findByIdWithMezzo(idPrenotazione)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, PRENOTAZIONE_NON_TROVATA));
 
         if (prenotazione.getStato() != StatoPrenotazione.attiva) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Prenotazione non è attiva");
@@ -122,10 +134,10 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
     @Transactional
     public void notificaScadenzaTempo(Long idPrenotazione) {
         Prenotazione prenotazione = prenotazioneRepository.findById(idPrenotazione)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prenotazione non trovata"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, PRENOTAZIONE_NON_TROVATA));
 
         if (prenotazione.getStato() == StatoPrenotazione.attiva) {
-            gestisciTimeout();
+            selfProxy.gestisciTimeout();
         }
     }
 
@@ -183,11 +195,19 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
             tipoVeicolo = p.getMezzo().getTipo();
             idVeicolo = p.getMezzo().getIdMezzo();
         }
+        String dataInizio;
+        if (p.getData() != null && p.getOrarioInizio() != null) {
+            dataInizio = p.getData().toString() + "T" + p.getOrarioInizio().toString();
+        } else if (p.getData() != null) {
+            dataInizio = p.getData().toString();
+        } else {
+            dataInizio = null;
+        }
         return new PrenotazioneResponse(
                 p.getIdPrenotazione(),
                 p.getUtente() != null ? p.getUtente().getIdUtente() : null,
                 p.getMezzo() != null ? p.getMezzo().getIdMezzo() : null,
-                p.getData() != null && p.getOrarioInizio() != null ? p.getData().toString() + "T" + p.getOrarioInizio().toString() : (p.getData() != null ? p.getData().toString() : null),
+                dataInizio,
                 null,
                 p.getStato() != null ? p.getStato().name() : null,
                 nomeVeicolo,

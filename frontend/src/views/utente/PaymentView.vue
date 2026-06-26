@@ -15,20 +15,20 @@
     <div class="card" style="margin-top:16px">
       <h3>Aggiungi carta</h3>
       <div class="form-group">
-        <label>Numero carta</label>
-        <input v-model="numCarta" type="text" />
+        <label for="card-number">Numero carta</label>
+        <input id="card-number" v-model="numCarta" type="text" />
       </div>
       <div class="form-group">
-        <label>Intestatario</label>
-        <input v-model="intestatario" type="text" />
+        <label for="card-holder">Intestatario</label>
+        <input id="card-holder" v-model="intestatario" type="text" />
       </div>
       <div class="form-group">
-        <label>Scadenza</label>
-        <input v-model="scadenza" type="text" placeholder="MM/AA" />
+        <label for="card-expiry">Scadenza</label>
+        <input id="card-expiry" v-model="scadenza" type="text" placeholder="MM/AA" />
       </div>
       <div class="form-group">
-        <label>CVV</label>
-        <input v-model="cvv" type="text" />
+        <label for="card-cvv">CVV</label>
+        <input id="card-cvv" v-model="cvv" type="text" />
       </div>
       <button @click="addCard" class="btn-primary" :disabled="saving">{{ saving ? 'Salvataggio...' : 'Salva' }}</button>
       <p v-if="cardError" class="error-message">{{ cardError }}</p>
@@ -122,7 +122,7 @@ async function selectForRide(id: number) {
 .selected-method { border: 2px solid var(--success, #28a745) !important; background: #f0fff4; }
 .selected-badge {
   display: inline-block;
-  background: var(--success, #28a745);
+  background: var(--success, #1a7a30);
   color: white;
   padding: 2px 8px;
   border-radius: 4px;

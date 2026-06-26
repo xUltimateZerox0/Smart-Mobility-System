@@ -33,7 +33,7 @@ public class Prenotazione {
     @JoinColumn(name = "id_mezzo")
     private Mezzo mezzo;
 
-    public Prenotazione() {}
+    public Prenotazione() { /* required by JPA */ }
 
     public Long getIdPrenotazione() {
         return idPrenotazione;

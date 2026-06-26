@@ -35,7 +35,7 @@ public class Utente extends Attore {
     @Column(name = "data_nascita")
     private String dataNascita;
 
-    public Utente() {}
+    public Utente() { /* required by JPA */ }
 
     public Long getIdUtente() {
         return idUtente;
@@ -119,6 +119,7 @@ public class Utente extends Attore {
         }
     }
 
+    @SuppressWarnings("java:S1172")
     public void creaAccountUtente(String nome, String cognome, String email, String password, String datanascita) {
         this.nomeUtente = nome;
         this.cognomeUtente = cognome;

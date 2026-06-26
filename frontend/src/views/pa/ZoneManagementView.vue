@@ -7,8 +7,8 @@
         <p><strong>Restrizione:</strong> {{ z.tipoRestrizione }}</p>
         <p><strong>Note:</strong> {{ z.noteRestrizione }}</p>
         <div class="form-group" style="margin-top:8px">
-          <label>Tipo restrizione</label>
-          <select v-model="editTipo[z.id]">
+          <label :for="'tipo-' + z.id">Tipo restrizione</label>
+          <select :id="'tipo-' + z.id" v-model="editTipo[z.id]">
             <option value="">-- Seleziona --</option>
             <option value="divieto_parcheggio">Divieto Parcheggio</option>
             <option value="ZTL">ZTL</option>
@@ -16,12 +16,12 @@
           </select>
         </div>
         <div class="form-group" style="margin-top:8px">
-          <label>Coordinate zona</label>
-          <input v-model="editZona[z.id]" placeholder="es. 45.4640,9.1900,45.4660,9.1950" />
+          <label :for="'coord-' + z.id">Coordinate zona</label>
+          <input :id="'coord-' + z.id" v-model="editZona[z.id]" placeholder="es. 45.4640,9.1900,45.4660,9.1950" />
         </div>
         <div class="form-group" style="margin-top:8px">
-          <label>Note</label>
-          <input v-model="editNote[z.id]" :placeholder="'Nuova nota per ' + z.tipoRestrizione" />
+          <label :for="'note-' + z.id">Note</label>
+          <input :id="'note-' + z.id" v-model="editNote[z.id]" :placeholder="'Nuova nota per ' + z.tipoRestrizione" />
         </div>
         <div style="display:flex;gap:8px;margin-top:4px">
           <button @click="checkAndUpdate(z)" class="btn-primary">Verifica Conflitti e Aggiorna</button>

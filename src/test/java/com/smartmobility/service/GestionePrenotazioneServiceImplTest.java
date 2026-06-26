@@ -45,6 +45,7 @@ class GestionePrenotazioneServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new GestionePrenotazioneServiceImpl(prenotazioneRepository, mezzoRepository, utenteRepository);
+        service.setSelfProxy(service);
         utente = TestDataFactory.createDefaultUtente();
         mezzo = TestDataFactory.createDefaultMezzo();
     }

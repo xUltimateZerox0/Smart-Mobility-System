@@ -3,6 +3,7 @@ package com.smartmobility.dto.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
+@SuppressWarnings("java:S107")
 public class CorsaResponse {
     private Long id;
     private Long idUtente;

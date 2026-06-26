@@ -15,7 +15,7 @@ public class TransitoId implements Serializable {
     @Column(name = "id_area")
     private Long idArea;
 
-    public TransitoId() {}
+    public TransitoId() { /* required by JPA */ }
 
     public Long getIdCorsa() {
         return idCorsa;

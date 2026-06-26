@@ -10,10 +10,14 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Component
 @SuppressWarnings("unused")
 public class AppPA {
+
+    private static final Logger LOG = Logger.getLogger(AppPA.class.getName());
 
     private final GestioneFlottaService gestioneFlottaService;
     private final GestioneStatisticheService gestioneStatisticheService;
@@ -30,19 +34,19 @@ public class AppPA {
     }
 
     public void mostraErrore(String msg) {
-        System.err.println("ERRORE: " + msg);
+        LOG.log(Level.SEVERE, "ERRORE: {0}", msg);
     }
 
     public void mostraStatistiche(Object statistiche) {
-        System.out.println("Statistiche: " + statistiche);
+        LOG.log(Level.INFO, "Statistiche: {0}", statistiche);
     }
 
     public void visualizzaMezzi(List<MezzoResponse> mezzi) {
-        System.out.println("Mezzi: " + mezzi.size());
+        LOG.log(Level.INFO, "Mezzi: {0}", mezzi.size());
     }
 
     public void mostraMappa(List<ZonaGeograficaResponse> zone) {
-        System.out.println("Zone: " + zone.size());
+        LOG.log(Level.INFO, "Zone: {0}", zone.size());
     }
 
     public void selezionaIntervallo(LocalDate dataInizio, LocalDate dataFine) {
@@ -53,7 +57,7 @@ public class AppPA {
         try {
             gestioneFlottaService.getCondizioniMezzi(Long.parseLong(idFlotta));
         } catch (NumberFormatException e) {
-            System.err.println("ERRORE: formato idFlotta non valido - " + idFlotta);
+            LOG.log(Level.SEVERE, "ERRORE: formato idFlotta non valido - {0}", idFlotta);
         }
     }
 
@@ -62,16 +66,16 @@ public class AppPA {
             long id = Long.parseLong(idFlotta);
             gestioneFlottaService.analisiStatoFlotta(id);
         } catch (NumberFormatException e) {
-            System.err.println("ERRORE: formato idFlotta non valido - " + idFlotta);
+            LOG.log(Level.SEVERE, "ERRORE: formato idFlotta non valido - {0}", idFlotta);
         }
     }
 
     public void selezionaMappa() {
-        System.out.println("Mappa selezionata");
+        LOG.info("Mappa selezionata");
     }
 
     public void modificaRestrizioni(ZonaGeograficaResponse zona) {
-        System.out.println("Modifica restrizioni per zona: " + zona.getId());
+        LOG.log(Level.INFO, "Modifica restrizioni per zona: {0}", zona.getId());
     }
 
     public void confermaSovrascrittura(Long idArea, String tipoRestrizione, String noteRestrizione) {
@@ -79,7 +83,7 @@ public class AppPA {
     }
 
     public void rifiutaSovrascrittura() {
-        System.out.println("Sovrascrittura rifiutata");
+        LOG.info("Sovrascrittura rifiutata");
     }
 
     public void richiestaLogout(String email) {
@@ -87,7 +91,7 @@ public class AppPA {
     }
 
     public void mostraSuccesso(String msg) {
-        System.out.println("SUCCESSO: " + msg);
+        LOG.log(Level.INFO, "SUCCESSO: {0}", msg);
     }
 
     public Long getIdPA() {

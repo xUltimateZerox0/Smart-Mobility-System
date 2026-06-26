@@ -106,7 +106,7 @@ function statusBadge(stato: string): string {
 <style scoped>
 .error-message { color: var(--danger); font-size: 13px; margin-top: 8px; }
 .success-message { color: var(--success, #28a745); font-size: 13px; margin-top: 8px; }
-.btn-warning { background: #f0ad4e; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+.btn-warning { background: #f0ad4e; color: #333; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 .btn-warning:hover { background: #ec971f; }
 .btn-small { padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; border: none; }
 .btn-danger { background: #dc3545; color: #fff; }
