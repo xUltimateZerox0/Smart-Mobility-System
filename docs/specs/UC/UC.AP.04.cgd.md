@@ -143,7 +143,7 @@ La seguente tabella traccia ogni chiamata di metodo nel flusso UC.AP.04 alla ris
 | 2a | `inviaRichiestaLogout(email)` | GestioneAutenticazione | Controller | `inviaRichiestaLogout(email: String): void` | Master_Spec.cgd.md:524 | Il Controller riceve la richiesta dalla View e gestisce la terminazione della sessione. |
 | *(alt)* | `mostraErrore(msg)` | AppPA | View | `mostraErrore(msg: String): void` | Master_Spec.cgd.md:783 | Flusso alternativo in caso di fallimento del logout. |
 
-> **Nota sul feedback di successo:** A differenza di AppUtente (`mostraSuccesso(): void` — Master_Spec.cgd.md:694), AppOperatoreTecnico (`mostraSuccesso(msg: String): void` — Master_Spec.cgd.md:735) e AppOperatoreSC (`mostraSuccesso(msg: String): void` — Master_Spec.cgd.md:760), la View AppPA **non dispone** di un metodo `mostraSuccesso()`. Il flusso di logout PA si conclude con la distruzione dell'istanza AppPA e il reindirizzamento alla View Autenticazione, senza notifica esplicita di successo. *(Vedi claim-3d7e9b1a)*
+> **Nota sul feedback di successo:** AppPA ora dispone del metodo `mostraSuccesso(msg: String): void`, allineato alle altre View (AppUtente, AppOperatoreTecnico, AppOperatoreSC). Il flusso di logout PA si conclude con la notifica di successo tramite `mostraSuccesso(msg)`, seguita dalla distruzione dell'istanza AppPA e dal reindirizzamento alla View Autenticazione. *(Risolto 2026-06-23, claim-3d7e9b1a)*
 
 ### Sequence Diagram (UC.AP.04-clean.uml) — CORRETTO
 
@@ -256,12 +256,9 @@ Scelta progettuale del team Cofee Coders *(chiarimenti-vari.md punto 13)*. Sebbe
 
 I messaggi di destroy nei diagrammi di sequenza *(chiarimenti-vari.md punto 11)* indicano che al logout l'istanza della View specifica del ruolo viene distrutta. Questo implementa il vincolo architetturale §11 *(Ruolo unico per sessione)* e garantisce che dopo il logout l'attore non possa accedere a funzionalita riservate senza una nuova autenticazione.
 
-### Asimmetria mostraSuccesso() in AppPA
+### Allineamento mostraSuccesso() in AppPA
 
-AppPA e l'unica tra le 4 View di ruolo a non disporre del metodo `mostraSuccesso()`. Questo potrebbe essere:
-- **Intenzionale:** L'interfaccia PA potrebbe non richiedere notifiche di successo per operazioni semplici come il logout (la scomparsa della dashboard e il reindirizzamento ad Autenticazione sono feedback sufficiente)
-- **Omissione:** Potrebbe trattarsi di un metodo mancante nel Master_Spec.cgd.md
-- *(Richiede conferma HITL — claim-3d7e9b1a)*
+In data 2026-06-23, il metodo `mostraSuccesso(msg: String): void` è stato aggiunto ad AppPA, allineandola alle altre 3 View di ruolo (AppUtente, AppOperatoreTecnico, AppOperatoreSC). Questo risolve l'asimmetria precedentemente documentata. *(Risolto — claim-3d7e9b1a)*
 
 ---
 

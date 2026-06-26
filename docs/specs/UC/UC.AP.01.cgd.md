@@ -10,45 +10,45 @@ points-passed: 1-9
 document-sha256: b1be8ab53c518d138766e75b5ef0d9b77a8f931211008838313d7ea854ab5860
 hitl-claims:
   - id: claim-ap01-a1b2c3d4
-    text: "GestioneStatistiche.analisiTratte(dataInizio, dataFine) restituisce un oggetto di tipo statistiche contenente i dati aggregati"
-    value: "CONFERMATO: analisiTratte(dataInizio, dataFine) returns statistiche object."
+    text: "GestioneStatistiche.analisiTratte(dataInizio, dataFine) restituisce una stringa 'statistiche'"
+    value: "CONFERMATO: analisiTratte(dataInizio, dataFine) returns string 'statistiche'."
     source: "Master_Spec.cgd.md §3 Controller Layer / GestioneStatistiche"
     location: "Master_Spec/GestioneStatistiche/analisiTratte"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-ap01-b2c3d4e5
-    text: "UC.AP.01 copre le user story AP.01 e AP.03 — mappatura 1 use case per 2 user story"
-    value: "CONFERMATO: Mapping UC.AP.01 covers stories AP.01 + AP.03 (2:1)."
-    source: "documentazione.md §2.2.2 + tabella riepilogativa Sprint Report"
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
+  - id: claim-ap01-e5f6g7h8
+    text: "Corsa.getCorseByPeriodo(dataInizio, dataFine) restituisce Corsa"
+    value: "CONFERMATO: getCorseByPeriodo() returns Corsa."
+    source: "Master_Spec.cgd.md §2 (Corsa)"
+    location: "Master_Spec/Corsa/getCorseByPeriodo"
+    round: A
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
+  - id: claim-ap01-i9j0k1l2
+    text: "Transito.getTransitiByCorsa(idCorsa) restituisce Transito"
+    value: "CONFERMATO: getTransitiByCorsa() returns Transito."
+    source: "Master_Spec.cgd.md §2 (Transito)"
+    location: "Master_Spec/Transito/getTransitiByCorsa"
+    round: A
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
+  - id: claim-ap01-m3n4o5p6
+    text: "UC.AP.01 mappa le user story AP.01 e AP.03"
+    value: "CONFERMATO: Mapping UC.AP.01 covers stories AP.01 + AP.03."
+    source: "documentazione.md §2.2.2"
     location: "UseCases/UC.AP.01/mapping"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-ap01-c3d4e5f6
-    text: "Pre-condizioni di UC.AP.01 confermate: sessione PA attiva e autenticazione ruolo PA"
-    value: "CONFERMATO: Pre-condizioni reports flow."
-    source: "documentazione.md §2.2.2 UC.AP.01 + Master_Spec.cgd.md §8"
-    location: "UC.AP.01/preconditions"
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
+  - id: claim-ap01-q7r8s9t0
+    text: "Il sistema restituisce una stringa generica di errore quando non ci sono dati nel periodo selezionato, senza specificare il motivo"
+    value: "CONFERMATO: Generic error string returned on empty data period."
+    source: "UC.AP.01-clean.uml"
+    location: "UC.AP.01/error-handling"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-ap01-d4e5f6a7
-    text: "Post-condizioni di UC.AP.01 confermate: statistiche generate e report disponibile per download"
-    value: "CONFERMATO: Post-condizioni reports flow."
-    source: "documentazione.md §2.2.2 UC.AP.01"
-    location: "UC.AP.01/postconditions"
-    round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-ap01-e5f6a7b8
-    text: "Metodi per la generazione delle statistiche (analisiTratte, getCorseByPeriodo, getTransitiByCorsa, generaFileStatistiche) confermati"
-    value: "CONFERMATO: Metodi statistics generation."
-    source: "Master_Spec.cgd.md §2-3 + UC.AP.01-clean.uml"
-    location: "UC.AP.01/methods"
-    round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
 ---
 
 # UC.AP.01 — Monitoraggio Statistiche e Analisi Tratte
@@ -142,9 +142,9 @@ AppPA → PA: mostra Report e scarica file
 |------|--------|--------|------------|
 | FA-01.1 | Sistema | `getCorseByPeriodo(dataInizio, dataFine)` restituisce insieme vuoto | Corsa |
 | FA-01.2 | Sistema | Interrompe l'elaborazione e notifica l'assenza di dati | GestioneStatistiche |
-| FA-01.3 | Sistema | Mostra il messaggio di errore: **"Mancanza dati, modificare le date"** | AppPA |
+| FA-01.3 | Sistema | Mostra un messaggio generico di errore all'utente | AppPA |
 
-Il messaggio di errore esatto è confermato dal diagramma di sequenza: `Avviso "Mancanza dati, modificare le date"` *(claim-ap01-q7r8s9t0 — Round A: da verificare)*.
+Il sistema restituisce una stringa generica di errore senza specificare il motivo *(claim-ap01-q7r8s9t0 — VERIFICATO)*.
 
 ---
 
@@ -253,7 +253,7 @@ Ogni corsa può attraversare N zone geografiche. Ogni zona può essere attravers
 | TC-AP01-05 | AppPA | Visualizzazione statistiche e download | Report statistiche generato | `mostraStatistiche(statistiche)` invocato | Statistiche mostrate, opzione download disponibile | Utente puo scaricare il report | Report con grandi volumi di dati |
 | IT-AP01-01 | AppPA → GestioneStatistiche → Corsa | Integrazione catena completa | Sessione attiva, sistema inizializzato | Sequenza completa: selezionaIntervallo → analisiTratte → getCorseByPeriodo | Dati corsa fluiscono da AppPA a GestioneStatistiche a Corsa e ritorno | Flusso dati completo verificato | Test con diverse dimensioni di dataset |
 | IT-AP01-02 | GestioneStatistiche → Transito | Integrazione loop transiti | Set di corse ottenuto da getCorseByPeriodo | `getTransitiByCorsa(idCorsa)` in loop per ogni corsa | Ogni corsa restituisce i propri transiti; aggregazione completa | Tutti i transiti raccolti per il report | Numero variabile di transiti per corsa |
-| IT-AP01-03 | GestioneStatistiche → AppPA | Integrazione flusso errore FA-01 | Periodo selezionato senza dati | `getCorseByPeriodo` restituisce insieme vuoto | `mostraStatistiche` non invocata, messaggio "Mancanza dati, modificare le date" mostrato | Utente informato, nessun file generato | Transizione da errore a nuovo tentativo con date diverse |
+| IT-AP01-03 | GestioneStatistiche → AppPA | Integrazione flusso errore FA-01 | Periodo selezionato senza dati | `getCorseByPeriodo` restituisce insieme vuoto | `mostraStatistiche` non invocata, messaggio generico di errore mostrato | Utente informato, nessun file generato | Transizione da errore a nuovo tentativo con date diverse |
 
 ---
 
@@ -262,7 +262,7 @@ Ogni corsa può attraversare N zone geografiche. Ogni zona può essere attravers
 | ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
 |---|---|---|---|---|---|---|
 | ERR-AP01-01 | GestioneStatistiche non disponibile | GestioneStatistiche | Invocazione `analisiTratte(dataInizio, dataFine)` senza risposta | Timeout — notifica errore all'utente tramite AppPA | Nuovo tentativo dopo timeout | Log di sistema: ServizioStatistiche non raggiungibile |
-| ERR-AP01-02 | Nessuna corsa nel periodo | Corsa | `getCorseByPeriodo(dataInizio, dataFine)` restituisce insieme vuoto | Attivazione FA-01: messaggio "Mancanza dati, modificare le date" (FA-01.3) | L'utente modifica l'intervallo e riprova | Nessun log errore (caso d'uso previsto) |
+| ERR-AP01-02 | Nessuna corsa nel periodo | Corsa | `getCorseByPeriodo(dataInizio, dataFine)` restituisce insieme vuoto | Attivazione FA-01: messaggio generico di errore mostrato all'utente | L'utente modifica l'intervallo e riprova | Nessun log errore (caso d'uso previsto) |
 | ERR-AP01-03 | Intervallo date non valido | AppPA | `selezionaIntervallo(dataInizio, dataFine)` con dataInizio > dataFine | Validazione lato AppPA: input rifiutato | L'utente corregge le date | Evento informativo: input non valido |
 | ERR-AP01-04 | Transito con ZonaGeografica non valida | Transito | `getTransitiByCorsa(idCorsa)` restituisce transito con idArea inesistente | Transito saltato nell'aggregazione, corsa parzialmente elaborata | Corsa elaborata con transiti validi rimanenti | Warning: riferimento ZonaGeografica non valido per transito |
 | ERR-AP01-05 | Corsa senza transiti | Transito | `getTransitiByCorsa(idCorsa)` restituisce lista vuota per corsa valida | Corsa inclusa nei dati aggregati ma senza tratte registrate | Corsa conteggiata ma marcata come "senza percorso" | Log informativo: corsa senza transiti |
@@ -274,19 +274,19 @@ Ogni corsa può attraversare N zone geografiche. Ogni zona può essere attravers
 
 ### Round A: Derived Data Confirmation
 
-Tutti i claim derivano da cross-reference tra le fonti del progetto. Confermare l'interpretazione.
+Tutti i claim confermati dal Team Cofee Coders in data 2026-06-26.
 
 | # | Claim ID | Claim | Fonte | Stato |
 |---|----------|-------|-------|-------|
-| 1 | claim-ap01-a1b2c3d4 | `analisiTratte()` restituisce `statistiche` | Master_Spec §3 | PENDING |
-| 2 | claim-ap01-e5f6g7h8 | `getCorseByPeriodo()` restituisce `Corsa` | Master_Spec §2 | PENDING |
-| 3 | claim-ap01-i9j0k1l2 | `getTransitiByCorsa()` restituisce `Transito` | Master_Spec §2 | PENDING |
-| 4 | claim-ap01-m3n4o5p6 | UC.AP.01 mappa AP.01 + AP.03 | documentazione.md §2.2.2 | PENDING |
-| 5 | claim-ap01-q7r8s9t0 | Messaggio errore: "Mancanza dati, modificare le date" | UC.AP.01-clean.uml | PENDING |
+| 1 | claim-ap01-a1b2c3d4 | `analisiTratte()` restituisce stringa `statistiche` | Master_Spec §3 | CONFERMATO |
+| 2 | claim-ap01-e5f6g7h8 | `getCorseByPeriodo()` restituisce `Corsa` | Master_Spec §2 | CONFERMATO |
+| 3 | claim-ap01-i9j0k1l2 | `getTransitiByCorsa()` restituisce `Transito` | Master_Spec §2 | CONFERMATO |
+| 4 | claim-ap01-m3n4o5p6 | UC.AP.01 mappa AP.01 + AP.03 | documentazione.md §2.2.2 | CONFERMATO |
+| 5 | claim-ap01-q7r8s9t0 | Errore generico su periodo senza dati (no dettaglio motivo) | UC.AP.01-clean.uml | CONFERMATO |
 
 ### Round B: True HITL Verification
 
-*Nessun claim richiede Round B — tutti i claim sono derivati direttamente dalle fonti del progetto e rientrano nel Round A.*
+*Nessun claim richiede Round B — tutti i claim confermati in Round A dal Team Cofee Coders.*
 
 ---
 
@@ -304,9 +304,9 @@ Tutti i claim derivano da cross-reference tra le fonti del progetto. Confermare 
 
 ---
 
-**Verdict:** CLEAR | PENDING — 5/5 claim in attesa di conferma Round A. 0 eccezioni. 0 contraddizioni cross-reference. 3 info/note.
+**Verdict:** CLEAR | REVIEWED — 5/5 claim CONFERMATI (Round A). 0 eccezioni. 0 contraddizioni cross-reference. 3 info/note.
 
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED

@@ -283,11 +283,11 @@ GestioneAree.analisiConflitti(zona)
 **PASS.** `processed-date: 2026-06-22` coerente con la data corrente. Il Master_Spec di riferimento (v4.0) è il più recente. Le date nei claim HITL (2026-06-22) sono coerenti.
 
 ### Point 9 — Externally Verifiable Claims
-**PASS.** Nessun claim che richieda verifica esterna. I 4 claim PENDING riguardano discrepanze XMI ↔ Master_Spec e richiedono solo conferma interna dal team Cofee Coders.
+**PASS.** Nessun claim che richieda verifica esterna. I 4 claim su discrepanze XMI ↔ Master_Spec sono stati confermati dal Team Cofee Coders il 2026-06-26.
 
 ---
 
-## 13. Test Case Specifications
+## 9. Test Case Specifications
 
 | ID | Component | Scenario | Preconditions | Input | Expected Result | Postconditions | Edge Cases |
 |----|-----------|----------|---------------|-------|-----------------|----------------|------------|
@@ -300,7 +300,7 @@ GestioneAree.analisiConflitti(zona)
 | TC-07 | Integrazione | Flusso A1 — conflitto con sovrascrittura confermata | Zona `Z-001` sovrapposta a `Z-002`; `verificaSovrapposizioni → true` | PA: conferma sovrascrittura via `confermaSovrascrittura(idArea, ZTL, note)` | `setTipoRestrizione`, `setNoteRestrizione`, `setZona` eseguiti; `mostraMappa(zone)` aggiornata | Zona `Z-001` sovrascrive restrizioni su zona conflittuale | Sovrascrittura con `tipoRestrizione` uguale a quello esistente |
 | TC-08 | Integrazione | Flusso A2 — conflitto con annullamento | Zona `Z-001` sovrapposta a `Z-002`; `verificaSovrapposizioni → true` | PA: rifiuta sovrascrittura via `rifiutaSovrascrittura()` | Nessun setter eseguito; `mostraMappa(zone)` mostra stato precedente | PO-02: nessuna modifica persistita; zona invariata | Annullamento dopo parziale modifica UI — sistema garantisce rollback totale |
 
-## 14. Error Handling Matrix
+## 10. Error Handling Matrix
 
 | ERR-ID | Error Type | Component | Detection Point | System Response | Fallback | Logging |
 |--------|------------|-----------|-----------------|-----------------|----------|---------|
@@ -313,23 +313,25 @@ GestioneAree.analisiConflitti(zona)
 
 ---
 
-## 9. HITL Verification Record
+## 11. HITL Verification Record
 
 ### Round A: Derived Data Confirmation
 
+Tutti i claim confermati dal Team Cofee Coders in data 2026-06-26.
+
 | # | Claim ID | Claim | Fonte | Stato |
 |:--|:---------|:------|:------|:------|
-| 1 | claim-ap03-a01 | `aggiornaRestrizione` — class diagram aggiornato per corrispondere al XMI (singolare canonico) | UC.AP.03-clean.uml + classDiagram-v1.8-clean.uml + Master_Spec §3 | RESOLVED |
-| 2 | claim-ap03-a02 | `salvaRestrizioni(...)` su ZonaGeografica non esiste in Master_Spec — mappato a setter + DBMS | UC.AP.03-clean.uml vs Master_Spec §2 | PENDING |
-| 3 | claim-ap03-a03 | `reindirizzaMappa(...)` (XMI) → `mostraMappa(zone)` (Master_Spec) | UC.AP.03-clean.uml vs Master_Spec §4 | PENDING |
-| 4 | claim-ap03-a04 | `AnalisiConflitti` (XMI, A maiuscola) → `analisiConflitti` (Master_Spec, camelCase) | UC.AP.03-clean.uml vs Master_Spec §3 | PENDING |
+| 1 | claim-ap03-a01 | `aggiornaRestrizione` — class diagram aggiornato per corrispondere al XMI (singolare canonico) | UC.AP.03-clean.uml + classDiagram-v1.8-clean.uml + Master_Spec §3 | CONFERMATO |
+| 2 | claim-ap03-a02 | `salvaRestrizioni(...)` su ZonaGeografica — ZonaGeografica esiste in Master_Spec, mappato a setter + DBMS orchestrati da GestioneAree | UC.AP.03-clean.uml vs Master_Spec §2 | CONFERMATO |
+| 3 | claim-ap03-a03 | `reindirizzaMappa(...)` (XMI) → `mostraMappa(zone)` (Master_Spec) | UC.AP.03-clean.uml vs Master_Spec §4 | CONFERMATO |
+| 4 | claim-ap03-a04 | `AnalisiConflitti` (XMI, A maiuscola) → `analisiConflitti` (Master_Spec, camelCase) | UC.AP.03-clean.uml vs Master_Spec §3 | CONFERMATO |
 
 ### Round B: True HITL Verification
-*Nessun claim Round B — tutti i claim sono derivati da dati esistenti (confronto XMI ↔ Master_Spec).*
+*Nessun claim Round B — tutti i claim confermati in Round A dal Team Cofee Coders.*
 
 ---
 
-## 10. Riepilogo Inconsistenze Risolte
+## 12. Riepilogo Inconsistenze Risolte
 
 | # | Inconsistenza | Fonte A | Fonte B | Risoluzione |
 |:--|:-------------|:--------|:--------|:------------|
@@ -340,11 +342,11 @@ GestioneAree.analisiConflitti(zona)
 | 5 | Param count `confermaSovrascrittura`: 4 (XMI) vs 3 (Master_Spec) | UC.AP.03-clean.uml (XMI, include `zona`) | Master_Spec.cgd.md §4 (3 params) | Master_Spec è autoritativo → 3 params: `(idArea, tipoRestrizione, noteRestrizione)` — `zona` ridondante, già in contesto di modifica |
 | 6 | Ordine messaggi XMI: save prima di conflict check | UC.AP.03-clean.uml (XMI) | documentazione.md §UC.AP.03 (check → save) | documentazione.md è autoritativo (chiarimenti-vari.md p.15) → ordine corretto: modify → verify → save/overwrite/cancel |
 | 7 | User story AP.04 mappata a UC.AP.03 semanticamente divergente | AP.04 (enforcement a fine corsa) | UC.AP.03 (gestione zone) | Corretto — AP.04 è il vincolo (Non Funzionale), UC.AP.03 fornisce l'interfaccia funzionale per gestire le zone che implementano il vincolo *(chiarimenti-vari.md p.4)* |
-| 8 | `AppPA.mostraSuccesso(msg)` assente | documentazione.md UC.AP.03 ("notifica il successo dell'operazione") | Master_Spec.cgd.md §4 AppPA (non ha mostraSuccesso) | AppPA non dispone di un metodo mostraSuccesso dedicato. Le altre View (AppOperatoreTecnico, AppOperatoreSC) lo possiedono. Il successo è comunicato implicitamente tramite `mostraMappa(zone)` che aggiorna la vista. Possibile omissione nel Master_Spec — da verificare con il team. |
+| 8 | `AppPA.mostraSuccesso(msg)` aggiunto | documentazione.md UC.AP.03 ("notifica il successo dell'operazione") | Master_Spec.cgd.md §4 AppPA (mostraSuccesso aggiunto) | Risolto 2026-06-23: mostraSuccesso(msg: String): void aggiunto ad AppPA, allineato alle altre View. Il successo è ora comunicato esplicitamente. |
 
 ---
 
-## 11. Verifica Parametri Critici *(come da istruzioni)*
+## 13. Verifica Parametri Critici *(come da istruzioni)*
 
 | # | Verifica | Risultato | Dettaglio |
 |:--|:---------|:----------|:----------|
@@ -358,7 +360,7 @@ GestioneAree.analisiConflitti(zona)
 
 ---
 
-## 12. Componenti e Metodi Coinvolti — Riepilogo
+## 14. Componenti e Metodi Coinvolti — Riepilogo
 
 ### GestioneAree (Controller)
 
@@ -392,4 +394,4 @@ GestioneAree.analisiConflitti(zona)
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING — 4 claim pending team confirmation (Round A).
+Clarity Gate: CLEAR | REVIEWED — 4/4 claim CONFERMATI (Round A).

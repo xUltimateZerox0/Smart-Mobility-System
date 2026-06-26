@@ -9,46 +9,46 @@ hitl-pending-count: 0
 points-passed: 1-9
 document-sha256: 9a2a83906e049c2efee8095618d9863b078e7879764ef3788f9e314ed2da3ef1
 hitl-claims:
+  - id: claim-ap02-a1b2c3d4
+    text: "GestioneFlotta.getCondizioniMezzi(idFlotta) restituisce Mezzo"
+    value: "CONFERMATO: getCondizioniMezzi() returns Mezzo."
+    source: "Master_Spec.cgd.md §3 (GestioneFlotta)"
+    location: "Master_Spec/GestioneFlotta/getCondizioniMezzi"
+    round: A
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
   - id: claim-ap02-e5f6g7h8
     text: "GestioneFlotta.avviaManutenzione(idFlotta) restituisce bool (true = intervento avviato, false = nessun intervento necessario)"
     value: "CONFERMATO: avviaManutenzione(idFlotta) returns bool."
     source: "Master_Spec.cgd.md §3 Controller Layer / GestioneFlotta"
     location: "Master_Spec/GestioneFlotta/avviaManutenzione"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-ap02-f6g7h8i9
-    text: "Lifelines del flusso manutenzione (PA, AppPA, GestioneFlotta, Mezzo, Segnalazione) confermate"
-    value: "CONFERMATO: Maintenance flow lifelines."
-    source: "documentazione.md §2.2.2 UC.AP.02 + UC.AP.02-clean.uml"
-    location: "UC.AP.02/lifelines"
-    round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-ap02-g7h8i9j0
-    text: "Post-condizioni manutenzione: mezzi in stato manutenzione e segnalazioni create"
-    value: "CONFERMATO: Post-condizioni manutenzione."
-    source: "documentazione.md §2.2.2 UC.AP.02"
-    location: "UC.AP.02/postconditions"
-    round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
-  - id: claim-ap02-h8i9j0k1
-    text: "Notifica fine manutenzione tramite stringaManutenzione alla PA"
-    value: "CONFERMATO: Notifica fine manutenzione."
-    source: "UC.AP.02-clean.uml + documentazione.md §2.2.2"
-    location: "UC.AP.02/notifications"
-    round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
   - id: claim-ap02-i9j0k1l2
     text: "Segnalazione.creaSegnalazione(idMezzo, statoS, data, ora, note) ha esattamente 5 parametri (idMezzo, statoS, data, ora, note)"
     value: "CONFERMATO: creaSegnalazione 5 params: idMezzo, statoS, data, ora, note."
     source: "Master_Spec.cgd.md §2 Model Layer / Segnalazione + UC.AP.02-clean.uml"
     location: "Master_Spec/Segnalazione/creaSegnalazione"
     round: A
-    confirmed-by: Team Cofee Coders (via response2.md)
-    confirmed-date: 2026-06-23
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
+  - id: claim-ap02-m3n4o5p6
+    text: "UC.AP.02 mappa la user story AP.02 (1:1)"
+    value: "CONFERMATO: UC.AP.02 maps AP.02 (1:1)."
+    source: "documentazione.md §2.2.2"
+    location: "UseCases/UC.AP.02/mapping"
+    round: A
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
+  - id: claim-ap02-q7r8s9t0
+    text: "FA-01: il sistema restituisce una stringa di successo 'Flotta completamente operativa' (stringaFlottaOperativa)"
+    value: "CONFERMATO: Success string 'Flotta Operativa' returned on FA-01."
+    source: "UC.AP.02-clean.uml"
+    location: "UC.AP.02/flusso-alternativo"
+    round: A
+    confirmed-by: Team Cofee Coders
+    confirmed-date: 2026-06-26
 ---
 
 # UC.AP.02 — Analisi Stato Flotta
@@ -321,21 +321,19 @@ UC.AP.02 introduce il percorso `qualsiasi stato → manutenzione` quando la PA a
 
 ### Round A: Derived Data Confirmation
 
-Tutti i claim derivano da cross-reference tra le fonti del progetto. Confermare l'interpretazione.
+Tutti i claim confermati dal Team Cofee Coders in data 2026-06-26.
 
 | # | Claim ID | Claim | Fonte | Stato |
 |---|----------|-------|-------|-------|
-| 1 | claim-ap02-a1b2c3d4 | `getCondizioniMezzi()` restituisce `Mezzo` | Master_Spec §3 | PENDING |
-| 2 | claim-ap02-e5f6g7h8 | `avviaManutenzione()` restituisce `bool` | Master_Spec §3 | PENDING |
-| 3 | claim-ap02-i9j0k1l2 | `creaSegnalazione()` ha 5 parametri | Master_Spec §2 + XMI | PENDING |
-| 4 | claim-ap02-m3n4o5p6 | UC.AP.02 mappa AP.02 (1:1) | documentazione.md §2.2.2 | PENDING |
-| 5 | claim-ap02-q7r8s9t0 | FA-01 messaggio: `stringaFlottaOperativa` | UC.AP.02-clean.uml | PENDING |
+| 1 | claim-ap02-a1b2c3d4 | `getCondizioniMezzi()` restituisce `Mezzo` | Master_Spec §3 | CONFERMATO |
+| 2 | claim-ap02-e5f6g7h8 | `avviaManutenzione()` restituisce `bool` | Master_Spec §3 | CONFERMATO |
+| 3 | claim-ap02-i9j0k1l2 | `creaSegnalazione()` ha 5 parametri | Master_Spec §2 + XMI | CONFERMATO |
+| 4 | claim-ap02-m3n4o5p6 | UC.AP.02 mappa AP.02 (1:1) | documentazione.md §2.2.2 | CONFERMATO |
+| 5 | claim-ap02-q7r8s9t0 | FA-01: `stringaFlottaOperativa` di successo | UC.AP.02-clean.uml | CONFERMATO |
 
 ### Round B: True HITL Verification
 
-| # | Claim | Why HITL Needed | Human Confirms |
-|---|-------|-----------------|----------------|
-| — | *Nessun claim Round B* | Tutti i claim sono derivati direttamente dalle fonti del progetto e rientrano nel Round A | — |
+*Nessun claim Round B — tutti i claim confermati in Round A dal Team Cofee Coders.*
 
 ---
 
@@ -377,9 +375,9 @@ Tutti i claim derivano da cross-reference tra le fonti del progetto. Confermare 
 
 ---
 
-**Verdict:** CLEAR | PENDING — 5/5 claim in attesa di conferma Round A. 0 eccezioni. 7/7 critical checks PASS. 8 cross-reference findings (3 info/note, 5 conferme).
+**Verdict:** CLEAR | REVIEWED — 5/5 claim CONFERMATI (Round A). 0 eccezioni. 7/7 critical checks PASS. 8 cross-reference findings (3 info/note, 5 conferme).
 
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED
