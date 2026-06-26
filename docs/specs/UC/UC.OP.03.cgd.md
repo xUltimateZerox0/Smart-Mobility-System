@@ -7,6 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
+rag-ingestable: true
 document-sha256: f7517622da82cb858655d5c8e47ffab1f7b7eb8ff97c5f4f54758b6f976de0df
 hitl-claims:
   - id: claim-9a3e7c01
@@ -466,16 +467,16 @@ UC.OP.03 (Amministrazione Prenotazioni)  — indipendente, non include né esten
 
 ### Round A: Derived Data Confirmation
 
-Tutti i claim derivano da cross-reference tra documentazione.md, Master_Spec.cgd.md, UC.OP.03-clean.uml e chiarimenti-vari.md. Ciascuno richiede conferma interpretativa dal team Cofee Coders.
+Tutti i claim derivano da cross-reference tra documentazione.md, Master_Spec.cgd.md, UC.OP.03-clean.uml e chiarimenti-vari.md. Tutti i 6 claim sono stati confermati (chiarimentiUC.md 2026-06-26).
 
 | # | Claim ID | Claim | Rilevanza | Stato |
 |---|----------|-------|-----------|-------|
-| 1 | claim-9a3e7c01 | `getPrenotazioneByStato(valida)` — `valida` non esiste in StatoPrenotazione; usare `attiva` | Correttezza chiamata metodo | PENDING |
-| 2 | claim-7b2d4f02 | `annullaPrenotazione()` senza parametri (Master_Spec) o con `idPrenotazione` (sequence diagram) | Firma del metodo controller | PENDING |
-| 3 | claim-1c5e8a03 | Controller: "GestionePrenotazioni" vs "GestionePrenotazione" — quale nome è canonico? | Naming consistente | PENDING |
-| 4 | claim-4f9b6d04 | `richiediLista()` su controller o su model? | Architettura MVC | PENDING |
-| 5 | claim-6c1a7e05 | Il controller recupera `idMezzo` via `Prenotazione.getIdMezzo()` per chiamare `Mezzo.setStato()` — confermate? | Risoluzione FK a runtime | PENDING |
-| 6 | claim-2d8f3b06 | Filtro per `attiva` in `richiediLista()` è implicito — design intenzionale o va reso esplicito? | Chiarezza API controller | PENDING |
+| 1 | claim-9a3e7c01 | `getPrenotazioneByStato(valida)` → `valida` non esiste; correggere in `attiva` | **[RISOLTO]** valida → attiva | RESOLVED |
+| 2 | claim-7b2d4f02 | `annullaPrenotazione()` con o senza `idPrenotazione`? | **[RISOLTO]** con parametro idPrenotazione | RESOLVED |
+| 3 | claim-1c5e8a03 | Controller: "GestionePrenotazioni" vs "GestionePrenotazione" | **[RISOLTO]** GestionePrenotazione (singolare) | RESOLVED |
+| 4 | claim-4f9b6d04 | `richiediLista()` su controller o su model? | **[RISOLTO]** su controller | RESOLVED |
+| 5 | claim-6c1a7e05 | Il controller recupera `idMezzo` via `Prenotazione.getIdMezzo()` per `Mezzo.setStato()` | **[RISOLTO]** confermato | RESOLVED |
+| 6 | claim-2d8f3b06 | Filtro per `attiva` in `richiediLista()` implicito? | **[RISOLTO]** filtro implicito confermato | RESOLVED |
 
 ### Round B: True HITL Verification
 
@@ -494,7 +495,7 @@ Tutti i claim derivano da cross-reference tra documentazione.md, Master_Spec.cgd
 
 ---
 
-**Fine specifica UC.OP.03 — CGD aggiornato il 2026-06-23. Clarity-status: CLEAR — XMI aggiornato con 'attiva' (Critical #1 risolto). 6 claim risolti Round A.**
+**Fine specifica UC.OP.03 — CGD aggiornato il 2026-06-26. Clarity-status: CLEAR — XMI aggiornato con 'attiva' (Critical #1 risolto). Tutti i 6 claim HITL Round A risolti (chiarimentiUC.md 2026-06-26).**
 
 <!-- CLARITY_GATE_END -->
 Clarity Gate: CLEAR | REVIEWED

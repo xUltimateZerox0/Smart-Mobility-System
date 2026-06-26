@@ -7,6 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
+rag-ingestable: true
 document-sha256: e808a8cc2b399e3c2d3092ca6996e1ab1ad59cf212ff0650d44ea7119c98e0dc
 hitl-claims:
   - id: claim-333b42a7
@@ -319,7 +320,7 @@ A differenza di AppUtente che usa `mostraSuccesso()` senza parametri, AppOperato
 
 ### Round A: Derived Data Confirmation
 
-Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. I 10 claim richiedono conferma da parte del team Cofee Coders.
+Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. Tutti i 10 claim sono stati confermati (chiarimentiUC.md 2026-06-26).
 
 | # | Claim ID | Claim | Fonte | Stato |
 |---|----------|-------|-------|-------|

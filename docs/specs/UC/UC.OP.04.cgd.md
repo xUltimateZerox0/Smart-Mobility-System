@@ -7,6 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
+rag-ingestable: true
 document-sha256: 9d7440f5840455c094adb1fac0a29c936b3541fd7a98a8d22d806dd2edcd0779
 hitl-claims:
   - id: claim-111b42a7
@@ -323,7 +324,7 @@ Questa e una differenza architetturale rispetto ad AppUtente, che dipende da 5 C
 
 ### Round A: Derived Data Confirmation
 
-Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. I 10 claim richiedono conferma da parte del team Cofee Coders.
+Tutti i claim derivano da fonti cross-referenziate nella sessione corrente. Tutti i 10 claim sono stati confermati (chiarimentiUC.md 2026-06-26).
 
 | # | Claim ID | Claim | Fonte | Stato |
 |---|----------|-------|-------|-------|

@@ -7,7 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-rag-ingestable: false
+rag-ingestable: true
 document-sha256: d26ea262ea658db86033e067f8e1a6ba6be8de1719970a63952cbe5007cfa517
 hitl-claims:
   - id: claim-70d7b247
@@ -57,7 +57,7 @@ hitl-claims:
 | **Attori principali** | Operatore Servizio Clienti |
 | **Attori secondari** | Utente *(destinatario della notifica e disconnessione)* |
 | **Precondizioni** | 1. L'Operatore Servizio Clienti ha effettuato l'accesso e ha una sessione attiva (RuoloAttore = `Operatore`, TipoOperatore = `OperatoreSC`). 2. L'utente target esiste nel sistema con stato `attivo`. |
-| **Flusso principale** | 1. Il caso d'uso inizia quando l'Operatore Servizio Clienti cerca un utente tramite il suo identificativo (`idUtente`). 2. Il sistema, tramite `AppOperatoreSC.mostraReport(idUtente)`, innesca la ricerca: `GestioneUtenti.cercaReport(idUtente)` → `Utente.ricercaUtente(idUtente)`, recupera i dati anagrafici e il report (`Utente.report`) e li mostra all'operatore. 3. L'operatore aggiorna il report dell'utente: `AppOperatoreSC.aggiornaReport(idUtente)` → `Utente.setReportUtente(nuovoReport)`. 4. L'operatore applica un'azione correttiva: `Utente.azioneCorrettiva(azione)` dove `azione` è `"sospendi"` o `"disattiva"`, e il sistema aggiorna lo stato: `Utente.setStatoUtente(StatoUtente.sospeso)` o `Utente.setStatoUtente(StatoUtente.disattivato)`, orchestrato da `GestioneUtenti.gestioneUtente(idUtente)`. 5. Il sistema invia una notifica all'utente: `AppUtente.notificaAzione(idUtente, azione)`. 6. Il sistema disconnette l'utente da tutte le sessioni aperte — destroy dell'istanza `AppUtente` *(chiarimenti-vari.md punto 11)*. 7. Il sistema conferma l'esito positivo all'operatore: `AppOperatoreSC.mostraSuccesso(msg)`. |
+| **Flusso principale** | 1. Il caso d'uso inizia quando l'Operatore Servizio Clienti cerca un utente tramite il suo identificativo (`idUtente`). 2. Il sistema, tramite `AppOperatoreSC.mostraReport(idUtente)`, innesca la ricerca: `GestioneUtenti.cercaReport(idUtente)` → `Utente.ricercaUtente(idUtente)`, recupera i dati anagrafici e il report (`Utente.report`) e li mostra all'operatore. 3. L'operatore aggiorna il report dell'utente: `AppOperatoreSC.aggiornaReport(idUtente)` → `Utente.setReportUtente(nuovoReport)`. 4. L'operatore applica un'azione correttiva: `Utente.azioneCorrettiva(azione)` dove `azione` è `"sospensione"` o `"disattivazione"` *(da chiarimentiUC.md: enum classDiagram-v1.8)*, e il sistema aggiorna lo stato: `Utente.setStatoUtente(StatoUtente.sospeso)` o `Utente.setStatoUtente(StatoUtente.disattivato)`, orchestrato da `GestioneUtenti.gestioneUtente(idUtente)`. 5. Il sistema invia una notifica all'utente: `AppUtente.notificaAzione(idUtente, azione)`. 6. Il sistema disconnette l'utente da tutte le sessioni aperte — destroy dell'istanza `AppUtente` *(chiarimenti-vari.md punto 11)*. 7. Il sistema conferma l'esito positivo all'operatore: `AppOperatoreSC.mostraSuccesso(msg)`. |
 | **Flussi alternativi** | **A1 — Utente Non Trovato:** Al passo 2 del flusso principale, `Utente.ricercaUtente(idUtente)` restituisce `null`. Il sistema mostra errore: `AppOperatoreSC.mostraErrore("Utente non trovato")`. Il caso d'uso termina senza modifiche. |
 | **Postcondizioni** | 1. L'azione correttiva è stata applicata — `Utente.statoUtente` è stato aggiornato a `sospeso` o `disattivato` *(verificabile)*. 2. Il report dell'utente (`Utente.reportUtente`) è stato aggiornato *(verificabile)*. 3. È stata inviata all'utente una notifica sull'azione intrapresa tramite `AppUtente.notificaAzione()`. 4. L'utente è stato disconnesso da tutte le sessioni attive *(istanza AppUtente distrutta)*. |
 | **Include** | — |
@@ -100,7 +100,7 @@ hitl-claims:
 | Metodo | Parametro | Tipo | Dominio | Fonte |
 |:-------|:----------|:-----|:--------|:------|
 | `Utente.ricercaUtente()` | `idUtente` | PK | Identificativo univoco utente | Master_Spec §2 |
-| `Utente.azioneCorrettiva()` | `azione` | `String` | `"sospendi"` \| `"disattiva"` *(da verificare — HITL claim-b5e04f8a)* | Master_Spec §2 + documentazione.md |
+| `Utente.azioneCorrettiva()` | `azione` | `String` | `"sospensione"` \| `"disattivazione"` *(confermato da chiarimentiUC.md — classDiagram-v1.8)* | Master_Spec §2 + documentazione.md |
 | `Utente.setStatoUtente()` | `statoUtente` | `StatoUtente` | Enum: `attivo`, `sospeso`, `disattivato` | Master_Spec §1 |
 | `GestioneUtenti.gestioneUtente()` | `idUtente` | PK | Identificativo univoco utente | Master_Spec §3 |
 | `GestioneUtenti.cercaReport()` | `idUtente` | PK | Identificativo univoco utente | Master_Spec §3 |

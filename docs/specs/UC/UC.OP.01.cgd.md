@@ -7,6 +7,7 @@ clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
+rag-ingestable: true
 document-sha256: 80659c4af1f5a9b3d9a330c09852845030a5f18d209a19a021ef909c87731556
 hitl-claims:
   - id: claim-op01-mezzo-dual-lifeline
@@ -726,10 +727,10 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 
 | # | Claim ID | Claim | Rilevanza | Stato |
 |---|----------|-------|-----------|-------|
-| 1 | claim-op01-mezzo-dual-lifeline | Due lifeline "Mezzo" nel SD — la IoT dovrebbe chiamarsi "Mezzo:IoT" | Naming consistente con chiarimenti-vari.md punto 6 | **PENDING** |
+| 1 | claim-op01-mezzo-dual-lifeline | Due lifeline "Mezzo" nel SD — la IoT dovrebbe chiamarsi "Mezzo:IoT" | Naming consistente con chiarimenti-vari.md punto 6 | **RESOLVED** |
 | 2 | claim-op01-analisistatoflotta | `analisiStatoFlotta()` non in UC.OP.01 — dominio PA (UC.AP.02). Rileva Mezzo da manutenere: crea Segnalazione + setta `Mezzo.stato = 'manutenzione'` | Chiarezza API Controller | **RESOLVED** |
-| 3 | claim-op01-creasegnalazione-sd-typo | Typo XMI virgola mancante in `creaSegnalazione` — confermare firma 5-parametri | Fedeltà documentazione | **PENDING** |
-| 4 | claim-op01-getcondizionimezzi-return-type | `getCondizioniMezzi()` → `Mezzo` singolare ma restituisce lista | Tipo di ritorno formale | **PENDING** |
+| 3 | claim-op01-creasegnalazione-sd-typo | Typo XMI virgola mancante in `creaSegnalazione` — confermare firma 5-parametri | Fedeltà documentazione | **RESOLVED** |
+| 4 | claim-op01-getcondizionimezzi-return-type | `getCondizioniMezzi()` → `Mezzo` singolare ma restituisce lista | Tipo di ritorno formale | **RESOLVED** |
 
 ### Round B: True HITL Verification
 
@@ -750,7 +751,7 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 | Precondizioni | 3 |
 | Postcondizioni (main + alt) | 5 |
 | Inconsistenze rilevate | 6 (2 naming, 1 ruolo, 1 tipo, 2 sintassi SD) |
-| Claim HITL pending | 4 (Round A) |
+| Claim HITL | 4 risolti (Round A — chiarimentiUC.md 2026-06-26) |
 | Vincoli architetturali applicabili | 6 |
 | Dati inferiti (epistemic markers) | 7 |
 
@@ -767,7 +768,7 @@ UC.OP.01 è uno use case indipendente — non include, non estende e non è este
 
 ---
 
-**Fine specifica UC.OP.01 — CGD generato il 2026-06-22. In attesa di conferma HITL Round A (4 claim pending).**
+**Fine specifica UC.OP.01 — CGD generato il 2026-06-22. Tutti i claim HITL Round A risolti (chiarimentiUC.md 2026-06-26).**
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | PENDING
+Clarity Gate: CLEAR | REVIEWED
