@@ -29,7 +29,7 @@ function cmdExists(cmd) {
   try {
     execSync(isWin ? `where ${cmd} 2>nul` : `which ${cmd} 2>/dev/null`, { stdio: 'ignore' });
     return true;
-  } catch {
+  } catch (e) {
     return false;
   }
 }
@@ -39,7 +39,7 @@ function getJavaVersion() {
     const out = execSync('java -version 2>&1', { encoding: 'utf8' });
     const m = out.match(/(?:version\s+)"?(\d+)/);
     return m ? parseInt(m[1], 10) : 0;
-  } catch {
+  } catch (e) {
     return 0;
   }
 }
@@ -49,7 +49,7 @@ function getNodeVersion() {
     const out = execSync('node -v', { encoding: 'utf8' });
     const m = out.match(/v?(\d+)/);
     return m ? parseInt(m[1], 10) : 0;
-  } catch {
+  } catch (e) {
     return 0;
   }
 }
@@ -93,7 +93,7 @@ function installPkg(pm, pkg) {
     const prefix = needsElevation ? 'sudo ' : '';
     execSync(`${prefix}${cmd} 2>&1`, { stdio: 'inherit', timeout: 180000 });
     return true;
-  } catch {
+  } catch (e) {
     return false;
   }
 }
@@ -143,7 +143,7 @@ function installNode() {
       execSync(`curl -fsSL https://deb.nodesource.com/setup_20.x | ${s}bash - 2>&1`, { stdio: 'inherit', timeout: 60000 });
       execSync(`${s}apt-get install -y nodejs 2>&1`, { stdio: 'inherit', timeout: 120000 });
       return true;
-    } catch { return false; }
+    } catch (e) { return false; }
   }
   if (pm === 'dnf' || pm === 'yum') return installPkg(pm, 'nodejs');
   if (pm === 'apk') return installPkg(pm, 'nodejs');
