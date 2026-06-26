@@ -3,6 +3,7 @@
 
 const { spawn, execSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const ROOT = __dirname;
 const FRONTEND_DIR = path.join(ROOT, 'frontend');
@@ -121,10 +122,92 @@ function installJava() {
 function installMaven() {
   log('SETUP', 'Maven required. Attempting installation...');
   const pm = getPackageManager();
-  if (pm === 'winget') return installPkg(pm, 'Apache.Maven');
-  if (pm === 'choco')  return installPkg(pm, 'maven');
-  if (pm === 'brew')   return installPkg(pm, 'maven');
-  if (pm)              return installPkg(pm, 'maven');
+
+  if (pm === 'winget') {
+    if (installPkg(pm, 'Apache.Maven')) {
+      if (checkMaven()) return true;
+    }
+  } else if (pm === 'choco') {
+    if (installPkg(pm, 'maven')) {
+      if (checkMaven()) return true;
+    }
+  } else if (pm === 'brew') {
+    if (installPkg(pm, 'maven')) {
+      if (checkMaven()) return true;
+    }
+  } else if (pm === 'apt-get') {
+    if (installPkg(pm, 'maven')) {
+      if (checkMaven()) return true;
+    }
+  } else if (pm === 'dnf' || pm === 'yum') {
+    if (installPkg(pm, 'maven')) {
+      if (checkMaven()) return true;
+    }
+  } else if (pm === 'apk') {
+    if (installPkg(pm, 'maven')) {
+      if (checkMaven()) return true;
+    }
+  }
+
+  log('SETUP', 'Trying direct download from Apache mirror...');
+  const mvVer = '3.9.9';
+  const baseUrl = 'https://dlcdn.apache.org/maven/maven-3/' + mvVer + '/binaries';
+  const toolsDir = path.join(ROOT, '.tools');
+
+  try {
+    if (!fs.existsSync(toolsDir)) fs.mkdirSync(toolsDir, { recursive: true });
+
+    if (isWin) {
+      const zipFile = 'apache-maven-' + mvVer + '-bin.zip';
+      const extractDir = path.join(toolsDir, 'apache-maven-' + mvVer);
+      if (!fs.existsSync(extractDir)) {
+        execSync('curl -fsSL "' + baseUrl + '/' + zipFile + '" -o "' + path.join(toolsDir, zipFile) + '" 2>&1', { stdio: 'inherit', timeout: 120000 });
+        execSync('powershell -Command "Expand-Archive -Path \'' + path.join(toolsDir, zipFile) + '\' -DestinationPath \'' + toolsDir + '\' -Force" 2>&1', { stdio: 'inherit', timeout: 60000 });
+      }
+      const mvnBin = path.join(extractDir, 'bin', 'mvn.cmd');
+      if (fs.existsSync(mvnBin)) {
+        log('SETUP', 'Maven extracted to ' + extractDir);
+        log('SETUP', 'Add it to PATH or re-run this script from a new terminal.');
+        log('SETUP', '  [System] setx /M PATH "%PATH%;' + path.join(extractDir, 'bin') + '"');
+        log('SETUP', '  [User]   setx PATH "%PATH%;' + path.join(extractDir, 'bin') + '"');
+        return true;
+      }
+    } else {
+      const tgzFile = 'apache-maven-' + mvVer + '-bin.tar.gz';
+      const extractDir = path.join(toolsDir, 'apache-maven-' + mvVer);
+      if (!fs.existsSync(extractDir)) {
+        execSync('curl -fsSL "' + baseUrl + '/' + tgzFile + '" -o "' + path.join(toolsDir, tgzFile) + '" 2>&1', { stdio: 'inherit', timeout: 120000 });
+        execSync('tar -xzf "' + path.join(toolsDir, tgzFile) + '" -C "' + toolsDir + '" 2>&1', { stdio: 'inherit', timeout: 60000 });
+      }
+      const mvnBin = path.join(extractDir, 'bin', 'mvn');
+      if (fs.existsSync(mvnBin)) {
+        fs.chmodSync(mvnBin, '755');
+        log('SETUP', 'Maven extracted to ' + extractDir);
+        log('SETUP', 'Add it to PATH or symlink: sudo ln -sf ' + mvnBin + ' /usr/local/bin/mvn');
+        return true;
+      }
+    }
+  } catch (e) {
+    log('SETUP', 'Direct download failed: ' + e.message);
+  }
+
+  log('SETUP', 'Checking common Maven installation locations...');
+  try {
+    if (isWin) {
+      const dirOut = execSync('dir /s /b C:\\mvn.cmd C:\\tools\\apache-maven-*\\bin\\mvn.cmd C:\\ProgramData\\chocolatey\\lib\\maven\\*\\bin\\mvn.cmd 2>nul', { encoding: 'utf8', timeout: 10000 });
+      const lines = dirOut.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length > 0) { log('SETUP', 'Maven found at ' + lines[0]); return true; }
+    } else {
+      for (const dir of ['/usr/local/apache-maven-*/bin/mvn', '/opt/apache-maven-*/bin/mvn', '/usr/share/maven/bin/mvn', '/usr/local/bin/mvn']) {
+        try {
+          const out = execSync('ls ' + dir + ' 2>/dev/null', { encoding: 'utf8', timeout: 5000 });
+          const match = out.trim().split(/\n/)[0];
+          if (match) { log('SETUP', 'Maven found at ' + match); return true; }
+        } catch {}
+      }
+    }
+  } catch {}
+
   log('SETUP', 'Download Maven from https://maven.apache.org/download.cgi');
   return false;
 }
@@ -148,6 +231,75 @@ function installNode() {
   if (pm === 'dnf' || pm === 'yum') return installPkg(pm, 'nodejs');
   if (pm === 'apk') return installPkg(pm, 'nodejs');
   log('SETUP', 'Download Node.js 20+ from https://nodejs.org/');
+  return false;
+}
+
+function installNpm() {
+  log('SETUP', 'npm not found. Attempting installation...');
+  const pm = getPackageManager();
+
+  if (pm === 'winget') {
+    if (installPkg(pm, 'OpenJS.NodeJS.20')) {
+      if (checkNpm()) return true;
+    }
+  }
+  if (pm === 'choco') {
+    if (installPkg(pm, 'npm')) {
+      if (checkNpm()) return true;
+    }
+  }
+  if (pm === 'brew') {
+    if (installPkg(pm, 'npm')) {
+      if (checkNpm()) return true;
+    }
+  }
+  if (pm === 'apt-get') {
+    if (installPkg(pm, 'npm')) {
+      if (checkNpm()) return true;
+    }
+  }
+  if (pm === 'dnf' || pm === 'yum') {
+    if (installPkg(pm, 'npm')) {
+      if (checkNpm()) return true;
+    }
+  }
+  if (pm === 'apk') {
+    if (installPkg(pm, 'npm')) {
+      if (checkNpm()) return true;
+    }
+  }
+
+  log('SETUP', 'Trying official npm installer as fallback...');
+  try {
+    const s = !isWin && !isMac && process.getuid && process.getuid() !== 0 && cmdExists('sudo') ? 'sudo ' : '';
+    execSync(`${s}curl -L https://www.npmjs.org/install.sh 2>&1`, { stdio: 'inherit', timeout: 60000 });
+    if (checkNpm()) return true;
+  } catch {}
+
+  log('SETUP', 'Checking common npm locations bundled with Node.js...');
+  const candidates = [];
+  if (isWin) {
+    candidates.push(
+      path.join(process.execPath, '..', 'node_modules', 'npm', 'bin', 'npm.cmd'),
+      path.join(process.execPath, '..', '..', 'node_modules', 'npm', 'bin', 'npm.cmd'),
+      path.join(process.execPath, '..', '..', '..', 'node_modules', 'npm', 'bin', 'npm.cmd')
+    );
+  } else {
+    candidates.push(
+      path.join(process.execPath, '..', '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+      path.join(process.execPath, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+      '/usr/local/lib/node_modules/npm/bin/npm-cli.js',
+      '/usr/lib/node_modules/npm/bin/npm-cli.js'
+    );
+  }
+  for (const loc of candidates) {
+    try {
+      execSync(`"${loc}" --version 2>&1`, { stdio: 'ignore' });
+      log('SETUP', `npm found at ${loc}`);
+      return true;
+    } catch {}
+  }
+
   return false;
 }
 
@@ -194,8 +346,9 @@ function checkAll() {
   if (checkNpm()) {
     log('SETUP', '[OK] npm');
   } else {
-    log('SETUP', '[MISS] npm not found (bundled with Node.js)');
-    pass = false;
+    log('SETUP', '[MISS] npm not found');
+    if (installNpm()) { changed = true; pass = checkNpm() && pass; }
+    else { pass = false; }
   }
 
   if (!pass) {
