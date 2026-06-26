@@ -146,6 +146,18 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -
 sudo apt-get install -y nodejs
 ```
 
+**Arch Linux (pacman)**
+```bash
+# Java 21
+sudo pacman -S --noconfirm jdk21-openjdk
+
+# Maven
+sudo pacman -S --noconfirm maven
+
+# Node.js 20 + npm
+sudo pacman -S --noconfirm nodejs-lts-iron npm
+```
+
 **Fedora / RHEL (dnf)**
 ```bash
 # Java 21
