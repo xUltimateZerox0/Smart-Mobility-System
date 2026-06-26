@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestorePagamentoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.controller</a> &gt; <span class="el_source">GestorePagamentoController.java</span></div><h1>GestorePagamentoController.java</h1><pre class="source lang-java linenums">package com.smartmobility.controller;
+
+import com.smartmobility.dto.request.AddPaymentMethodRequest;
+import com.smartmobility.dto.request.ProcessPaymentRequest;
+import com.smartmobility.dto.response.MetodoPagamentoResponse;
+import com.smartmobility.security.SecurityHelper;
+import com.smartmobility.service.GestorePagamentoService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/payments&quot;)
+public class GestorePagamentoController {
+
+    private final GestorePagamentoService gestorePagamentoService;
+    private final SecurityHelper securityHelper;
+
+<span class="fc" id="L28">    public GestorePagamentoController(GestorePagamentoService gestorePagamentoService, SecurityHelper securityHelper) {</span>
+<span class="fc" id="L29">        this.gestorePagamentoService = gestorePagamentoService;</span>
+<span class="fc" id="L30">        this.securityHelper = securityHelper;</span>
+<span class="fc" id="L31">    }</span>
+
+    @PostMapping(&quot;/process&quot;)
+    public ResponseEntity&lt;Boolean&gt; processPayment(@Valid @RequestBody ProcessPaymentRequest request,
+                                                   @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="fc" id="L36">        securityHelper.requireUserIdMatch(authHeader, request.getIdUtente());</span>
+<span class="fc" id="L37">        boolean result = gestorePagamentoService.pagamentoCorsa(</span>
+<span class="fc" id="L38">                request.getIdUtente(), request.getIdMetodoPagamento(), request.getIdCorsa(), request.getCosto());</span>
+<span class="fc" id="L39">        return ResponseEntity.ok(result);</span>
+    }
+
+    @PostMapping(&quot;/methods&quot;)
+    public ResponseEntity&lt;Boolean&gt; addPaymentMethod(@Valid @RequestBody AddPaymentMethodRequest request,
+                                                     @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="fc" id="L45">        securityHelper.requireUserIdMatch(authHeader, request.getIdUtente());</span>
+<span class="fc" id="L46">        boolean result = gestorePagamentoService.elaboraDatiCarta(</span>
+<span class="fc" id="L47">                request.getIdUtente(), request.getNumCarta(),</span>
+<span class="fc" id="L48">                request.getDsCarta(), request.getCvv(), request.getIntestatarioCarta());</span>
+<span class="fc" id="L49">        return ResponseEntity.ok(result);</span>
+    }
+
+    @GetMapping(&quot;/methods&quot;)
+    public ResponseEntity&lt;List&lt;MetodoPagamentoResponse&gt;&gt; getSavedMethods(@RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader,
+                                                                          @RequestParam(required = false) Long idUtente) {
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        Long userId = (idUtente != null) ? idUtente : securityHelper.getCurrentUserId(authHeader);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (idUtente != null) securityHelper.requireUserIdMatch(authHeader, idUtente);</span>
+<span class="fc" id="L58">        List&lt;MetodoPagamentoResponse&gt; methods = gestorePagamentoService.recuperaMetodiSalvati(userId);</span>
+<span class="fc" id="L59">        return ResponseEntity.ok(methods);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

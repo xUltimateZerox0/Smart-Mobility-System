@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestioneFlottaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.controller</a> &gt; <span class="el_source">GestioneFlottaController.java</span></div><h1>GestioneFlottaController.java</h1><pre class="source lang-java linenums">package com.smartmobility.controller;
+
+import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.SegnalazioneResponse;
+import com.smartmobility.model.enums.RuoloAttore;
+import com.smartmobility.security.SecurityHelper;
+import com.smartmobility.service.GestioneFlottaService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/fleet&quot;)
+public class GestioneFlottaController {
+
+    private final GestioneFlottaService gestioneFlottaService;
+    private final SecurityHelper securityHelper;
+
+    public GestioneFlottaController(GestioneFlottaService gestioneFlottaService,
+<span class="fc" id="L26">                                     SecurityHelper securityHelper) {</span>
+<span class="fc" id="L27">        this.gestioneFlottaService = gestioneFlottaService;</span>
+<span class="fc" id="L28">        this.securityHelper = securityHelper;</span>
+<span class="fc" id="L29">    }</span>
+
+    @PostMapping(&quot;/vehicles/{id}/lock&quot;)
+    public ResponseEntity&lt;Boolean&gt; lockVehicle(@PathVariable Long id,
+                                                @RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="fc" id="L34">        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);</span>
+<span class="fc" id="L35">        boolean result = gestioneFlottaService.bloccaMezzo(id);</span>
+<span class="fc" id="L36">        return ResponseEntity.ok(result);</span>
+    }
+
+    @PostMapping(&quot;/vehicles/{id}/unlock&quot;)
+    public ResponseEntity&lt;Boolean&gt; unlockVehicle(@PathVariable Long id,
+                                                  @RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="fc" id="L42">        securityHelper.requireRole(authHeader, RuoloAttore.Operatore);</span>
+<span class="fc" id="L43">        boolean result = gestioneFlottaService.sbloccaMezzo(id);</span>
+<span class="fc" id="L44">        return ResponseEntity.ok(result);</span>
+    }
+
+    @PostMapping(&quot;/vehicles/{id}/maintenance&quot;)
+    public ResponseEntity&lt;Boolean&gt; startVehicleMaintenance(@PathVariable Long id,
+                                                             @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="fc" id="L50">        securityHelper.requireRole(authHeader, RuoloAttore.PA);</span>
+<span class="fc" id="L51">        boolean result = gestioneFlottaService.avviaManutenzioneVeicolo(id);</span>
+<span class="fc" id="L52">        return ResponseEntity.ok(result);</span>
+    }
+
+    @PostMapping(&quot;/{flottaId}/maintenance&quot;)
+    public ResponseEntity&lt;Boolean&gt; startMaintenance(@PathVariable Long flottaId,
+                                                      @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="fc" id="L58">        securityHelper.requireRole(authHeader, RuoloAttore.PA);</span>
+<span class="fc" id="L59">        boolean result = gestioneFlottaService.avviaManutenzione(flottaId);</span>
+<span class="fc" id="L60">        return ResponseEntity.ok(result);</span>
+    }
+
+    @PostMapping(&quot;/{flottaId}/analyze&quot;)
+    public ResponseEntity&lt;Boolean&gt; analyzeFleet(@PathVariable Long flottaId,
+                                                  @RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="fc" id="L66">        securityHelper.requireRole(authHeader, RuoloAttore.PA);</span>
+<span class="fc" id="L67">        boolean result = gestioneFlottaService.analisiStatoFlotta(flottaId);</span>
+<span class="fc" id="L68">        return ResponseEntity.ok(result);</span>
+    }
+
+    @GetMapping(&quot;/segnalazioni&quot;)
+    public ResponseEntity&lt;List&lt;SegnalazioneResponse&gt;&gt; getSegnalazioni(@RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="fc" id="L73">        securityHelper.requireRole(authHeader, RuoloAttore.PA);</span>
+<span class="fc" id="L74">        List&lt;SegnalazioneResponse&gt; segnalazioni = gestioneFlottaService.getSegnalazioni();</span>
+<span class="fc" id="L75">        return ResponseEntity.ok(segnalazioni);</span>
+    }
+
+    @GetMapping(&quot;/segnalazioni/{stato}&quot;)
+    public ResponseEntity&lt;List&lt;SegnalazioneResponse&gt;&gt; getSegnalazioniByStato(@PathVariable String stato,
+                                                                               @RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="fc" id="L81">        securityHelper.requireRole(authHeader, RuoloAttore.PA);</span>
+<span class="fc" id="L82">        List&lt;SegnalazioneResponse&gt; segnalazioni = gestioneFlottaService.getSegnalazioniByStato(stato);</span>
+<span class="fc" id="L83">        return ResponseEntity.ok(segnalazioni);</span>
+    }
+
+    @GetMapping(&quot;/{flottaId}/conditions&quot;)
+    public ResponseEntity&lt;List&lt;MezzoResponse&gt;&gt; getVehicleConditions(@PathVariable Long flottaId,
+                                                                     @RequestHeader(&quot;Authorization&quot;) String authHeader) {
+<span class="fc" id="L89">        securityHelper.requireAuth(authHeader);</span>
+<span class="fc" id="L90">        List&lt;MezzoResponse&gt; conditions = gestioneFlottaService.getCondizioniMezzi(flottaId);</span>
+<span class="fc" id="L91">        return ResponseEntity.ok(conditions);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

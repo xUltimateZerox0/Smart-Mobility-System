@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MezzoResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.dto.response</a> &gt; <span class="el_source">MezzoResponse.java</span></div><h1>MezzoResponse.java</h1><pre class="source lang-java linenums">package com.smartmobility.dto.response;
+
+import java.util.Objects;
+
+@SuppressWarnings(&quot;java:S107&quot;)
+public class MezzoResponse {
+    private Long id;
+    private String tipo;
+    private String stato;
+    private double latitudine;
+    private double longitudine;
+    private double autonomia;
+    private double tariffa;
+    private String codiceMezzo;
+    private String tempoDisponibilita;
+    private String condizione;
+    private String idFlotta;
+
+<span class="fc" id="L19">    public MezzoResponse() {}</span>
+
+    public MezzoResponse(Long id, String tipo, String stato, double latitudine, double longitudine, double autonomia, double tariffa, String codiceMezzo) {
+<span class="fc" id="L22">        this(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo, null, null, null);</span>
+<span class="fc" id="L23">    }</span>
+
+    public MezzoResponse(Long id, String tipo, String stato, double latitudine, double longitudine, double autonomia, double tariffa, String codiceMezzo, String tempoDisponibilita) {
+<span class="fc" id="L26">        this(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo, tempoDisponibilita, null, null);</span>
+<span class="fc" id="L27">    }</span>
+
+<span class="fc" id="L29">    public MezzoResponse(Long id, String tipo, String stato, double latitudine, double longitudine, double autonomia, double tariffa, String codiceMezzo, String tempoDisponibilita, String condizione, String idFlotta) {</span>
+<span class="fc" id="L30">        this.id = id;</span>
+<span class="fc" id="L31">        this.tipo = tipo;</span>
+<span class="fc" id="L32">        this.stato = stato;</span>
+<span class="fc" id="L33">        this.latitudine = latitudine;</span>
+<span class="fc" id="L34">        this.longitudine = longitudine;</span>
+<span class="fc" id="L35">        this.autonomia = autonomia;</span>
+<span class="fc" id="L36">        this.tariffa = tariffa;</span>
+<span class="fc" id="L37">        this.codiceMezzo = codiceMezzo;</span>
+<span class="fc" id="L38">        this.tempoDisponibilita = tempoDisponibilita;</span>
+<span class="fc" id="L39">        this.condizione = condizione;</span>
+<span class="fc" id="L40">        this.idFlotta = idFlotta;</span>
+<span class="fc" id="L41">    }</span>
+
+<span class="fc" id="L43">    public Long getId() { return id; }</span>
+<span class="fc" id="L44">    public void setId(Long id) { this.id = id; }</span>
+<span class="fc" id="L45">    public String getTipo() { return tipo; }</span>
+<span class="fc" id="L46">    public void setTipo(String tipo) { this.tipo = tipo; }</span>
+<span class="fc" id="L47">    public String getStato() { return stato; }</span>
+<span class="fc" id="L48">    public void setStato(String stato) { this.stato = stato; }</span>
+<span class="fc" id="L49">    public double getLatitudine() { return latitudine; }</span>
+<span class="fc" id="L50">    public void setLatitudine(double latitudine) { this.latitudine = latitudine; }</span>
+<span class="fc" id="L51">    public double getLongitudine() { return longitudine; }</span>
+<span class="fc" id="L52">    public void setLongitudine(double longitudine) { this.longitudine = longitudine; }</span>
+<span class="fc" id="L53">    public double getAutonomia() { return autonomia; }</span>
+<span class="fc" id="L54">    public void setAutonomia(double autonomia) { this.autonomia = autonomia; }</span>
+<span class="fc" id="L55">    public double getTariffa() { return tariffa; }</span>
+<span class="fc" id="L56">    public void setTariffa(double tariffa) { this.tariffa = tariffa; }</span>
+<span class="fc" id="L57">    public String getCodiceMezzo() { return codiceMezzo; }</span>
+<span class="fc" id="L58">    public void setCodiceMezzo(String codiceMezzo) { this.codiceMezzo = codiceMezzo; }</span>
+<span class="fc" id="L59">    public String getTempoDisponibilita() { return tempoDisponibilita; }</span>
+<span class="fc" id="L60">    public void setTempoDisponibilita(String tempoDisponibilita) { this.tempoDisponibilita = tempoDisponibilita; }</span>
+<span class="fc" id="L61">    public String getCondizione() { return condizione; }</span>
+<span class="fc" id="L62">    public void setCondizione(String condizione) { this.condizione = condizione; }</span>
+<span class="fc" id="L63">    public String getIdFlotta() { return idFlotta; }</span>
+<span class="fc" id="L64">    public void setIdFlotta(String idFlotta) { this.idFlotta = idFlotta; }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (this == o) return true;</span>
+<span class="fc bfc" id="L69" title="All 4 branches covered.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L70">        MezzoResponse that = (MezzoResponse) o;</span>
+<span class="pc bpc" id="L71" title="10 of 22 branches missed.">        return Objects.equals(id, that.id) &amp;&amp; Objects.equals(tipo, that.tipo) &amp;&amp; Objects.equals(stato, that.stato) &amp;&amp; Objects.equals(latitudine, that.latitudine) &amp;&amp; Objects.equals(longitudine, that.longitudine) &amp;&amp; Objects.equals(autonomia, that.autonomia) &amp;&amp; Objects.equals(tariffa, that.tariffa) &amp;&amp; Objects.equals(codiceMezzo, that.codiceMezzo) &amp;&amp; Objects.equals(tempoDisponibilita, that.tempoDisponibilita) &amp;&amp; Objects.equals(condizione, that.condizione) &amp;&amp; Objects.equals(idFlotta, that.idFlotta);</span>
+    }
+
+    @Override
+<span class="fc" id="L75">    public int hashCode() { return Objects.hash(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo, tempoDisponibilita, condizione, idFlotta); }</span>
+
+    @Override
+<span class="fc" id="L78">    public String toString() { return &quot;MezzoResponse{id=&quot; + id + &quot;, tipo='&quot; + tipo + &quot;', stato='&quot; + stato + &quot;', latitudine=&quot; + latitudine + &quot;, longitudine=&quot; + longitudine + &quot;, autonomia=&quot; + autonomia + &quot;, tariffa=&quot; + tariffa + &quot;, codiceMezzo='&quot; + codiceMezzo + &quot;', tempoDisponibilita='&quot; + tempoDisponibilita + &quot;', condizione='&quot; + condizione + &quot;', idFlotta='&quot; + idFlotta + &quot;'}&quot;; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

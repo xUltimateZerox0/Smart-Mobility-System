@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestionePrenotazioneController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.controller</a> &gt; <span class="el_source">GestionePrenotazioneController.java</span></div><h1>GestionePrenotazioneController.java</h1><pre class="source lang-java linenums">package com.smartmobility.controller;
+
+import com.smartmobility.dto.request.PrenotazioneRequest;
+import com.smartmobility.dto.response.PrenotazioneResponse;
+import com.smartmobility.security.SecurityHelper;
+import com.smartmobility.service.GestionePrenotazioneService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/bookings&quot;)
+public class GestionePrenotazioneController {
+
+    private final GestionePrenotazioneService gestionePrenotazioneService;
+    private final SecurityHelper securityHelper;
+
+<span class="fc" id="L28">    public GestionePrenotazioneController(GestionePrenotazioneService gestionePrenotazioneService, SecurityHelper securityHelper) {</span>
+<span class="fc" id="L29">        this.gestionePrenotazioneService = gestionePrenotazioneService;</span>
+<span class="fc" id="L30">        this.securityHelper = securityHelper;</span>
+<span class="fc" id="L31">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;PrenotazioneResponse&gt; createBooking(@Valid @RequestBody PrenotazioneRequest request,
+                                                               @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="fc" id="L36">        securityHelper.requireUserIdMatch(authHeader, request.idUtente());</span>
+<span class="fc" id="L37">        PrenotazioneResponse result = gestionePrenotazioneService.inviaRichiestaPrenotazione(request.idMezzo(), request.idUtente(), request.orarioInizio());</span>
+<span class="fc" id="L38">        return ResponseEntity.ok(result);</span>
+    }
+
+    @GetMapping(&quot;/{id}/qrcode&quot;)
+    public ResponseEntity&lt;String&gt; getQRCode(@PathVariable Long id) {
+<span class="nc" id="L43">        String qrCode = gestionePrenotazioneService.getQRCode(id);</span>
+<span class="nc" id="L44">        return ResponseEntity.ok(qrCode);</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;PrenotazioneResponse&gt;&gt; getBookings() {
+<span class="fc" id="L49">        List&lt;PrenotazioneResponse&gt; bookings = gestionePrenotazioneService.richiediLista();</span>
+<span class="fc" id="L50">        return ResponseEntity.ok(bookings);</span>
+    }
+
+    @GetMapping(&quot;/user/me&quot;)
+    public ResponseEntity&lt;List&lt;PrenotazioneResponse&gt;&gt; getMyBookings(@RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="nc" id="L55">        Long idUtente = securityHelper.getCurrentUserId(authHeader);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (idUtente == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();</span>
+<span class="nc" id="L57">        List&lt;PrenotazioneResponse&gt; bookings = gestionePrenotazioneService.richiediListaPerUtente(idUtente);</span>
+<span class="nc" id="L58">        return ResponseEntity.ok(bookings);</span>
+    }
+
+    @GetMapping(&quot;/user/{idUtente}&quot;)
+    public ResponseEntity&lt;List&lt;PrenotazioneResponse&gt;&gt; getUserBookings(@PathVariable Long idUtente,
+                                                                        @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="nc" id="L64">        securityHelper.requireUserIdMatch(authHeader, idUtente);</span>
+<span class="nc" id="L65">        List&lt;PrenotazioneResponse&gt; bookings = gestionePrenotazioneService.richiediListaPerUtente(idUtente);</span>
+<span class="nc" id="L66">        return ResponseEntity.ok(bookings);</span>
+    }
+
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Boolean&gt; cancelBooking(@PathVariable Long id,
+                                                  @RequestHeader(value = &quot;Authorization&quot;, required = false) String authHeader) {
+<span class="fc" id="L72">        securityHelper.requireAuth(authHeader);</span>
+<span class="fc" id="L73">        boolean result = gestionePrenotazioneService.annullaPrenotazione(id);</span>
+<span class="fc" id="L74">        return ResponseEntity.ok(result);</span>
+    }
+
+    @PostMapping(&quot;/timeout&quot;)
+    public ResponseEntity&lt;Void&gt; handleTimeout() {
+<span class="fc" id="L79">        gestionePrenotazioneService.gestisciTimeout();</span>
+<span class="fc" id="L80">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PostMapping(&quot;/{id}/notify-expiry&quot;)
+    public ResponseEntity&lt;Void&gt; notifyExpiry(@PathVariable Long id) {
+<span class="fc" id="L85">        gestionePrenotazioneService.notificaScadenzaTempo(id);</span>
+<span class="fc" id="L86">        return ResponseEntity.ok().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

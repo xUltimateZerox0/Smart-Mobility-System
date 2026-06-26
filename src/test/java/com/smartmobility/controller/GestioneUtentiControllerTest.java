@@ -2,6 +2,7 @@ package com.smartmobility.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.CorrectiveActionRequest;
+import com.smartmobility.dto.response.UtenteResponse;
 import com.smartmobility.model.Attore;
 import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.security.SecurityHelper;
@@ -15,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -110,5 +113,115 @@ class GestioneUtentiControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getUsers_ReturnsListOfUsers() throws Exception {
+        List<UtenteResponse> users = List.of(
+                new UtenteResponse(1L, 1L, "Mario", "Rossi", "mario@test.com", "attivo")
+        );
+        when(gestioneUtentiService.getElencoUtenti()).thenReturn(users);
+
+        mockMvc.perform(get("/admin/users")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].nome").value("Mario"))
+                .andExpect(jsonPath("$[0].email").value("mario@test.com"));
+    }
+
+    @Test
+    void getUsers_WhenEmpty_ReturnsEmptyList() throws Exception {
+        when(gestioneUtentiService.getElencoUtenti()).thenReturn(List.of());
+
+        mockMvc.perform(get("/admin/users")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void getUsers_WithoutAuth_ReturnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/admin/users"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void blockUser_WithValidId_ReturnsTrue() throws Exception {
+        when(gestioneUtentiService.bloccaUtente(1L)).thenReturn(true);
+
+        mockMvc.perform(post("/admin/users/1/block")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void blockUser_WithInvalidId_ReturnsNotFound() throws Exception {
+        when(gestioneUtentiService.bloccaUtente(999L))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+
+        mockMvc.perform(post("/admin/users/999/block")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void unblockUser_WithValidId_ReturnsTrue() throws Exception {
+        when(gestioneUtentiService.sbloccaUtente(1L)).thenReturn(true);
+
+        mockMvc.perform(post("/admin/users/1/unblock")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void unblockUser_WithInvalidId_ReturnsNotFound() throws Exception {
+        when(gestioneUtentiService.sbloccaUtente(999L))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+
+        mockMvc.perform(post("/admin/users/999/unblock")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void disableUser_WithValidId_ReturnsTrue() throws Exception {
+        when(gestioneUtentiService.disattivaUtente(1L)).thenReturn(true);
+
+        mockMvc.perform(post("/admin/users/1/disable")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void disableUser_WithInvalidId_ReturnsNotFound() throws Exception {
+        when(gestioneUtentiService.disattivaUtente(999L))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
+
+        mockMvc.perform(post("/admin/users/999/disable")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteReport_WithValidId_ReturnsNoContent() throws Exception {
+        mockMvc.perform(delete("/admin/users/1/report")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNoContent());
+
+        verify(gestioneUtentiService).cancellaReport(1L);
+    }
+
+    @Test
+    void deleteReport_WithInvalidId_ReturnsNotFound() throws Exception {
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Report non trovato"))
+                .when(gestioneUtentiService).cancellaReport(999L);
+
+        mockMvc.perform(delete("/admin/users/999/report")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNotFound());
     }
 }

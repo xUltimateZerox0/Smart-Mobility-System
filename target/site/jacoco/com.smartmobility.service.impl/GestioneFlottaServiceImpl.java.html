@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestioneFlottaServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.service.impl</a> &gt; <span class="el_source">GestioneFlottaServiceImpl.java</span></div><h1>GestioneFlottaServiceImpl.java</h1><pre class="source lang-java linenums">package com.smartmobility.service.impl;
+
+import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.SegnalazioneResponse;
+import com.smartmobility.integration.MezzoIoTService;
+import com.smartmobility.model.Corsa;
+import com.smartmobility.model.Mezzo;
+import com.smartmobility.model.Segnalazione;
+import com.smartmobility.model.enums.StatoMezzo;
+import com.smartmobility.model.enums.StatoSegnalazione;
+import com.smartmobility.repository.CorsaRepository;
+import com.smartmobility.repository.MezzoRepository;
+import com.smartmobility.repository.SegnalazioneRepository;
+import com.smartmobility.service.GestioneCorsaService;
+import com.smartmobility.service.GestioneFlottaService;
+import com.smartmobility.util.GeoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+@Service
+public class GestioneFlottaServiceImpl implements GestioneFlottaService {
+
+<span class="fc" id="L32">    private static final Logger log = LoggerFactory.getLogger(GestioneFlottaServiceImpl.class);</span>
+    private static final String MEZZO_NON_TROVATO = &quot;Mezzo non trovato&quot;;
+
+    private final MezzoRepository mezzoRepository;
+    private final SegnalazioneRepository segnalazioneRepository;
+    private final MezzoIoTService mezzoIoTService;
+    private final CorsaRepository corsaRepository;
+    private final GestioneCorsaService gestioneCorsaService;
+
+    private GestioneFlottaService selfProxy;
+
+    public GestioneFlottaServiceImpl(MezzoRepository mezzoRepository,
+                                      SegnalazioneRepository segnalazioneRepository,
+                                      MezzoIoTService mezzoIoTService,
+                                      CorsaRepository corsaRepository,
+<span class="fc" id="L47">                                      GestioneCorsaService gestioneCorsaService) {</span>
+<span class="fc" id="L48">        this.mezzoRepository = mezzoRepository;</span>
+<span class="fc" id="L49">        this.segnalazioneRepository = segnalazioneRepository;</span>
+<span class="fc" id="L50">        this.mezzoIoTService = mezzoIoTService;</span>
+<span class="fc" id="L51">        this.corsaRepository = corsaRepository;</span>
+<span class="fc" id="L52">        this.gestioneCorsaService = gestioneCorsaService;</span>
+<span class="fc" id="L53">    }</span>
+
+    @Autowired
+    @Lazy
+    public void setSelfProxy(GestioneFlottaService selfProxy) {
+<span class="fc" id="L58">        this.selfProxy = selfProxy;</span>
+<span class="fc" id="L59">    }</span>
+
+    @Override
+    @Transactional
+    public boolean analisiStatoFlotta(Long idFlotta) {
+<span class="fc" id="L64">        List&lt;Mezzo&gt; mezzi = mezzoRepository.findByIdFlotta(String.valueOf(idFlotta));</span>
+<span class="fc" id="L65">        boolean foundIssue = false;</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        for (Mezzo mezzo : mezzi) {</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            if (mezzo.getStato() == StatoMezzo.manutenzione) {</span>
+<span class="nc" id="L69">                continue;</span>
+            }
+
+<span class="fc" id="L72">            String motivazione = null;</span>
+<span class="pc bpc" id="L73" title="1 of 4 branches missed.">            if (mezzo.getCondizione() != null &amp;&amp; mezzo.getCondizione().toLowerCase().startsWith(&quot;danneggi&quot;)) {</span>
+<span class="fc" id="L74">                motivazione = &quot;Veicolo danneggiato: &quot; + mezzo.getCondizione();</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            } else if (mezzo.getAutonomia() &lt;= 0) {</span>
+<span class="fc" id="L76">                motivazione = &quot;Autonomia esaurita&quot;;</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">            } else if (&quot;manutenzione_necessaria&quot;.equalsIgnoreCase(mezzo.getCondizione())) {</span>
+<span class="nc" id="L78">                motivazione = &quot;Manutenzione necessaria: &quot; + mezzo.getCondizione();</span>
+            }
+
+<span class="fc bfc" id="L81" title="All 2 branches covered.">            if (motivazione != null) {</span>
+<span class="fc" id="L82">                Segnalazione segnalazione = new Segnalazione();</span>
+<span class="fc" id="L83">                segnalazione.setMezzo(mezzo);</span>
+<span class="fc" id="L84">                segnalazione.setStato(StatoSegnalazione.aperta);</span>
+<span class="fc" id="L85">                segnalazione.setData(LocalDate.now());</span>
+<span class="fc" id="L86">                segnalazione.setOra(LocalTime.now());</span>
+<span class="fc" id="L87">                segnalazione.setMotivazione(motivazione);</span>
+<span class="fc" id="L88">                segnalazioneRepository.save(segnalazione);</span>
+
+<span class="fc" id="L90">                mezzo.setStato(StatoMezzo.manutenzione);</span>
+<span class="fc" id="L91">                mezzo.setCondizione(&quot;manutenzione&quot;);</span>
+<span class="fc" id="L92">                mezzoRepository.save(mezzo);</span>
+
+<span class="fc" id="L94">                foundIssue = true;</span>
+            }
+<span class="fc" id="L96">        }</span>
+
+<span class="fc" id="L98">        return foundIssue;</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean bloccaMezzo(Long idMezzo) {
+<span class="fc" id="L104">        Mezzo mezzo = mezzoRepository.findById(idMezzo)</span>
+<span class="pc" id="L105">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, MEZZO_NON_TROVATO));</span>
+
+<span class="fc" id="L107">        List&lt;Corsa&gt; corseAttive = corsaRepository.findByMezzoIdAndOrarioFineIsNull(idMezzo);</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        for (Corsa corsa : corseAttive) {</span>
+            try {
+<span class="nc" id="L110">                gestioneCorsaService.forzaTerminaCorsa(corsa.getIdCorsa());</span>
+<span class="nc" id="L111">                log.info(&quot;Corsa {} terminata forzatamente per blocco veicolo {}&quot;, corsa.getIdCorsa(), idMezzo);</span>
+<span class="nc" id="L112">            } catch (Exception e) {</span>
+<span class="nc" id="L113">                log.error(&quot;Errore terminazione corsa {} per blocco veicolo: {}&quot;, corsa.getIdCorsa(), e.getMessage());</span>
+<span class="nc" id="L114">            }</span>
+<span class="nc" id="L115">        }</span>
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (!mezzoIoTService.bloccoMezzoFisico(idMezzo)) {</span>
+<span class="fc" id="L118">            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, &quot;Blocco remoto fallito&quot;);</span>
+        }
+
+<span class="fc" id="L121">        mezzo.setStato(StatoMezzo.bloccato);</span>
+<span class="fc" id="L122">        mezzoRepository.save(mezzo);</span>
+
+<span class="fc" id="L124">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean sbloccaMezzo(Long idMezzo) {
+<span class="nc" id="L130">        Mezzo mezzo = mezzoRepository.findById(idMezzo)</span>
+<span class="nc" id="L131">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, MEZZO_NON_TROVATO));</span>
+
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (!mezzoIoTService.sbloccoMezzoFisico(idMezzo)) {</span>
+<span class="nc" id="L134">            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, &quot;Sblocco remoto fallito&quot;);</span>
+        }
+
+<span class="nc" id="L137">        mezzo.setStato(StatoMezzo.disponibile);</span>
+<span class="nc" id="L138">        mezzoRepository.save(mezzo);</span>
+
+<span class="nc" id="L140">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean avviaManutenzione(Long idFlotta) {
+<span class="fc" id="L146">        List&lt;Mezzo&gt; mezzi = mezzoRepository.findByIdFlotta(String.valueOf(idFlotta));</span>
+
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        if (mezzi.isEmpty()) {</span>
+<span class="nc" id="L149">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Nessun mezzo trovato per la flotta&quot;);</span>
+        }
+
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        for (Mezzo mezzo : mezzi) {</span>
+<span class="fc" id="L153">            selfProxy.avviaManutenzioneVeicolo(mezzo.getIdMezzo());</span>
+<span class="fc" id="L154">        }</span>
+
+<span class="fc" id="L156">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    @SuppressWarnings(&quot;java:S3516&quot;)
+    public boolean avviaManutenzioneVeicolo(Long idMezzo) {
+<span class="fc" id="L163">        Mezzo mezzo = mezzoRepository.findById(idMezzo)</span>
+<span class="pc" id="L164">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, MEZZO_NON_TROVATO));</span>
+
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        if (mezzo.getStato() == StatoMezzo.manutenzione) {</span>
+<span class="nc" id="L167">            return true;</span>
+        }
+
+<span class="fc" id="L170">        mezzo.setStato(StatoMezzo.manutenzione);</span>
+<span class="fc" id="L171">        mezzo.setCondizione(&quot;manutenzione&quot;);</span>
+
+<span class="fc" id="L173">        Segnalazione segnalazione = new Segnalazione();</span>
+<span class="fc" id="L174">        segnalazione.setMezzo(mezzo);</span>
+<span class="fc" id="L175">        segnalazione.setStato(StatoSegnalazione.aperta);</span>
+<span class="fc" id="L176">        segnalazione.setData(LocalDate.now());</span>
+<span class="fc" id="L177">        segnalazione.setOra(LocalTime.now());</span>
+<span class="fc" id="L178">        segnalazione.setMotivazione(&quot;Manutenzione manuale&quot;);</span>
+<span class="fc" id="L179">        segnalazioneRepository.save(segnalazione);</span>
+
+<span class="fc" id="L181">        mezzoRepository.save(mezzo);</span>
+
+<span class="fc" id="L183">        return true;</span>
+    }
+
+    @Override
+    public List&lt;MezzoResponse&gt; getCondizioniMezzi(Long idFlotta) {
+<span class="fc" id="L188">        List&lt;Mezzo&gt; mezzi = mezzoRepository.findByIdFlotta(String.valueOf(idFlotta));</span>
+
+<span class="fc" id="L190">        return mezzi.stream()</span>
+<span class="fc" id="L191">                .map(this::toMezzoResponse)</span>
+<span class="fc" id="L192">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;SegnalazioneResponse&gt; getSegnalazioni() {
+<span class="nc" id="L197">        return segnalazioneRepository.findAll().stream()</span>
+<span class="nc" id="L198">                .map(this::toSegnalazioneResponse)</span>
+<span class="nc" id="L199">                .toList();</span>
+    }
+
+    @Override
+    public List&lt;SegnalazioneResponse&gt; getSegnalazioniByStato(String stato) {
+        try {
+<span class="nc" id="L205">            StatoSegnalazione statoEnum = StatoSegnalazione.valueOf(stato);</span>
+<span class="nc" id="L206">            return segnalazioneRepository.findByStato(statoEnum).stream()</span>
+<span class="nc" id="L207">                    .map(this::toSegnalazioneResponse)</span>
+<span class="nc" id="L208">                    .toList();</span>
+<span class="nc" id="L209">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L210">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Stato segnalazione non valido: &quot; + stato);</span>
+        }
+    }
+
+    private SegnalazioneResponse toSegnalazioneResponse(Segnalazione s) {
+<span class="nc" id="L215">        return new SegnalazioneResponse(</span>
+<span class="nc" id="L216">                s.getIdSegnalazione(),</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">                s.getMezzo() != null ? s.getMezzo().getIdMezzo() : null,</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">                s.getStato() != null ? s.getStato().name() : null,</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                s.getOra() != null ? s.getOra().toString() : null,</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">                s.getData() != null ? s.getData().toString() : null,</span>
+<span class="nc" id="L221">                s.getMotivazione()</span>
+        );
+    }
+
+    private MezzoResponse toMezzoResponse(Mezzo mezzo) {
+<span class="fc" id="L226">        double[] coords = GeoUtils.parseCoordinates(mezzo.getCoordinateMezzo());</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        String tempoDisp = mezzo.getTempoDisponibilita() != null ? mezzo.getTempoDisponibilita().toString() : null;</span>
+<span class="fc" id="L228">        return new MezzoResponse(</span>
+<span class="fc" id="L229">                mezzo.getIdMezzo(),</span>
+<span class="fc" id="L230">                mezzo.getTipo(),</span>
+<span class="fc" id="L231">                mezzo.getStato().name(),</span>
+                coords[0],
+                coords[1],
+<span class="fc" id="L234">                mezzo.getAutonomia(),</span>
+<span class="fc" id="L235">                mezzo.getCostoOrario(),</span>
+<span class="fc" id="L236">                &quot;MEZZO-&quot; + mezzo.getIdMezzo(),</span>
+                tempoDisp,
+<span class="fc" id="L238">                mezzo.getCondizione(),</span>
+<span class="fc" id="L239">                mezzo.getIdFlotta()</span>
+        );
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

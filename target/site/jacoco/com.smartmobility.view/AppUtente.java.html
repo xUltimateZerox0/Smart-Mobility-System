@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppUtente.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.view</a> &gt; <span class="el_source">AppUtente.java</span></div><h1>AppUtente.java</h1><pre class="source lang-java linenums">package com.smartmobility.view;
+
+import com.smartmobility.dto.response.CorsaResponse;
+import com.smartmobility.dto.response.MetodoPagamentoResponse;
+import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.StimaCorsaResponse;
+import com.smartmobility.service.GestioneAutenticazioneService;
+import com.smartmobility.service.GestioneCorsaService;
+import com.smartmobility.service.GestionePrenotazioneService;
+import com.smartmobility.service.GestorePagamentoService;
+import com.smartmobility.service.RicercaMezziService;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+@Component
+@SuppressWarnings(&quot;unused&quot;)
+public class AppUtente {
+
+<span class="fc" id="L23">    private static final Logger LOG = Logger.getLogger(AppUtente.class.getName());</span>
+
+    private final GestioneCorsaService gestioneCorsaService;
+    private final GestorePagamentoService gestorePagamentoService;
+    private final RicercaMezziService ricercaMezziService;
+    private final GestionePrenotazioneService gestionePrenotazioneService;
+    private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idUtente;
+    private Long idSessioneUtente;
+
+<span class="fc" id="L33">    public AppUtente(GestioneCorsaService gestioneCorsaService, GestorePagamentoService gestorePagamentoService, RicercaMezziService ricercaMezziService, GestionePrenotazioneService gestionePrenotazioneService, GestioneAutenticazioneService gestioneAutenticazioneService) {</span>
+<span class="fc" id="L34">        this.gestioneCorsaService = gestioneCorsaService;</span>
+<span class="fc" id="L35">        this.gestorePagamentoService = gestorePagamentoService;</span>
+<span class="fc" id="L36">        this.ricercaMezziService = ricercaMezziService;</span>
+<span class="fc" id="L37">        this.gestionePrenotazioneService = gestionePrenotazioneService;</span>
+<span class="fc" id="L38">        this.gestioneAutenticazioneService = gestioneAutenticazioneService;</span>
+<span class="fc" id="L39">    }</span>
+
+    public void mostraErrore(String msg) {
+<span class="nc" id="L42">        LOG.log(Level.SEVERE, &quot;ERRORE: {0}&quot;, msg);</span>
+<span class="nc" id="L43">    }</span>
+
+    public void mostraStima(Long idCorsa) {
+<span class="nc" id="L46">        StimaCorsaResponse result = gestioneCorsaService.aggiornaStima(idCorsa);</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (result != null) {</span>
+<span class="nc" id="L48">            LOG.log(Level.INFO, &quot;Costo stimato: {0} (tariffa: {1} €/h)&quot;, new Object[]{result.getCosto(), result.getTariffa()});</span>
+        }
+<span class="nc" id="L50">    }</span>
+
+    public void mostraCorsaAttiva() {
+        try {
+<span class="nc" id="L54">            CorsaResponse corsa = gestioneCorsaService.getCorsaAttiva(this.idUtente);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            if (corsa != null) {</span>
+<span class="nc" id="L56">                LOG.info(&quot;&gt;&gt;&gt; SEZIONE CORSA &lt;&lt;&lt;&quot;);</span>
+<span class="nc" id="L57">                LOG.log(Level.INFO, &quot;ID Corsa: {0}&quot;, corsa.getId());</span>
+<span class="nc" id="L58">                LOG.log(Level.INFO, &quot;Mezzo: {0}&quot;, corsa.getIdMezzo());</span>
+<span class="nc" id="L59">                LOG.log(Level.INFO, &quot;Inizio: {0}&quot;, corsa.getDataInizio());</span>
+<span class="nc" id="L60">                LOG.log(Level.INFO, &quot;Costo: {0}&quot;, corsa.getCosto());</span>
+<span class="nc" id="L61">                LOG.log(Level.INFO, &quot;Stato: {0}&quot;, corsa.getStato());</span>
+            } else {
+<span class="nc" id="L63">                LOG.info(&quot;&gt;&gt;&gt; NESSUNA CORSA ATTIVA &lt;&lt;&lt;&quot;);</span>
+            }
+<span class="nc" id="L65">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore nel recupero corsa attiva&quot;);</span>
+<span class="nc" id="L67">        }</span>
+<span class="nc" id="L68">    }</span>
+
+    public void mostraSuccesso() {
+<span class="nc" id="L71">        LOG.info(&quot;Operazione completata con successo&quot;);</span>
+<span class="nc" id="L72">    }</span>
+
+    public void mostraFineCorsa() {
+<span class="nc" id="L75">        LOG.info(&quot;Corsa terminata&quot;);</span>
+<span class="nc" id="L76">    }</span>
+
+    public void mostraQRCode() {
+<span class="nc" id="L79">        LOG.info(&quot;QR Code generato&quot;);</span>
+<span class="nc" id="L80">    }</span>
+
+    public void mostraRipresaCorsa() {
+<span class="nc" id="L83">        LOG.info(&quot;Corsa ripresa&quot;);</span>
+<span class="nc" id="L84">    }</span>
+
+    public void mostraMezzi(List&lt;MezzoResponse&gt; mezzi) {
+<span class="nc" id="L87">        LOG.log(Level.INFO, &quot;Mezzi trovati: {0}&quot;, mezzi.size());</span>
+<span class="nc" id="L88">    }</span>
+
+    public void renderizzaDettagliVeicolo(MezzoResponse mezzo) {
+<span class="nc" id="L91">        LOG.log(Level.INFO, &quot;Dettagli: {0}&quot;, mezzo.getTipo());</span>
+<span class="nc" id="L92">    }</span>
+
+    public boolean scansionaQRCode(String qrCode) {
+        try {
+<span class="nc" id="L96">            boolean sbloccato = gestioneCorsaService.richiediSblocco(qrCode);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            if (sbloccato) {</span>
+<span class="nc" id="L98">                LOG.log(Level.INFO, &quot;QR Code validato: {0}&quot;, qrCode);</span>
+<span class="nc" id="L99">                return true;</span>
+            } else {
+<span class="nc" id="L101">                mostraErrore(&quot;Impossibile sbloccare il veicolo con il QR Code fornito&quot;);</span>
+<span class="nc" id="L102">                return false;</span>
+            }
+<span class="nc" id="L104">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;QR Code non valido&quot;);</span>
+<span class="nc" id="L106">            return false;</span>
+        }
+    }
+
+    public void selezionaMetodo(Long idMetodoPagamento) {
+        try {
+<span class="nc" id="L112">            gestioneCorsaService.acquisisciSceltaMetodo(idMetodoPagamento, this.idUtente);</span>
+<span class="nc" id="L113">            LOG.log(Level.INFO, &quot;Metodo di pagamento selezionato e convalidato: {0}&quot;, idMetodoPagamento);</span>
+<span class="nc" id="L114">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore nella selezione del metodo&quot;);</span>
+<span class="nc" id="L116">        }</span>
+<span class="nc" id="L117">    }</span>
+
+    public void avviaCorsaConQR(Long idMezzo, String qrCode, Long idMetodoPagamento) {
+<span class="nc bnc" id="L120" title="All 4 branches missed.">        if (qrCode == null || qrCode.isBlank()) {</span>
+<span class="nc" id="L121">            mostraErrore(&quot;QR Code non valido o non scansionato. Scansiona il QR Code del veicolo prima di avviare la corsa.&quot;);</span>
+<span class="nc" id="L122">            return;</span>
+        }
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (idMetodoPagamento == null) {</span>
+<span class="nc" id="L125">            mostraErrore(&quot;Nessun metodo di pagamento selezionato. Seleziona un metodo di pagamento prima di avviare la corsa.&quot;);</span>
+<span class="nc" id="L126">            return;</span>
+        }
+        try {
+<span class="nc" id="L129">            gestioneCorsaService.acquisisciSceltaMetodo(idMetodoPagamento, this.idUtente);</span>
+<span class="nc" id="L130">            Long idCorsa = gestioneCorsaService.avviaCorsa(idMezzo, this.idUtente, qrCode);</span>
+<span class="nc" id="L131">            LOG.log(Level.INFO, &quot;CORSA AVVIATA con ID: {0}&quot;, idCorsa);</span>
+<span class="nc" id="L132">            mostraCorsaAttiva();</span>
+<span class="nc" id="L133">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore durante l'avvio della corsa&quot;);</span>
+<span class="nc" id="L135">        }</span>
+<span class="nc" id="L136">    }</span>
+
+    public void terminazioneCorsa(Long idCorsa) {
+        try {
+<span class="nc" id="L140">            CorsaResponse response = gestioneCorsaService.terminaCorsa(idCorsa);</span>
+<span class="nc" id="L141">            LOG.log(Level.INFO, &quot;Corsa terminata. Costo finale: {0}&quot;, response.getCosto());</span>
+<span class="nc" id="L142">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore durante la terminazione della corsa&quot;);</span>
+<span class="nc" id="L144">        }</span>
+<span class="nc" id="L145">    }</span>
+
+    public void sospendiCorsa(Long idCorsa) {
+        try {
+<span class="nc" id="L149">            boolean sospesa = gestioneCorsaService.sospensioneCorsa(idCorsa);</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">            LOG.info(sospesa ? &quot;Corsa sospesa/ripresa&quot; : &quot;Impossibile sospendere la corsa&quot;);</span>
+<span class="nc" id="L151">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore durante la sospensione della corsa&quot;);</span>
+<span class="nc" id="L153">        }</span>
+<span class="nc" id="L154">    }</span>
+
+    public void selezionaMezzo(Long idMezzo) {
+<span class="nc" id="L157">        LOG.log(Level.INFO, &quot;Mezzo selezionato: {0}&quot;, idMezzo);</span>
+<span class="nc" id="L158">    }</span>
+
+    public void inserisciDestinazione(String indirizzoArrivo) {
+<span class="nc" id="L161">        LOG.log(Level.INFO, &quot;Destinazione: {0}&quot;, indirizzoArrivo);</span>
+<span class="nc" id="L162">    }</span>
+
+    public void avviaRicercaMezzi(String coordinateUtente, float raggio) {
+<span class="nc" id="L165">        List&lt;MezzoResponse&gt; mezzi = ricercaMezziService.visualizzaMezziVicini(coordinateUtente, raggio);</span>
+<span class="nc" id="L166">        mostraMezzi(mezzi);</span>
+<span class="nc" id="L167">    }</span>
+
+    public void confermaEspansione() {
+<span class="nc" id="L170">        LOG.info(&quot;Espansione confermata&quot;);</span>
+<span class="nc" id="L171">    }</span>
+
+    public void notificaAzione(Long idUtente, String azione) {
+<span class="nc" id="L174">        LOG.log(Level.INFO, &quot;Notifica a {0}: {1}&quot;, new Object[]{idUtente, azione});</span>
+<span class="nc" id="L175">    }</span>
+
+    public void ottieniMetodiSalvati() {
+        try {
+<span class="nc" id="L179">            List&lt;MetodoPagamentoResponse&gt; metodi = gestorePagamentoService.recuperaMetodiSalvati(this.idUtente);</span>
+<span class="nc" id="L180">            LOG.log(Level.INFO, &quot;METODI DI PAGAMENTO SALVATI ({0}):&quot;, metodi.size());</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            for (MetodoPagamentoResponse m : metodi) {</span>
+<span class="nc" id="L182">                LOG.log(Level.INFO, &quot;  ID={0} | carta={1} | intestatario={2}&quot;, new Object[]{m.getId(), m.getNumCarta(), m.getIntestatarioCarta()});</span>
+<span class="nc" id="L183">            }</span>
+<span class="nc" id="L184">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore nel recupero metodi&quot;);</span>
+<span class="nc" id="L186">        }</span>
+<span class="nc" id="L187">    }</span>
+
+    public void richiestaLogout(String email) {
+<span class="nc" id="L190">        gestioneAutenticazioneService.inviaRichiestaLogout(email);</span>
+<span class="nc" id="L191">    }</span>
+
+    public Long getIdUtente() {
+<span class="nc" id="L194">        return idUtente;</span>
+    }
+
+    public void setIdUtente(Long idUtente) {
+<span class="nc" id="L198">        this.idUtente = idUtente;</span>
+<span class="nc" id="L199">    }</span>
+
+    public Long getIdSessioneUtente() {
+<span class="nc" id="L202">        return idSessioneUtente;</span>
+    }
+
+    public void setIdSessioneUtente(Long idSessioneUtente) {
+<span class="nc" id="L206">        this.idSessioneUtente = idSessioneUtente;</span>
+<span class="nc" id="L207">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

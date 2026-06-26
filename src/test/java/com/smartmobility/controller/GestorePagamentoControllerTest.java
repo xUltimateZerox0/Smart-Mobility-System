@@ -6,6 +6,7 @@ import com.smartmobility.dto.request.ProcessPaymentRequest;
 import com.smartmobility.dto.response.MetodoPagamentoResponse;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestorePagamentoService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,6 +16,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +39,12 @@ class GestorePagamentoControllerTest {
 
     @MockBean
     private SecurityHelper securityHelper;
+
+    @BeforeEach
+    void setUp() {
+        doNothing().when(securityHelper).requireUserIdMatch(any(), anyLong());
+        when(securityHelper.getCurrentUserId(anyString())).thenReturn(1L);
+    }
 
     @Test
     void processPayment_WithValidData_ReturnsTrue() throws Exception {
@@ -97,5 +109,39 @@ class GestorePagamentoControllerTest {
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].numCarta").value("****1111"))
                 .andExpect(jsonPath("$[0].intestatarioCarta").value("Mario Rossi"));
+    }
+
+    @Test
+    void getSavedMethods_WithoutIdUtente_ReturnsCurrentUserMethods() throws Exception {
+        List<MetodoPagamentoResponse> methods = List.of(
+                new MetodoPagamentoResponse(2L, "****2222", "Anna Bianchi", null)
+        );
+        doReturn(2L).when(securityHelper).getCurrentUserId(anyString());
+        when(gestorePagamentoService.recuperaMetodiSalvati(2L)).thenReturn(methods);
+
+        mockMvc.perform(get("/payments/methods")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(2L))
+                .andExpect(jsonPath("$[0].intestatarioCarta").value("Anna Bianchi"));
+    }
+
+    @Test
+    void getSavedMethods_WhenUnauthorized_ReturnsUnauthorized() throws Exception {
+        when(securityHelper.getCurrentUserId(anyString())).thenReturn(null);
+
+        mockMvc.perform(get("/payments/methods")
+                        .header("Authorization", "Bearer invalid-token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void processPayment_WithInvalidData_ReturnsBadRequest() throws Exception {
+        String invalidJson = "{\"idUtente\": null, \"idMetodoPagamento\": null}";
+
+        mockMvc.perform(post("/payments/process")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest());
     }
 }

@@ -1,6 +1,7 @@
 package com.smartmobility.controller;
 
 import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.SegnalazioneResponse;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneFlottaService;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,6 +114,99 @@ class GestioneFlottaControllerTest {
         when(gestioneFlottaService.getCondizioniMezzi(1L)).thenReturn(List.of());
 
         mockMvc.perform(get("/fleet/1/conditions")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void unlockVehicle_WithValidId_ReturnsTrue() throws Exception {
+        when(gestioneFlottaService.sbloccaMezzo(1L)).thenReturn(true);
+
+        mockMvc.perform(post("/fleet/vehicles/1/unlock")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void unlockVehicle_WithInvalidId_ReturnsNotFound() throws Exception {
+        when(gestioneFlottaService.sbloccaMezzo(999L))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Mezzo non trovato"));
+
+        mockMvc.perform(post("/fleet/vehicles/999/unlock")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void startVehicleMaintenance_WithValidId_ReturnsTrue() throws Exception {
+        when(gestioneFlottaService.avviaManutenzioneVeicolo(1L)).thenReturn(true);
+
+        mockMvc.perform(post("/fleet/vehicles/1/maintenance")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void startVehicleMaintenance_WithInvalidId_ReturnsNotFound() throws Exception {
+        when(gestioneFlottaService.avviaManutenzioneVeicolo(999L))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Mezzo non trovato"));
+
+        mockMvc.perform(post("/fleet/vehicles/999/maintenance")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getSegnalazioni_ReturnsList() throws Exception {
+        List<SegnalazioneResponse> segnalazioni = List.of(
+                new SegnalazioneResponse(1L, 2L, "aperta", "10:30", "2026-06-26", "Guasto meccanico")
+        );
+        when(gestioneFlottaService.getSegnalazioni()).thenReturn(segnalazioni);
+
+        mockMvc.perform(get("/fleet/segnalazioni")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idSegnalazione").value(1L))
+                .andExpect(jsonPath("$[0].stato").value("aperta"))
+                .andExpect(jsonPath("$[0].motivazione").value("Guasto meccanico"));
+    }
+
+    @Test
+    void getSegnalazioni_WhenEmpty_ReturnsEmptyList() throws Exception {
+        when(gestioneFlottaService.getSegnalazioni()).thenReturn(List.of());
+
+        mockMvc.perform(get("/fleet/segnalazioni")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void getSegnalazioniByStato_WithValidStato_ReturnsList() throws Exception {
+        List<SegnalazioneResponse> segnalazioni = List.of(
+                new SegnalazioneResponse(2L, 3L, "aperta", "11:00", "2026-06-26", "Batteria scarica")
+        );
+        when(gestioneFlottaService.getSegnalazioniByStato("aperta")).thenReturn(segnalazioni);
+
+        mockMvc.perform(get("/fleet/segnalazioni/aperta")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idSegnalazione").value(2L))
+                .andExpect(jsonPath("$[0].stato").value("aperta"));
+    }
+
+    @Test
+    void getSegnalazioniByStato_WithNoResults_ReturnsEmptyList() throws Exception {
+        when(gestioneFlottaService.getSegnalazioniByStato("risolta")).thenReturn(List.of());
+
+        mockMvc.perform(get("/fleet/segnalazioni/risolta")
                         .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())

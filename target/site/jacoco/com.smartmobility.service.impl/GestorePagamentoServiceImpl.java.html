@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestorePagamentoServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.service.impl</a> &gt; <span class="el_source">GestorePagamentoServiceImpl.java</span></div><h1>GestorePagamentoServiceImpl.java</h1><pre class="source lang-java linenums">package com.smartmobility.service.impl;
+
+import com.smartmobility.dto.response.MetodoPagamentoResponse;
+import com.smartmobility.integration.GatewayPagamentoService;
+import com.smartmobility.model.MetodoPagamento;
+import com.smartmobility.model.Utente;
+import com.smartmobility.repository.MetodoPagamentoRepository;
+import com.smartmobility.repository.UtenteRepository;
+import com.smartmobility.service.GestorePagamentoService;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+@Service
+public class GestorePagamentoServiceImpl implements GestorePagamentoService {
+
+    private static final String UTENTE_NON_TROVATO = &quot;Utente non trovato&quot;;
+
+    private final MetodoPagamentoRepository metodoPagamentoRepository;
+    private final UtenteRepository utenteRepository;
+    private final GatewayPagamentoService gatewayPagamentoService;
+
+    public GestorePagamentoServiceImpl(MetodoPagamentoRepository metodoPagamentoRepository,
+                                        UtenteRepository utenteRepository,
+<span class="fc" id="L28">                                        GatewayPagamentoService gatewayPagamentoService) {</span>
+<span class="fc" id="L29">        this.metodoPagamentoRepository = metodoPagamentoRepository;</span>
+<span class="fc" id="L30">        this.utenteRepository = utenteRepository;</span>
+<span class="fc" id="L31">        this.gatewayPagamentoService = gatewayPagamentoService;</span>
+<span class="fc" id="L32">    }</span>
+
+    @Override
+    @Transactional
+    public boolean pagamentoCorsa(Long idUtente, Long idMetodoPagamento, Long idCorsa, double costo) {
+<span class="fc" id="L37">        utenteRepository.findByIdUtente(idUtente)</span>
+<span class="fc" id="L38">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+
+<span class="fc" id="L40">        MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)</span>
+<span class="pc" id="L41">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Metodo pagamento non trovato&quot;));</span>
+
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (!metodo.getUtente().getIdUtente().equals(idUtente)) {</span>
+<span class="fc" id="L44">            throw new ResponseStatusException(HttpStatus.FORBIDDEN, &quot;Metodo pagamento non appartiene all'utente&quot;);</span>
+        }
+
+<span class="fc" id="L47">        return gatewayPagamentoService.effettuaPagamento(idMetodoPagamento, idCorsa, costo);</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean elaboraDatiCarta(Long idUtente, String numCarta, String dsCarta, String cvv, String intestatarioCarta) {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (metodoPagamentoRepository.existsByNumCarta(numCarta)) {</span>
+<span class="fc" id="L54">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Carta già registrata&quot;);</span>
+        }
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (!gatewayPagamentoService.convalidaCarta(numCarta, dsCarta, cvv, intestatarioCarta)) {</span>
+<span class="fc" id="L58">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Carta non valida&quot;);</span>
+        }
+
+<span class="fc" id="L61">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="pc" id="L62">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+
+<span class="fc" id="L64">        MetodoPagamento metodo = new MetodoPagamento();</span>
+<span class="fc" id="L65">        metodo.setNumCarta(numCarta);</span>
+<span class="fc" id="L66">        metodo.setIntestatarioCarta(intestatarioCarta);</span>
+<span class="fc" id="L67">        metodo.setDsCarta(dsCarta);</span>
+<span class="fc" id="L68">        metodo.setUtente(utente);</span>
+<span class="fc" id="L69">        metodoPagamentoRepository.save(metodo);</span>
+
+<span class="fc" id="L71">        return true;</span>
+    }
+
+    @Override
+    public List&lt;MetodoPagamentoResponse&gt; recuperaMetodiSalvati(Long idUtente) {
+<span class="fc" id="L76">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="pc" id="L77">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+<span class="fc" id="L78">        return metodoPagamentoRepository.findByIdUtente(utente.getIdUtente()).stream()</span>
+<span class="fc" id="L79">                .map(m -&gt; new MetodoPagamentoResponse(</span>
+<span class="fc" id="L80">                        m.getIdMetodoPagamento(),</span>
+<span class="fc" id="L81">                        maskCardNumber(m.getNumCarta()),</span>
+<span class="fc" id="L82">                        m.getIntestatarioCarta(),</span>
+<span class="fc" id="L83">                        m.getDsCarta()))</span>
+<span class="fc" id="L84">                .toList();</span>
+    }
+
+    private String maskCardNumber(String numCarta) {
+<span class="pc bpc" id="L88" title="2 of 4 branches missed.">        if (numCarta == null || numCarta.length() &lt; 4) return &quot;****&quot;;</span>
+<span class="fc" id="L89">        return &quot;****&quot; + numCarta.substring(numCarta.length() - 4);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

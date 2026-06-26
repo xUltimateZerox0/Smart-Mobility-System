@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.request.AnalyzeStatisticsRequest;
 import com.smartmobility.dto.request.ExportStatisticsRequest;
 import com.smartmobility.dto.response.CorsaResponse;
+import com.smartmobility.dto.response.MezzoResponse;
 import java.util.Map;
 import com.smartmobility.dto.response.StatisticheResponse;
 import com.smartmobility.security.SecurityHelper;
@@ -126,5 +127,35 @@ class GestioneStatisticheControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void getFleetAnalysis_ReturnsFleetData() throws Exception {
+        List<MezzoResponse> mezzi = List.of(
+                new MezzoResponse(1L, "bici", "disponibile", 41.9028, 12.4964, 80.0, 5.0, "FLOTTA-1")
+        );
+        Map<String, Long> stats = Map.of("totaleMezzi", 10L, "mezziDisponibili", 7L);
+        when(gestioneStatisticheService.analisiStatoFlotta()).thenReturn(mezzi);
+        when(gestioneStatisticheService.getStatisticheFlotta()).thenReturn(stats);
+
+        mockMvc.perform(get("/statistics/fleet")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.veicoli[0].tipo").value("bici"))
+                .andExpect(jsonPath("$.statistiche.totaleMezzi").value(10))
+                .andExpect(jsonPath("$.statistiche.mezziDisponibili").value(7));
+    }
+
+    @Test
+    void getFleetAnalysis_WhenEmpty_ReturnsEmptyData() throws Exception {
+        when(gestioneStatisticheService.analisiStatoFlotta()).thenReturn(List.of());
+        when(gestioneStatisticheService.getStatisticheFlotta()).thenReturn(Map.of());
+
+        mockMvc.perform(get("/statistics/fleet")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.veicoli").isArray())
+                .andExpect(jsonPath("$.veicoli").isEmpty())
+                .andExpect(jsonPath("$.statistiche").isMap());
     }
 }

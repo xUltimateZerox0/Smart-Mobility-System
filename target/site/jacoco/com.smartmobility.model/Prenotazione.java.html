@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Prenotazione.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">Prenotazione.java</span></div><h1>Prenotazione.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import com.smartmobility.model.enums.StatoPrenotazione;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+@Entity
+@Table(name = &quot;prenotazione&quot;)
+public class Prenotazione {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id_prenotazione&quot;)
+    private Long idPrenotazione;
+
+    @Enumerated(EnumType.STRING)
+    private StatoPrenotazione stato;
+
+    @Column(name = &quot;orario_inizio&quot;)
+    private LocalTime orarioInizio;
+
+    private LocalDate data;
+
+    @Column(name = &quot;qr_code&quot;)
+    private String qrCode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;id_utente&quot;)
+    private Utente utente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;id_mezzo&quot;)
+    private Mezzo mezzo;
+
+<span class="fc" id="L36">    public Prenotazione() { /* required by JPA */ }</span>
+
+    public Long getIdPrenotazione() {
+<span class="fc" id="L39">        return idPrenotazione;</span>
+    }
+
+    public void setIdPrenotazione(Long idPrenotazione) {
+<span class="fc" id="L43">        this.idPrenotazione = idPrenotazione;</span>
+<span class="fc" id="L44">    }</span>
+
+    public StatoPrenotazione getStato() {
+<span class="fc" id="L47">        return stato;</span>
+    }
+
+    public void setStato(StatoPrenotazione stato) {
+<span class="fc" id="L51">        this.stato = stato;</span>
+<span class="fc" id="L52">    }</span>
+
+    public LocalTime getOrarioInizio() {
+<span class="fc" id="L55">        return orarioInizio;</span>
+    }
+
+    public void setOrarioInizio(LocalTime orarioInizio) {
+<span class="fc" id="L59">        this.orarioInizio = orarioInizio;</span>
+<span class="fc" id="L60">    }</span>
+
+    public LocalDate getData() {
+<span class="fc" id="L63">        return data;</span>
+    }
+
+    public void setData(LocalDate data) {
+<span class="fc" id="L67">        this.data = data;</span>
+<span class="fc" id="L68">    }</span>
+
+    public String getQrCode() {
+<span class="fc" id="L71">        return qrCode;</span>
+    }
+
+    public void setQrCode(String qrCode) {
+<span class="fc" id="L75">        this.qrCode = qrCode;</span>
+<span class="fc" id="L76">    }</span>
+
+    public Utente getUtente() {
+<span class="fc" id="L79">        return utente;</span>
+    }
+
+    public void setUtente(Utente utente) {
+<span class="fc" id="L83">        this.utente = utente;</span>
+<span class="fc" id="L84">    }</span>
+
+    public Mezzo getMezzo() {
+<span class="fc" id="L87">        return mezzo;</span>
+    }
+
+    public void setMezzo(Mezzo mezzo) {
+<span class="fc" id="L91">        this.mezzo = mezzo;</span>
+<span class="fc" id="L92">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

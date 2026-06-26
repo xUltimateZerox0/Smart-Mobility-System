@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZonaGeografica.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">ZonaGeografica.java</span></div><h1>ZonaGeografica.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import com.smartmobility.model.enums.TipoRestrizione;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = &quot;zona_geografica&quot;)
+public class ZonaGeografica {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id_area&quot;)
+    private Long idArea;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;tipo_restrizione&quot;)
+    private TipoRestrizione tipoRestrizione;
+
+    @Column(name = &quot;note_restrizione&quot;)
+    private String noteRestrizione;
+
+    private String zona;
+
+<span class="fc" id="L24">    public ZonaGeografica() { /* required by JPA */ }</span>
+
+    public Long getIdArea() {
+<span class="fc" id="L27">        return idArea;</span>
+    }
+
+    public void setIdArea(Long idArea) {
+<span class="fc" id="L31">        this.idArea = idArea;</span>
+<span class="fc" id="L32">    }</span>
+
+    public TipoRestrizione getTipoRestrizione() {
+<span class="fc" id="L35">        return tipoRestrizione;</span>
+    }
+
+    public void setTipoRestrizione(TipoRestrizione tipoRestrizione) {
+<span class="fc" id="L39">        this.tipoRestrizione = tipoRestrizione;</span>
+<span class="fc" id="L40">    }</span>
+
+    public String getNoteRestrizione() {
+<span class="fc" id="L43">        return noteRestrizione;</span>
+    }
+
+    public void setNoteRestrizione(String noteRestrizione) {
+<span class="fc" id="L47">        this.noteRestrizione = noteRestrizione;</span>
+<span class="fc" id="L48">    }</span>
+
+    public String getZona() {
+<span class="fc" id="L51">        return zona;</span>
+    }
+
+    public void setZona(String zona) {
+<span class="fc" id="L55">        this.zona = zona;</span>
+<span class="fc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestioneStatisticheServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.service.impl</a> &gt; <span class="el_source">GestioneStatisticheServiceImpl.java</span></div><h1>GestioneStatisticheServiceImpl.java</h1><pre class="source lang-java linenums">package com.smartmobility.service.impl;
+
+import com.smartmobility.dto.response.CorsaResponse;
+import com.smartmobility.dto.response.MezzoResponse;
+import com.smartmobility.dto.response.StatisticheResponse;
+import com.smartmobility.model.Corsa;
+import com.smartmobility.model.Mezzo;
+import com.smartmobility.model.enums.StatoMezzo;
+import com.smartmobility.repository.CorsaRepository;
+import com.smartmobility.repository.MezzoRepository;
+import com.smartmobility.service.GestioneStatisticheService;
+import com.smartmobility.util.GeoUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+public class GestioneStatisticheServiceImpl implements GestioneStatisticheService {
+
+    private final CorsaRepository corsaRepository;
+    private final MezzoRepository mezzoRepository;
+
+<span class="fc" id="L32">    public GestioneStatisticheServiceImpl(CorsaRepository corsaRepository, MezzoRepository mezzoRepository) {</span>
+<span class="fc" id="L33">        this.corsaRepository = corsaRepository;</span>
+<span class="fc" id="L34">        this.mezzoRepository = mezzoRepository;</span>
+<span class="fc" id="L35">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public StatisticheResponse analisiTratte(String dataInizio, String dataFine) {
+        LocalDateTime start;
+        LocalDateTime end;
+        try {
+<span class="fc" id="L43">            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;</span>
+<span class="fc" id="L44">            start = LocalDateTime.parse(dataInizio, formatter);</span>
+<span class="fc" id="L45">            end = LocalDateTime.parse(dataFine, formatter);</span>
+<span class="fc" id="L46">        } catch (Exception e1) {</span>
+            try {
+<span class="fc" id="L48">                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;);</span>
+<span class="fc" id="L49">                start = LocalDateTime.parse(dataInizio, formatter);</span>
+<span class="fc" id="L50">                end = LocalDateTime.parse(dataFine, formatter);</span>
+<span class="fc" id="L51">            } catch (Exception e2) {</span>
+                try {
+<span class="fc" id="L53">                    start = LocalDateTime.parse(dataInizio + &quot;T00:00:00&quot;);</span>
+<span class="fc" id="L54">                    end = LocalDateTime.parse(dataFine + &quot;T23:59:59&quot;);</span>
+<span class="fc" id="L55">                } catch (Exception e3) {</span>
+<span class="fc" id="L56">                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Formato data non valido. Usa yyyy-MM-dd&quot;);</span>
+<span class="fc" id="L57">                }</span>
+<span class="fc" id="L58">            }</span>
+<span class="fc" id="L59">        }</span>
+
+<span class="fc" id="L61">        List&lt;Corsa&gt; corse = corsaRepository.findByDataRange(start, end);</span>
+
+<span class="fc" id="L63">        long totalCorse = corse.size();</span>
+<span class="fc" id="L64">        double totalKm = 0;</span>
+<span class="fc" id="L65">        double totalRicavo = 0;</span>
+<span class="fc" id="L66">        double totalDurataMin = 0;</span>
+
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        for (Corsa corsa : corse) {</span>
+<span class="fc" id="L69">            totalRicavo += corsa.getCosto();</span>
+
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">            if (corsa.getOrarioInizio() != null &amp;&amp; corsa.getOrarioFine() != null) {</span>
+<span class="fc" id="L72">                totalDurataMin += ChronoUnit.MINUTES.between(corsa.getOrarioInizio(), corsa.getOrarioFine());</span>
+            }
+
+<span class="pc bpc" id="L75" title="1 of 4 branches missed.">            if (corsa.getCoordinatePartenza() != null &amp;&amp; corsa.getCoordinateArrivo() != null) {</span>
+<span class="fc" id="L76">                totalKm += estimateDistance(corsa.getCoordinatePartenza(), corsa.getCoordinateArrivo());</span>
+            }
+<span class="fc" id="L78">        }</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        double mediaDurata = totalCorse &gt; 0 ? totalDurataMin / totalCorse : 0;</span>
+
+<span class="fc" id="L82">        Map&lt;String, Object&gt; dettagli = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L83">        dettagli.put(&quot;periodo&quot;, dataInizio + &quot; - &quot; + dataFine);</span>
+<span class="fc" id="L84">        dettagli.put(&quot;totaleMinuti&quot;, totalDurataMin);</span>
+<span class="fc" id="L85">        dettagli.put(&quot;numeroCorse&quot;, totalCorse);</span>
+
+<span class="fc" id="L87">        return new StatisticheResponse(totalCorse, totalKm, totalRicavo, mediaDurata, dettagli);</span>
+    }
+
+    @Override
+    public String generaFileStatistiche(List&lt;CorsaResponse&gt; corse) {
+<span class="fc" id="L92">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L93">        sb.append(&quot;idCorsa,idUtente,idMezzo,dataInizio,dataFine,costo,distanza,stato\n&quot;);</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (CorsaResponse corsa : corse) {</span>
+<span class="fc" id="L95">            sb.append(String.format(&quot;%s,%s,%s,%s,%s,%s,%s,%s%n&quot;,</span>
+<span class="fc" id="L96">                    corsa.getId(), corsa.getIdUtente(), corsa.getIdMezzo(),</span>
+<span class="fc" id="L97">                    corsa.getDataInizio(), corsa.getDataFine(),</span>
+<span class="fc" id="L98">                    corsa.getCosto(), corsa.getDistanza(), corsa.getStato()));</span>
+<span class="fc" id="L99">        }</span>
+<span class="fc" id="L100">        return sb.toString();</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;MezzoResponse&gt; analisiStatoFlotta() {
+<span class="fc" id="L106">        List&lt;Mezzo&gt; mezzi = mezzoRepository.findAll();</span>
+<span class="fc" id="L107">        List&lt;MezzoResponse&gt; responses = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        for (Mezzo m : mezzi) {</span>
+<span class="fc" id="L109">            MezzoResponse r = new MezzoResponse();</span>
+<span class="fc" id="L110">            r.setId(m.getIdMezzo());</span>
+<span class="fc" id="L111">            r.setTipo(m.getTipo());</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">            r.setStato(m.getStato() != null ? m.getStato().name() : null);</span>
+<span class="fc" id="L113">            r.setAutonomia(m.getAutonomia());</span>
+<span class="fc" id="L114">            r.setTariffa(m.getCostoOrario());</span>
+<span class="fc" id="L115">            r.setCondizione(m.getCondizione());</span>
+<span class="fc" id="L116">            r.setIdFlotta(m.getIdFlotta());</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">            if (m.getCoordinateMezzo() != null) {</span>
+<span class="fc" id="L118">                String[] coords = m.getCoordinateMezzo().split(&quot;,&quot;);</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">                if (coords.length &gt;= 2) {</span>
+<span class="fc" id="L120">                    r.setLatitudine(Double.parseDouble(coords[0].trim()));</span>
+<span class="fc" id="L121">                    r.setLongitudine(Double.parseDouble(coords[1].trim()));</span>
+                }
+            }
+<span class="fc" id="L124">            responses.add(r);</span>
+<span class="fc" id="L125">        }</span>
+<span class="fc" id="L126">        return responses;</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map&lt;String, Long&gt; getStatisticheFlotta() {
+<span class="fc" id="L132">        List&lt;Mezzo&gt; mezzi = mezzoRepository.findAll();</span>
+<span class="fc" id="L133">        Map&lt;String, Long&gt; stats = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        stats.put(&quot;disponibile&quot;, mezzi.stream().filter(m -&gt; m.getStato() == StatoMezzo.disponibile).count());</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        stats.put(&quot;prenotato&quot;, mezzi.stream().filter(m -&gt; m.getStato() == StatoMezzo.prenotato).count());</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">        stats.put(&quot;in_uso&quot;, mezzi.stream().filter(m -&gt; m.getStato() == StatoMezzo.in_uso).count());</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        stats.put(&quot;manutenzione&quot;, mezzi.stream().filter(m -&gt; m.getStato() == StatoMezzo.manutenzione).count());</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        stats.put(&quot;bloccato&quot;, mezzi.stream().filter(m -&gt; m.getStato() == StatoMezzo.bloccato).count());</span>
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        stats.put(&quot;sospeso&quot;, mezzi.stream().filter(m -&gt; m.getStato() == StatoMezzo.sospeso).count());</span>
+<span class="fc" id="L140">        stats.put(&quot;totale&quot;, (long) mezzi.size());</span>
+<span class="fc" id="L141">        return stats;</span>
+    }
+
+    private double estimateDistance(String coord1, String coord2) {
+<span class="fc" id="L145">        double[] c1 = GeoUtils.parseCoordinates(coord1);</span>
+<span class="fc" id="L146">        double[] c2 = GeoUtils.parseCoordinates(coord2);</span>
+<span class="fc" id="L147">        return GeoUtils.haversine(c1[0], c1[1], c2[0], c2[1]);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
