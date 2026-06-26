@@ -27,7 +27,7 @@ function run(cmd, args, opts = {}) {
 
 function cmdExists(cmd) {
   try {
-    execSync(isWin ? `where ${cmd}` : `which ${cmd}`, { stdio: 'ignore' });
+    execSync(isWin ? `where ${cmd} 2>nul` : `which ${cmd} 2>/dev/null`, { stdio: 'ignore' });
     return true;
   } catch {
     return false;
@@ -58,7 +58,11 @@ function checkMaven() { return cmdExists('mvn'); }
 function checkNpm()   { return cmdExists('npm'); }
 
 function getPackageManager() {
-  if (isWin) return cmdExists('choco') ? 'choco' : null;
+  if (isWin) {
+    if (cmdExists('winget')) return 'winget';
+    if (cmdExists('choco'))  return 'choco';
+    return null;
+  }
   if (isMac) return cmdExists('brew') ? 'brew' : null;
   for (const pm of ['apt-get', 'dnf', 'yum', 'apk']) {
     if (cmdExists(pm)) return pm;
@@ -67,26 +71,27 @@ function getPackageManager() {
 }
 
 function installPkg(pm, pkg) {
-  log('SETUP', `Installing \`${pkg}\` via ${pm}...`);
+  log('SETUP', `Installing via ${pm}...`);
   try {
-    let pre = '';
-    let post = `install -y ${pkg}`;
-    if (pm === 'apt-get') {
-      pre = 'apt-get update -y && ';
-    } else if (pm === 'apk') {
-      pre = 'apk update && ';
-      post = `add ${pkg}`;
-    } else if (pm === 'brew') {
-      post = `install ${pkg}`;
+    let cmd;
+    if (pm === 'winget') {
+      cmd = `winget install --id ${pkg} --accept-package-agreements --accept-source-agreements`;
     } else if (pm === 'choco') {
-      post = `install -y ${pkg}`;
-    } else if (pm === 'dnf' || pm === 'yum') {
-      post = `install -y ${pkg}`;
+      cmd = `choco install -y ${pkg}`;
+    } else if (pm === 'brew') {
+      cmd = `brew install ${pkg}`;
+    } else if (pm === 'apk') {
+      cmd = `apk update && apk add ${pkg}`;
+    } else if (pm === 'apt-get') {
+      cmd = `apt-get update -y && apt-get install -y ${pkg}`;
+    } else {
+      cmd = `${pm} install -y ${pkg}`;
     }
 
-    const needsSudo = !isWin && !isMac && process.getuid && process.getuid() !== 0;
-    const prefix = needsSudo && cmdExists('sudo') ? 'sudo ' : '';
-    execSync(`${prefix}${pm} ${pre}${post} 2>&1`, { stdio: 'inherit', timeout: 180000 });
+    const needsElevation =
+      !isWin && !isMac && process.getuid && process.getuid() !== 0 && cmdExists('sudo');
+    const prefix = needsElevation ? 'sudo ' : '';
+    execSync(`${prefix}${cmd} 2>&1`, { stdio: 'inherit', timeout: 180000 });
     return true;
   } catch {
     return false;
@@ -95,68 +100,54 @@ function installPkg(pm, pkg) {
 
 function installJava() {
   log('SETUP', 'Java 21+ required. Attempting installation...');
-  if (isWin) {
-    log('SETUP', 'Download JDK 21 from https://adoptium.net/temurin/releases/?version=21');
-    log('SETUP', 'After install, set JAVA_HOME and add java to PATH, then re-run this script.');
-    return false;
-  }
-  if (isMac) {
-    if (installPkg('brew', 'openjdk@21')) {
+  const pm = getPackageManager();
+  if (pm === 'winget') return installPkg(pm, 'EclipseAdoptium.Temurin.21.JDK');
+  if (pm === 'choco')  return installPkg(pm, 'temurin21');
+  if (pm === 'brew') {
+    if (installPkg(pm, 'openjdk@21')) {
       log('SETUP', 'Run: sudo ln -sfn /usr/local/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk');
       return true;
     }
     return false;
   }
-  const pm = getPackageManager();
-  if (!pm) return false;
-  const pkgs = {
-    'apt-get': 'openjdk-21-jdk',
-    'dnf': 'java-21-openjdk-devel',
-    'yum': 'java-21-openjdk-devel',
-    'apk': 'openjdk21',
-  };
-  return installPkg(pm, pkgs[pm]);
+  if (pm === 'apt-get') return installPkg(pm, 'openjdk-21-jdk');
+  if (pm === 'dnf' || pm === 'yum') return installPkg(pm, 'java-21-openjdk-devel');
+  if (pm === 'apk') return installPkg(pm, 'openjdk21');
+  log('SETUP', 'No supported package manager found.');
+  log('SETUP', 'Download JDK 21 from https://adoptium.net/temurin/releases/?version=21');
+  return false;
 }
 
 function installMaven() {
   log('SETUP', 'Maven required. Attempting installation...');
   const pm = getPackageManager();
-  if (!pm) {
-    log('SETUP', 'No package manager found. Download Maven from https://maven.apache.org/download.cgi');
-    return false;
-  }
-  return installPkg(pm, 'maven');
+  if (pm === 'winget') return installPkg(pm, 'Apache.Maven');
+  if (pm === 'choco')  return installPkg(pm, 'maven');
+  if (pm === 'brew')   return installPkg(pm, 'maven');
+  if (pm)              return installPkg(pm, 'maven');
+  log('SETUP', 'Download Maven from https://maven.apache.org/download.cgi');
+  return false;
 }
 
 function installNode() {
   log('SETUP', 'Node.js 20+ required. Attempting installation...');
-  if (isWin) {
-    log('SETUP', 'Download Node.js 20+ from https://nodejs.org/, install, and re-run this script.');
-    return false;
-  }
-  if (isMac) {
-    return installPkg('brew', 'node');
-  }
-  // Linux: prefer NodeSource for up-to-date Node.js
-  if (cmdExists('apt-get')) {
+  const pm = getPackageManager();
+  if (pm === 'winget') return installPkg(pm, 'OpenJS.NodeJS.20');
+  if (pm === 'choco')  return installPkg(pm, 'nodejs-lts');
+  if (pm === 'brew')   return installPkg(pm, 'node');
+  if (pm === 'apt-get') {
     log('SETUP', 'Using NodeSource setup for Node.js 20...');
     try {
-      const needsSudo = process.getuid && process.getuid() !== 0 && cmdExists('sudo');
-      const s = needsSudo ? 'sudo ' : '';
+      const s = (process.getuid && process.getuid() !== 0 && cmdExists('sudo')) ? 'sudo ' : '';
       execSync(`${s}apt-get update -y && ${s}apt-get install -y ca-certificates curl gnupg 2>&1`, { stdio: 'inherit', timeout: 60000 });
       execSync(`curl -fsSL https://deb.nodesource.com/setup_20.x | ${s}bash - 2>&1`, { stdio: 'inherit', timeout: 60000 });
       execSync(`${s}apt-get install -y nodejs 2>&1`, { stdio: 'inherit', timeout: 120000 });
       return true;
-    } catch {
-      return false;
-    }
+    } catch { return false; }
   }
-  const pm = getPackageManager();
-  if (pm) {
-    const pkgs = { 'dnf': 'nodejs', 'yum': 'nodejs', 'apk': 'nodejs' };
-    if (installPkg(pm, pkgs[pm])) return true;
-  }
-  log('SETUP', 'Could not install Node.js. Install manually from https://nodejs.org/');
+  if (pm === 'dnf' || pm === 'yum') return installPkg(pm, 'nodejs');
+  if (pm === 'apk') return installPkg(pm, 'nodejs');
+  log('SETUP', 'Download Node.js 20+ from https://nodejs.org/');
   return false;
 }
 
@@ -166,60 +157,54 @@ function checkAll() {
   let pass = true;
   let changed = false;
 
-  // --- Java 21+ ---
   const jVer = getJavaVersion();
   if (jVer >= 21) {
     log('SETUP', `[OK] Java ${jVer}`);
   } else if (jVer > 0) {
-    log('SETUP', `[WARN] Java ${jVer} found, version 21+ required.`);
+    log('SETUP', `[WARN] Java ${jVer} found, need 21+`);
     if (installJava()) { changed = true; pass = getJavaVersion() >= 21; }
     else { pass = false; }
   } else {
-    log('SETUP', '[MISS] Java not found.');
+    log('SETUP', '[MISS] Java not found');
     if (installJava()) { changed = true; pass = getJavaVersion() >= 21; }
     else { pass = false; }
   }
 
-  // --- Maven ---
   if (checkMaven()) {
     log('SETUP', '[OK] Maven');
   } else {
-    log('SETUP', '[MISS] Maven not found.');
+    log('SETUP', '[MISS] Maven not found');
     if (installMaven()) { changed = true; pass = checkMaven() && pass; }
     else { pass = false; }
   }
 
-  // --- Node.js 20+ ---
   const nVer = getNodeVersion();
   if (nVer >= 20) {
     log('SETUP', `[OK] Node.js ${nVer}`);
   } else if (nVer > 0) {
-    log('SETUP', `[WARN] Node.js ${nVer} found, version 20+ required.`);
+    log('SETUP', `[WARN] Node.js ${nVer} found, need 20+`);
     if (installNode()) { changed = true; pass = getNodeVersion() >= 20 && pass; }
     else { pass = false; }
   } else {
-    log('SETUP', '[MISS] Node.js not found.');
+    log('SETUP', '[MISS] Node.js not found');
     if (installNode()) { changed = true; pass = getNodeVersion() >= 20 && pass; }
     else { pass = false; }
   }
 
-  // --- npm ---
   if (checkNpm()) {
     log('SETUP', '[OK] npm');
   } else {
-    log('SETUP', '[MISS] npm not found (bundled with Node.js).');
+    log('SETUP', '[MISS] npm not found (bundled with Node.js)');
     pass = false;
   }
 
   if (!pass) {
-    log('ERROR', 'Some dependencies could not be resolved.');
+    log('ERROR', 'Some dependencies could not be resolved automatically.');
     log('ERROR', 'Install missing tools manually (see INSTALL.md) and re-run.');
     process.exit(1);
   }
 
-  if (changed) {
-    log('SETUP', 'Dependencies installed. Proceeding to launch.');
-  }
+  if (changed) log('SETUP', 'All dependencies satisfied.');
 }
 
 function runBackend() {
