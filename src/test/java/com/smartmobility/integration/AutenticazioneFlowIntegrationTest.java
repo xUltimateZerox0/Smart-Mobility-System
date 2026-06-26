@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@SuppressWarnings("java:S2068") // test-only credentials
 class AutenticazioneFlowIntegrationTest {
 
     @Autowired

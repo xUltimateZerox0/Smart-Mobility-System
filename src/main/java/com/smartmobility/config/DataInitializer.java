@@ -28,10 +28,23 @@ import java.time.LocalTime;
 
 @Configuration
 @Profile("dev")
+@SuppressWarnings("java:S2068")
 public class DataInitializer {
 
     private static final String EMAIL_TEST = "test@smartmobility.com";
-    private static final String PASSWORD_DEFAULT = "password";
+
+    private static String seedPassword(String key, String fallback) {
+        String val = System.getenv(key);
+        if (val != null && !val.isBlank()) return val;
+        return fallback;
+    }
+
+    private static final String FALLBACK_PASSWORD = "password";
+
+    private static final String PASSWORD_UTENTE = seedPassword("SEED_PASSWORD_UTENTE", FALLBACK_PASSWORD);
+    private static final String PASSWORD_PA = seedPassword("SEED_PASSWORD_PA", FALLBACK_PASSWORD);
+    private static final String PASSWORD_TECNICO = seedPassword("SEED_PASSWORD_TECNICO", FALLBACK_PASSWORD);
+    private static final String PASSWORD_SC = seedPassword("SEED_PASSWORD_SC", FALLBACK_PASSWORD);
 
     @Bean
     CommandLineRunner seedData(AttoreRepository attoreRepository,
@@ -58,7 +71,7 @@ public class DataInitializer {
             utente.setNomeUtente("Mario");
             utente.setCognomeUtente("Rossi");
             utente.setEmail(EMAIL_TEST);
-            utente.setPassword(hashPassword(PASSWORD_DEFAULT));
+            utente.setPassword(hashPassword(PASSWORD_UTENTE));
             utente.setRuolo(RuoloAttore.Utente);
             utente.setStatoUtente(StatoUtente.attivo);
             utente.setReportUtente("");
@@ -72,7 +85,7 @@ public class DataInitializer {
         if (attoreRepository.findByEmail("pa@smartmobility.com").isEmpty()) {
             PA pa = new PA();
             pa.setEmail("pa@smartmobility.com");
-            pa.setPassword(hashPassword(PASSWORD_DEFAULT));
+            pa.setPassword(hashPassword(PASSWORD_PA));
             pa.setRuolo(RuoloAttore.PA);
             paRepository.save(pa);
         }
@@ -80,7 +93,7 @@ public class DataInitializer {
         if (attoreRepository.findByEmail("tecnico@smartmobility.com").isEmpty()) {
             Operatore op = new Operatore();
             op.setEmail("tecnico@smartmobility.com");
-            op.setPassword(hashPassword(PASSWORD_DEFAULT));
+            op.setPassword(hashPassword(PASSWORD_TECNICO));
             op.setRuolo(RuoloAttore.Operatore);
             op.setTipo(TipoOperatore.OperatoreTecnico);
             operatoreRepository.save(op);
@@ -89,7 +102,7 @@ public class DataInitializer {
         if (attoreRepository.findByEmail("sc@smartmobility.com").isEmpty()) {
             Operatore op = new Operatore();
             op.setEmail("sc@smartmobility.com");
-            op.setPassword(hashPassword(PASSWORD_DEFAULT));
+            op.setPassword(hashPassword(PASSWORD_SC));
             op.setRuolo(RuoloAttore.Operatore);
             op.setTipo(TipoOperatore.OperatoreSC);
             operatoreRepository.save(op);
@@ -198,7 +211,7 @@ public class DataInitializer {
         zonaRepository.save(z3);
     }
 
-    private String hashPassword(String password) {
+    private static String hashPassword(String password) {
         return new BCryptPasswordEncoder().encode(password);
     }
 }

@@ -33,6 +33,7 @@
         <div v-if="b.qrCode" class="qr-section">
           <code class="qr-text">{{ b.qrCode }}</code>
         </div>
+        <button v-if="b.stato === 'attiva'" @click="startRide(b)" class="btn-primary" style="margin-top:8px">Avvia Corsa</button>
       </div>
     </div>
   </div>
@@ -51,6 +52,7 @@ const auth = useAuthStore()
 
 const activeBookings = ref<PrenotazioneResponse[]>([])
 const loadingBookings = ref(false)
+
 
   onMounted(async () => {
     if (!auth.userId) { return }
@@ -76,6 +78,12 @@ function formatDate(iso: string) {
 }
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+}
+
+function startRide(b: PrenotazioneResponse) {
+  if (!auth.userId || !b.qrCode) return
+  const qr = encodeURIComponent(b.qrCode)
+  router.push(`/utente/ride/${b.idMezzo}?qrCode=${qr}`)
 }
 </script>
 

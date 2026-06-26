@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(GestioneAutenticazioneController.class)
+@SuppressWarnings("java:S2068") // test-only credentials
 class GestioneAutenticazioneControllerTest {
 
     @Autowired
