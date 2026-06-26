@@ -56,7 +56,7 @@ class GestioneStatisticheServiceImplTest {
         corsa2.setOrarioFine(LocalDateTime.of(2026, 1, 20, 15, 0));
         corsa2.setCoordinateArrivo("41.9040,12.4980,0.0");
 
-        when(corsaRepository.findByDataRange(any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(corsaRepository.findByDataRange(any(), any()))
                 .thenReturn(List.of(corsa1, corsa2));
 
         StatisticheResponse stats = service.analisiTratte("2026-01-01T00:00:00", "2026-01-31T23:59:59");
@@ -69,7 +69,7 @@ class GestioneStatisticheServiceImplTest {
 
     @Test
     void analisiTratte_WithNoData_ReturnsEmptyStatistics() {
-        when(corsaRepository.findByDataRange(any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(corsaRepository.findByDataRange(any(), any()))
                 .thenReturn(List.of());
 
         StatisticheResponse stats = service.analisiTratte("2025-01-01T00:00:00", "2025-01-01T23:59:59");
@@ -81,7 +81,7 @@ class GestioneStatisticheServiceImplTest {
 
     @Test
     void analisiTratte_WithSimpleDateFormat_Works() {
-        when(corsaRepository.findByDataRange(any(LocalDateTime.class), any(LocalDateTime.class)))
+        when(corsaRepository.findByDataRange(any(), any()))
                 .thenReturn(List.of());
 
         StatisticheResponse stats = service.analisiTratte("2026-01-01", "2026-01-31");

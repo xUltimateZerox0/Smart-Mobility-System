@@ -4,6 +4,7 @@ import com.smartmobility.model.Attore;
 import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.service.SessionRegistry;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,7 +17,7 @@ public class SecurityHelper {
         this.sessionRegistry = sessionRegistry;
     }
 
-    public Attore getCurrentUser(String authHeader) {
+    public @Nullable Attore getCurrentUser(@Nullable String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;
         }
@@ -24,18 +25,18 @@ public class SecurityHelper {
         return sessionRegistry.getAttore(token);
     }
 
-    public Long getCurrentUserId(String authHeader) {
+    public @Nullable Long getCurrentUserId(@Nullable String authHeader) {
         Attore attore = getCurrentUser(authHeader);
         return attore != null ? attore.getId() : null;
     }
 
-    public void requireAuth(String authHeader) {
+    public void requireAuth(@Nullable String authHeader) {
         if (getCurrentUser(authHeader) == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Autenticazione richiesta");
         }
     }
 
-    public void requireRole(String authHeader, RuoloAttore requiredRole) {
+    public void requireRole(@Nullable String authHeader, RuoloAttore requiredRole) {
         Attore attore = getCurrentUser(authHeader);
         if (attore == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Autenticazione richiesta");
@@ -45,7 +46,7 @@ public class SecurityHelper {
         }
     }
 
-    public void requireUserIdMatch(String authHeader, Long requestedUserId) {
+    public void requireUserIdMatch(@Nullable String authHeader, Long requestedUserId) {
         Attore attore = getCurrentUser(authHeader);
         if (attore == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Autenticazione richiesta");

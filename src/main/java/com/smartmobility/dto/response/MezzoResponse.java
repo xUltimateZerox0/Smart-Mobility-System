@@ -6,10 +6,10 @@ public class MezzoResponse {
     private Long id;
     private String tipo;
     private String stato;
-    private Double latitudine;
-    private Double longitudine;
-    private Double autonomia;
-    private Double tariffa;
+    private double latitudine;
+    private double longitudine;
+    private double autonomia;
+    private double tariffa;
     private String codiceMezzo;
     private String tempoDisponibilita;
     private String condizione;
@@ -17,15 +17,15 @@ public class MezzoResponse {
 
     public MezzoResponse() {}
 
-    public MezzoResponse(Long id, String tipo, String stato, Double latitudine, Double longitudine, Double autonomia, Double tariffa, String codiceMezzo) {
+    public MezzoResponse(Long id, String tipo, String stato, double latitudine, double longitudine, double autonomia, double tariffa, String codiceMezzo) {
         this(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo, null, null, null);
     }
 
-    public MezzoResponse(Long id, String tipo, String stato, Double latitudine, Double longitudine, Double autonomia, Double tariffa, String codiceMezzo, String tempoDisponibilita) {
+    public MezzoResponse(Long id, String tipo, String stato, double latitudine, double longitudine, double autonomia, double tariffa, String codiceMezzo, String tempoDisponibilita) {
         this(id, tipo, stato, latitudine, longitudine, autonomia, tariffa, codiceMezzo, tempoDisponibilita, null, null);
     }
 
-    public MezzoResponse(Long id, String tipo, String stato, Double latitudine, Double longitudine, Double autonomia, Double tariffa, String codiceMezzo, String tempoDisponibilita, String condizione, String idFlotta) {
+    public MezzoResponse(Long id, String tipo, String stato, double latitudine, double longitudine, double autonomia, double tariffa, String codiceMezzo, String tempoDisponibilita, String condizione, String idFlotta) {
         this.id = id;
         this.tipo = tipo;
         this.stato = stato;
@@ -45,14 +45,14 @@ public class MezzoResponse {
     public void setTipo(String tipo) { this.tipo = tipo; }
     public String getStato() { return stato; }
     public void setStato(String stato) { this.stato = stato; }
-    public Double getLatitudine() { return latitudine; }
-    public void setLatitudine(Double latitudine) { this.latitudine = latitudine; }
-    public Double getLongitudine() { return longitudine; }
-    public void setLongitudine(Double longitudine) { this.longitudine = longitudine; }
-    public Double getAutonomia() { return autonomia; }
-    public void setAutonomia(Double autonomia) { this.autonomia = autonomia; }
-    public Double getTariffa() { return tariffa; }
-    public void setTariffa(Double tariffa) { this.tariffa = tariffa; }
+    public double getLatitudine() { return latitudine; }
+    public void setLatitudine(double latitudine) { this.latitudine = latitudine; }
+    public double getLongitudine() { return longitudine; }
+    public void setLongitudine(double longitudine) { this.longitudine = longitudine; }
+    public double getAutonomia() { return autonomia; }
+    public void setAutonomia(double autonomia) { this.autonomia = autonomia; }
+    public double getTariffa() { return tariffa; }
+    public void setTariffa(double tariffa) { this.tariffa = tariffa; }
     public String getCodiceMezzo() { return codiceMezzo; }
     public void setCodiceMezzo(String codiceMezzo) { this.codiceMezzo = codiceMezzo; }
     public String getTempoDisponibilita() { return tempoDisponibilita; }

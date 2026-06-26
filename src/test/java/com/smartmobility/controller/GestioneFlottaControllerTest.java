@@ -1,22 +1,18 @@
 package com.smartmobility.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartmobility.dto.response.MezzoResponse;
-import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneFlottaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -29,9 +25,6 @@ class GestioneFlottaControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @MockBean
     private GestioneFlottaService gestioneFlottaService;
 
@@ -41,7 +34,7 @@ class GestioneFlottaControllerTest {
     @BeforeEach
     void setUp() {
         doNothing().when(securityHelper).requireAuth(anyString());
-        doNothing().when(securityHelper).requireRole(anyString(), any(RuoloAttore.class));
+        doNothing().when(securityHelper).requireRole(anyString(), any());
     }
 
     @Test

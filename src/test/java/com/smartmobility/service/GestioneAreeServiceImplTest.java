@@ -52,7 +52,7 @@ class GestioneAreeServiceImplTest {
 
         service.aggiornaRestrizione(1L, "divieto_parcheggio", "Divieto sosta", "41.9028,12.4964");
 
-        verify(zonaGeograficaRepository).save(any(ZonaGeografica.class));
+        verify(zonaGeograficaRepository).save(any());
     }
 
     @Test

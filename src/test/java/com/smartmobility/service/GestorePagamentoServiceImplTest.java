@@ -79,7 +79,7 @@ class GestorePagamentoServiceImplTest {
         boolean result = service.elaboraDatiCarta(1L, "4111111111111111", "12/28", "123", "Mario Rossi");
 
         assertTrue(result);
-        verify(metodoPagamentoRepository).save(any(MetodoPagamento.class));
+        verify(metodoPagamentoRepository).save(any());
     }
 
     @Test

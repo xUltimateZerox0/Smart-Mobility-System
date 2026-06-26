@@ -97,12 +97,12 @@ class GestioneCorsaServiceImplTest {
         when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
         Corsa savedCorsa = new Corsa();
         savedCorsa.setIdCorsa(1L);
-        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
+        when(corsaRepository.save(any())).thenReturn(savedCorsa);
 
         Long corsaId = service.avviaCorsa(1L, 1L, "QR-1");
 
         assertEquals(1L, corsaId);
-        verify(corsaRepository, atLeastOnce()).save(any(Corsa.class));
+        verify(corsaRepository, atLeastOnce()).save(any());
         verify(mezzoRepository).save(mezzo);
         assertEquals(StatoMezzo.in_uso, mezzo.getStato());
     }
@@ -123,7 +123,7 @@ class GestioneCorsaServiceImplTest {
         when(corsaRepository.findByIdUtenteAndOrarioFineIsNull(1L)).thenReturn(List.of());
         Corsa savedCorsa = new Corsa();
         savedCorsa.setIdCorsa(1L);
-        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
+        when(corsaRepository.save(any())).thenReturn(savedCorsa);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.avviaCorsa(1L, 1L, "QR-1"));

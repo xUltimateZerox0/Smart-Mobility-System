@@ -1,6 +1,5 @@
 package com.smartmobility.repository;
 
-import com.smartmobility.config.TestDataFactory;
 import com.smartmobility.model.Mezzo;
 import com.smartmobility.model.Prenotazione;
 import com.smartmobility.model.Utente;

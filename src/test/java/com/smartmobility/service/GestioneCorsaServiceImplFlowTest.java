@@ -85,7 +85,7 @@ class GestioneCorsaServiceImplFlowTest {
 
         Prenotazione savedPrenotazione = TestDataFactory.createPrenotazione(
                 10L, utente, mezzo, StatoPrenotazione.attiva, LocalTime.now());
-        when(prenotazioneRepository.save(any(Prenotazione.class))).thenReturn(savedPrenotazione);
+        when(prenotazioneRepository.save(any())).thenReturn(savedPrenotazione);
 
         // Simulate inviaRichiestaPrenotazione via GestionePrenotazioneServiceImpl
         // (we test the prenotazione service's effect on mezzo state here)
@@ -118,7 +118,7 @@ class GestioneCorsaServiceImplFlowTest {
         savedCorsa.setUtente(utente);
         savedCorsa.setMetodoPagamento(metodoPagamento);
         savedCorsa.setOrarioInizio(LocalDateTime.now());
-        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
+        when(corsaRepository.save(any())).thenReturn(savedCorsa);
 
         Prenotazione attivaBooking = TestDataFactory.createPrenotazione(
                 10L, utente, mezzo, StatoPrenotazione.attiva, LocalTime.now());
@@ -221,7 +221,7 @@ class GestioneCorsaServiceImplFlowTest {
         savedCorsa.setUtente(utente);
         savedCorsa.setMetodoPagamento(metodoPagamento);
         savedCorsa.setOrarioInizio(LocalDateTime.now());
-        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
+        when(corsaRepository.save(any())).thenReturn(savedCorsa);
         when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
 
         Long corsaId = service.avviaCorsa(1L, 1L, "QR-1");
@@ -287,7 +287,7 @@ class GestioneCorsaServiceImplFlowTest {
         savedCorsa.setMezzo(mezzo);
         savedCorsa.setUtente(utente);
         savedCorsa.setOrarioInizio(LocalDateTime.now());
-        when(corsaRepository.save(any(Corsa.class))).thenReturn(savedCorsa);
+        when(corsaRepository.save(any())).thenReturn(savedCorsa);
         when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
 
         Long corsaId = service.avviaCorsa(1L, 1L, "QR-1");
@@ -368,7 +368,7 @@ class GestioneCorsaServiceImplFlowTest {
         service.acquisisciSceltaMetodo(1L, utente.getIdUtente());
 
         verify(metodoPagamentoRepository).findById(1L);
-        verify(corsaRepository, never()).save(any(Corsa.class));
+        verify(corsaRepository, never()).save(any());
     }
 
     @Test
@@ -390,7 +390,7 @@ class GestioneCorsaServiceImplFlowTest {
         savedCorsa.setMezzo(mezzo);
         savedCorsa.setUtente(utente);
         savedCorsa.setOrarioInizio(LocalDateTime.now());
-        when(corsaRepository.save(any(Corsa.class))).thenAnswer(invocation -> {
+        when(corsaRepository.save(any())).thenAnswer(invocation -> {
             Corsa c = invocation.getArgument(0);
             c.setIdCorsa(300L);
             return c;

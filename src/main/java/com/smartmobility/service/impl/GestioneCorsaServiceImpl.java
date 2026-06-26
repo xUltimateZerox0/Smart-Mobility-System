@@ -26,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -131,7 +130,6 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
 
         PendingPayment pending = pendingPaymentMethods.remove(idUtente);
         if (pending == null || pending.isExpired()) {
-            if (pending != null) pendingPaymentMethods.remove(idUtente);
             throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,
                     "Nessun metodo di pagamento selezionato o selezione scaduta. Seleziona un metodo di pagamento prima di avviare la corsa.");
         }
@@ -387,10 +385,6 @@ public class GestioneCorsaServiceImpl implements GestioneCorsaService {
         double stima = calcolaCosto(corsa, true);
 
         return new StimaCorsaResponse(stima, mezzo.getCostoOrario());
-    }
-
-    private double calcolaCosto(Corsa corsa) {
-        return calcolaCosto(corsa, false);
     }
 
     private double calcolaCosto(Corsa corsa, boolean includeSospensione) {

@@ -7,6 +7,7 @@ import java.util.Objects;
 
 @Embeddable
 public class TransitoId implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "id_corsa")
     private Long idCorsa;

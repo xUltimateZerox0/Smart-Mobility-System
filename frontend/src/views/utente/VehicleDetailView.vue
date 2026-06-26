@@ -216,7 +216,7 @@ async function confirmBooking() {
     const orarioInizio = `${selectedDate.value}T${selectedTime.value}`
     const res = await bookingsApi.createBooking({
       idMezzo: veicolo.value.id,
-      idUtente: auth.userId,
+      idUtente: auth.userId!,
       orarioInizio
     })
     const bookingId = res.data.id

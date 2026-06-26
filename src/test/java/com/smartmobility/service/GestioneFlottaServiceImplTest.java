@@ -4,9 +4,7 @@ import com.smartmobility.config.TestDataFactory;
 import com.smartmobility.dto.response.MezzoResponse;
 import com.smartmobility.integration.MezzoIoTService;
 import com.smartmobility.model.Mezzo;
-import com.smartmobility.model.Segnalazione;
 import com.smartmobility.model.enums.StatoMezzo;
-import com.smartmobility.model.enums.StatoSegnalazione;
 import com.smartmobility.repository.CorsaRepository;
 import com.smartmobility.repository.MezzoRepository;
 import com.smartmobility.repository.SegnalazioneRepository;
@@ -61,7 +59,7 @@ class GestioneFlottaServiceImplTest {
 
         assertTrue(result);
         assertEquals(StatoMezzo.manutenzione, damaged.getStato());
-        verify(segnalazioneRepository).save(any(Segnalazione.class));
+        verify(segnalazioneRepository).save(any());
     }
 
     @Test
@@ -74,7 +72,7 @@ class GestioneFlottaServiceImplTest {
 
         assertTrue(result);
         assertEquals(StatoMezzo.manutenzione, lowBattery.getStato());
-        verify(segnalazioneRepository).save(any(Segnalazione.class));
+        verify(segnalazioneRepository).save(any());
     }
 
     @Test
@@ -126,7 +124,7 @@ class GestioneFlottaServiceImplTest {
         assertTrue(result);
         assertEquals(StatoMezzo.manutenzione, m1.getStato());
         assertEquals(StatoMezzo.manutenzione, m2.getStato());
-        verify(segnalazioneRepository, times(2)).save(any(Segnalazione.class));
+        verify(segnalazioneRepository, times(2)).save(any());
     }
 
     @Test

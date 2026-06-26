@@ -4,15 +4,15 @@ import java.util.Map;
 import java.util.Objects;
 
 public class StatisticheResponse {
-    private Long totalCorse;
-    private Double totalKm;
-    private Double totalRicavo;
-    private Double mediaDurata;
+    private long totalCorse;
+    private double totalKm;
+    private double totalRicavo;
+    private double mediaDurata;
     private Map<String, Object> dettagli;
 
     public StatisticheResponse() {}
 
-    public StatisticheResponse(Long totalCorse, Double totalKm, Double totalRicavo, Double mediaDurata, Map<String, Object> dettagli) {
+    public StatisticheResponse(long totalCorse, double totalKm, double totalRicavo, double mediaDurata, Map<String, Object> dettagli) {
         this.totalCorse = totalCorse;
         this.totalKm = totalKm;
         this.totalRicavo = totalRicavo;
@@ -20,14 +20,14 @@ public class StatisticheResponse {
         this.dettagli = dettagli;
     }
 
-    public Long getTotalCorse() { return totalCorse; }
-    public void setTotalCorse(Long totalCorse) { this.totalCorse = totalCorse; }
-    public Double getTotalKm() { return totalKm; }
-    public void setTotalKm(Double totalKm) { this.totalKm = totalKm; }
-    public Double getTotalRicavo() { return totalRicavo; }
-    public void setTotalRicavo(Double totalRicavo) { this.totalRicavo = totalRicavo; }
-    public Double getMediaDurata() { return mediaDurata; }
-    public void setMediaDurata(Double mediaDurata) { this.mediaDurata = mediaDurata; }
+    public long getTotalCorse() { return totalCorse; }
+    public void setTotalCorse(long totalCorse) { this.totalCorse = totalCorse; }
+    public double getTotalKm() { return totalKm; }
+    public void setTotalKm(double totalKm) { this.totalKm = totalKm; }
+    public double getTotalRicavo() { return totalRicavo; }
+    public void setTotalRicavo(double totalRicavo) { this.totalRicavo = totalRicavo; }
+    public double getMediaDurata() { return mediaDurata; }
+    public void setMediaDurata(double mediaDurata) { this.mediaDurata = mediaDurata; }
     public Map<String, Object> getDettagli() { return dettagli; }
     public void setDettagli(Map<String, Object> dettagli) { this.dettagli = dettagli; }
 

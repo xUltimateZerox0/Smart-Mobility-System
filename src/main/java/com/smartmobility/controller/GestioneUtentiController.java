@@ -6,6 +6,7 @@ import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneUtentiService;
 import jakarta.validation.Valid;
+import org.springframework.lang.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,7 +34,7 @@ public class GestioneUtentiController {
         this.securityHelper = securityHelper;
     }
 
-    private void requireAdminOrPA(String authHeader) {
+    private void requireAdminOrPA(@Nullable String authHeader) {
         var attore = securityHelper.getCurrentUser(authHeader);
         if (attore == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Autenticazione richiesta");

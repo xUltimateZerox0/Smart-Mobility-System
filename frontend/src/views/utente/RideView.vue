@@ -330,7 +330,7 @@ async function startRideFlow() {
 
   startLoading.value = true; error.value = ''; successMsg.value = ''
   try {
-    const res = await ridesApi.startRide(vehicleId, auth.userId, qrCode.value.trim())
+    const res = await ridesApi.startRide(vehicleId, auth.userId!, qrCode.value.trim())
     rideStore.setRide(res.data, vehicleId)
     corsaAvviata.value = true
     metodoPagamentoId.value = rideStore.metodoPagamentoId || metodoPagamentoId.value

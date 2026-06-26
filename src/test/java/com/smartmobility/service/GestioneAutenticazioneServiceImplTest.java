@@ -2,9 +2,7 @@ package com.smartmobility.service;
 
 import com.smartmobility.config.TestDataFactory;
 import com.smartmobility.dto.response.AuthResponse;
-import com.smartmobility.model.Attore;
 import com.smartmobility.model.Utente;
-import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.model.enums.StatoUtente;
 import com.smartmobility.repository.AttoreRepository;
 import com.smartmobility.repository.UtenteRepository;
@@ -82,8 +80,8 @@ class GestioneAutenticazioneServiceImplTest {
         when(attoreRepository.existsByEmail("new@example.com")).thenReturn(false);
 
         Utente savedUtente = TestDataFactory.createUtente(1L, 1L, "New", "User", "new@example.com", StatoUtente.attivo);
-        when(utenteRepository.save(any(Utente.class))).thenReturn(savedUtente);
-        when(sessionRegistry.createSession(any(Attore.class))).thenReturn("token-new");
+        when(utenteRepository.save(any())).thenReturn(savedUtente);
+        when(sessionRegistry.createSession(any())).thenReturn("token-new");
 
         AuthResponse response = service.verificaValidita("New", "User", "new@example.com", "password123", "1990-01-01");
 

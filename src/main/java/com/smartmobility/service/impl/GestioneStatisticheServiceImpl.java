@@ -92,7 +92,7 @@ public class GestioneStatisticheServiceImpl implements GestioneStatisticheServic
         StringBuilder sb = new StringBuilder();
         sb.append("idCorsa,idUtente,idMezzo,dataInizio,dataFine,costo,distanza,stato\n");
         for (CorsaResponse corsa : corse) {
-            sb.append(String.format("%d,%d,%d,%s,%s,%.2f,%.2f,%s%n",
+            sb.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s%n",
                     corsa.getId(), corsa.getIdUtente(), corsa.getIdMezzo(),
                     corsa.getDataInizio(), corsa.getDataFine(),
                     corsa.getCosto(), corsa.getDistanza(), corsa.getStato()));

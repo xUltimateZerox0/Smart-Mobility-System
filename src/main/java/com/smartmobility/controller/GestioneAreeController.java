@@ -3,6 +3,7 @@ package com.smartmobility.controller;
 import com.smartmobility.dto.request.ConflictCheckRequest;
 import com.smartmobility.dto.request.UpdateZoneRequest;
 import com.smartmobility.dto.response.ZonaGeograficaResponse;
+import com.smartmobility.model.enums.RuoloAttore;
 import com.smartmobility.security.SecurityHelper;
 import com.smartmobility.service.GestioneAreeService;
 import jakarta.validation.Valid;
@@ -33,7 +34,7 @@ public class GestioneAreeController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateZone(@PathVariable Long id, @Valid @RequestBody UpdateZoneRequest request,
                                             @RequestHeader("Authorization") String authHeader) {
-        securityHelper.requireRole(authHeader, com.smartmobility.model.enums.RuoloAttore.PA);
+        securityHelper.requireRole(authHeader, RuoloAttore.PA);
         gestioneAreeService.aggiornaRestrizione(
                 id, request.getTipoRestrizione(), request.getNoteRestrizione(), request.getZona());
         return ResponseEntity.ok().build();

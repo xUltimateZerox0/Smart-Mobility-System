@@ -31,8 +31,8 @@ public class GestorePagamentoServiceImpl implements GestorePagamentoService {
 
     @Override
     @Transactional
-    public boolean pagamentoCorsa(Long idUtente, Long idMetodoPagamento, Long idCorsa, Double costo) {
-        Utente utente = utenteRepository.findByIdUtente(idUtente)
+    public boolean pagamentoCorsa(Long idUtente, Long idMetodoPagamento, Long idCorsa, double costo) {
+        utenteRepository.findByIdUtente(idUtente)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utente non trovato"));
 
         MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)

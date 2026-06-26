@@ -5,16 +5,16 @@ import java.util.Objects;
 public class PercorsoResponse {
     private String coordinatePartenza;
     private String coordinateDestinazione;
-    private Double distanzaKm;
+    private double distanzaKm;
     private Integer durataMinuti;
-    private Double costoStimato;
+    private double costoStimato;
     private String messaggio;
 
     public PercorsoResponse() {}
 
     public PercorsoResponse(String coordinatePartenza, String coordinateDestinazione,
-                            Double distanzaKm, Integer durataMinuti,
-                            Double costoStimato, String messaggio) {
+                            double distanzaKm, Integer durataMinuti,
+                            double costoStimato, String messaggio) {
         this.coordinatePartenza = coordinatePartenza;
         this.coordinateDestinazione = coordinateDestinazione;
         this.distanzaKm = distanzaKm;
@@ -27,12 +27,12 @@ public class PercorsoResponse {
     public void setCoordinatePartenza(String coordinatePartenza) { this.coordinatePartenza = coordinatePartenza; }
     public String getCoordinateDestinazione() { return coordinateDestinazione; }
     public void setCoordinateDestinazione(String coordinateDestinazione) { this.coordinateDestinazione = coordinateDestinazione; }
-    public Double getDistanzaKm() { return distanzaKm; }
-    public void setDistanzaKm(Double distanzaKm) { this.distanzaKm = distanzaKm; }
+    public double getDistanzaKm() { return distanzaKm; }
+    public void setDistanzaKm(double distanzaKm) { this.distanzaKm = distanzaKm; }
     public Integer getDurataMinuti() { return durataMinuti; }
     public void setDurataMinuti(Integer durataMinuti) { this.durataMinuti = durataMinuti; }
-    public Double getCostoStimato() { return costoStimato; }
-    public void setCostoStimato(Double costoStimato) { this.costoStimato = costoStimato; }
+    public double getCostoStimato() { return costoStimato; }
+    public void setCostoStimato(double costoStimato) { this.costoStimato = costoStimato; }
     public String getMessaggio() { return messaggio; }
     public void setMessaggio(String messaggio) { this.messaggio = messaggio; }
 

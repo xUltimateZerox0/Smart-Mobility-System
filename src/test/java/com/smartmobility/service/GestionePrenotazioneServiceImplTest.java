@@ -57,8 +57,8 @@ class GestionePrenotazioneServiceImplTest {
 
         service.inviaRichiestaPrenotazione(1L, 1L, null);
 
-        verify(prenotazioneRepository).save(any(Prenotazione.class));
-        verify(mezzoRepository).save(any(Mezzo.class));
+        verify(prenotazioneRepository).save(any());
+        verify(mezzoRepository).save(any());
         assertEquals(StatoMezzo.prenotato, mezzo.getStato());
     }
 
