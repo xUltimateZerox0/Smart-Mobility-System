@@ -203,10 +203,10 @@ function installMaven() {
           const out = execSync('ls ' + dir + ' 2>/dev/null', { encoding: 'utf8', timeout: 5000 });
           const match = out.trim().split(/\n/)[0];
           if (match) { log('SETUP', 'Maven found at ' + match); return true; }
-        } catch {}
+        } catch (e) {}
       }
     }
-  } catch {}
+  } catch (e) {}
 
   log('SETUP', 'Download Maven from https://maven.apache.org/download.cgi');
   return false;
@@ -234,70 +234,106 @@ function installNode() {
   return false;
 }
 
+function resolveNpmPath() {
+  const dirs = isWin
+    ? [
+        process.env.ProgramFiles + '\\nodejs\\npm.cmd',
+        process.env.ProgramFiles + '\\nodejs\\npm',
+        process.env['ProgramFiles(x86)'] + '\\nodejs\\npm.cmd',
+        process.env['ProgramFiles(x86)'] + '\\nodejs\\npm',
+        process.env.APPDATA + '\\npm\\npm.cmd',
+        process.env.APPDATA + '\\npm\\npm',
+        process.env.LOCALAPPDATA + '\\fnm\\*\\nodejs\\*\\npm.cmd',
+        process.env.LOCALAPPDATA + '\\fnm\\*\\nodejs\\*\\npm',
+        'C:\\Program Files\\nodejs\\npm.cmd',
+        'C:\\Program Files\\nodejs\\npm',
+        'C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+      ]
+    : [
+        '/usr/local/bin/npm',
+        '/usr/bin/npm',
+        '/usr/local/lib/node_modules/npm/bin/npm-cli.js',
+        '/usr/lib/node_modules/npm/bin/npm-cli.js',
+        path.join(process.execPath, '..', '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+        path.join(process.execPath, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+      ];
+  for (const loc of dirs) {
+    try {
+      const testCmd = isWin ? loc : loc;
+      execSync('"' + testCmd + '" --version 2>&1', { stdio: 'ignore', timeout: 5000 });
+      return loc;
+    } catch (e) {}
+  }
+  return null;
+}
+
 function installNpm() {
   log('SETUP', 'npm not found. Attempting installation...');
   const pm = getPackageManager();
 
   if (pm === 'winget') {
+    log('SETUP', 'Installing Node.js (which bundles npm) via winget...');
     if (installPkg(pm, 'OpenJS.NodeJS.20')) {
-      if (checkNpm()) return true;
+      const found = resolveNpmPath();
+      if (found) {
+        process.env.PATH = path.dirname(found) + path.delimiter + process.env.PATH;
+        log('SETUP', 'npm added to PATH from ' + found);
+        return true;
+      }
     }
+    return false;
   }
   if (pm === 'choco') {
-    if (installPkg(pm, 'npm')) {
-      if (checkNpm()) return true;
+    if (installPkg(pm, 'nodejs-lts')) {
+      const found = resolveNpmPath();
+      if (found) {
+        process.env.PATH = path.dirname(found) + path.delimiter + process.env.PATH;
+        log('SETUP', 'npm added to PATH from ' + found);
+        return true;
+      }
     }
+    return false;
   }
   if (pm === 'brew') {
     if (installPkg(pm, 'npm')) {
       if (checkNpm()) return true;
     }
+    return false;
   }
   if (pm === 'apt-get') {
     if (installPkg(pm, 'npm')) {
       if (checkNpm()) return true;
     }
+    return false;
   }
   if (pm === 'dnf' || pm === 'yum') {
     if (installPkg(pm, 'npm')) {
       if (checkNpm()) return true;
     }
+    return false;
   }
   if (pm === 'apk') {
     if (installPkg(pm, 'npm')) {
       if (checkNpm()) return true;
     }
+    return false;
   }
 
-  log('SETUP', 'Trying official npm installer as fallback...');
-  try {
-    const s = !isWin && !isMac && process.getuid && process.getuid() !== 0 && cmdExists('sudo') ? 'sudo ' : '';
-    execSync(`${s}curl -L https://www.npmjs.org/install.sh 2>&1`, { stdio: 'inherit', timeout: 60000 });
-    if (checkNpm()) return true;
-  } catch {}
-
-  log('SETUP', 'Checking common npm locations bundled with Node.js...');
-  const candidates = [];
-  if (isWin) {
-    candidates.push(
-      path.join(process.execPath, '..', 'node_modules', 'npm', 'bin', 'npm.cmd'),
-      path.join(process.execPath, '..', '..', 'node_modules', 'npm', 'bin', 'npm.cmd'),
-      path.join(process.execPath, '..', '..', '..', 'node_modules', 'npm', 'bin', 'npm.cmd')
-    );
-  } else {
-    candidates.push(
-      path.join(process.execPath, '..', '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
-      path.join(process.execPath, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
-      '/usr/local/lib/node_modules/npm/bin/npm-cli.js',
-      '/usr/lib/node_modules/npm/bin/npm-cli.js'
-    );
-  }
-  for (const loc of candidates) {
+  if (!isWin) {
+    log('SETUP', 'Trying official npm installer as fallback...');
     try {
-      execSync(`"${loc}" --version 2>&1`, { stdio: 'ignore' });
-      log('SETUP', `npm found at ${loc}`);
+      const s = process.getuid && process.getuid() !== 0 && cmdExists('sudo') ? 'sudo ' : '';
+      execSync(s + 'curl -L https://www.npmjs.org/install.sh 2>&1', { stdio: 'inherit', timeout: 60000 });
+      if (checkNpm()) return true;
+    } catch (e) {}
+
+    log('SETUP', 'Checking common npm locations...');
+    const found = resolveNpmPath();
+    if (found) {
+      process.env.PATH = path.dirname(found) + path.delimiter + process.env.PATH;
+      log('SETUP', 'npm added to PATH from ' + found);
       return true;
-    } catch {}
+    }
   }
 
   return false;
