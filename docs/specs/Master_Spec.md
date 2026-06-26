@@ -882,4 +882,4 @@ Strategia `JOINED`: tabella base `attore` con tabelle `utente`, `operatore`, `pa
 
 ---
 
-*Documento generato il 2026-06-25. Basato su fonti verificate e cross-referenziate (Spec Gate 13/13, Clarity Gate 9/9).*
+*Documento generato il 2026-06-25. Specifica architetturale — non sottoposta a Clarity Gate. Fare riferimento a Master_Spec.cgd.md per la versione con validazione epistemica.**
