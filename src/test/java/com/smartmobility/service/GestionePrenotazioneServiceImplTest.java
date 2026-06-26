@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -157,5 +158,60 @@ class GestionePrenotazioneServiceImplTest {
 
         assertThrows(ResponseStatusException.class,
                 () -> service.inviaRichiestaPrenotazione(999L, 1L, null));
+    }
+
+    @Test
+    void inviaRichiestaPrenotazione_WithPastDateTime_ThrowsBadRequest() {
+        when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
+
+        String pastDateTime = LocalDateTime.now().minusHours(2).toString();
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.inviaRichiestaPrenotazione(1L, 1L, pastDateTime));
+        assertEquals(400, ex.getStatusCode().value());
+    }
+
+    @Test
+    void inviaRichiestaPrenotazione_WithPastTimeOnly_ThrowsBadRequest() {
+        when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
+
+        String pastTime = LocalTime.now().minusHours(1).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> service.inviaRichiestaPrenotazione(1L, 1L, pastTime));
+        assertEquals(400, ex.getStatusCode().value());
+    }
+
+    @Test
+    void inviaRichiestaPrenotazione_WithFutureDateTime_CreatesBooking() {
+        when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
+
+        String futureDateTime = LocalDateTime.now().plusDays(1).toString();
+
+        service.inviaRichiestaPrenotazione(1L, 1L, futureDateTime);
+
+        verify(prenotazioneRepository).save(any());
+        verify(mezzoRepository).save(any());
+        assertEquals(StatoMezzo.prenotato, mezzo.getStato());
+    }
+
+    @Test
+    @SuppressWarnings("java:S4144")
+    void inviaRichiestaPrenotazione_WithoutTime_DefaultsToNowAndSucceeds() {
+        when(mezzoRepository.findById(1L)).thenReturn(Optional.of(mezzo));
+        when(utenteRepository.findByIdUtente(1L)).thenReturn(Optional.of(utente));
+        when(prenotazioneRepository.findByUtenteIdAndStato(1L, StatoPrenotazione.attiva)).thenReturn(List.of());
+
+        service.inviaRichiestaPrenotazione(1L, 1L, null);
+
+        verify(prenotazioneRepository).save(any());
+        verify(mezzoRepository).save(any());
+        assertEquals(StatoMezzo.prenotato, mezzo.getStato());
     }
 }

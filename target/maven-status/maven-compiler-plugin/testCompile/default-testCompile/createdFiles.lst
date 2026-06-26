@@ -11,8 +11,8 @@ com/smartmobility/controller/GestioneAreeControllerTest.class
 com/smartmobility/service/GestioneFlottaServiceImplTest.class
 com/smartmobility/service/GestorePagamentoServiceImplTest.class
 com/smartmobility/service/RicercaMezziServiceImplTest.class
-com/smartmobility/repository/MezzoRepositoryTest.class
 com/smartmobility/service/GestioneAutenticazioneServiceImplTest.class
+com/smartmobility/repository/MezzoRepositoryTest.class
 com/smartmobility/controller/GestioneFlottaControllerTest.class
 com/smartmobility/controller/GestioneUtentiControllerTest.class
 com/smartmobility/controller/GestionePrenotazioneControllerTest.class

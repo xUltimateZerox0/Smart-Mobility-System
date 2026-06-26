@@ -33,16 +33,18 @@ public class DataInitializer {
 
     private static final String EMAIL_TEST = "test@smartmobility.com";
 
+    private static final String FALLBACK_PASSWORD = "password";
+
     private static String seedPassword(String key, String fallback) {
         String val = System.getenv(key);
         if (val != null && !val.isBlank()) return val;
         return fallback;
     }
 
-    private static final String PASSWORD_UTENTE = seedPassword("SEED_PASSWORD_UTENTE", "password");
-    private static final String PASSWORD_PA = seedPassword("SEED_PASSWORD_PA", "password");
-    private static final String PASSWORD_TECNICO = seedPassword("SEED_PASSWORD_TECNICO", "password");
-    private static final String PASSWORD_SC = seedPassword("SEED_PASSWORD_SC", "password");
+    private static final String PASSWORD_UTENTE = seedPassword("SEED_PASSWORD_UTENTE", FALLBACK_PASSWORD);
+    private static final String PASSWORD_PA = seedPassword("SEED_PASSWORD_PA", FALLBACK_PASSWORD);
+    private static final String PASSWORD_TECNICO = seedPassword("SEED_PASSWORD_TECNICO", FALLBACK_PASSWORD);
+    private static final String PASSWORD_SC = seedPassword("SEED_PASSWORD_SC", FALLBACK_PASSWORD);
 
     @Bean
     CommandLineRunner seedData(AttoreRepository attoreRepository,

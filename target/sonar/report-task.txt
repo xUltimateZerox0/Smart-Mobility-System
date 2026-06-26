@@ -2,5 +2,5 @@ projectKey=xUltimateZerox0_Smart-Mobility-System_AZ6JAb_A0GSrAtXtWPnm
 serverUrl=http://localhost:9000
 serverVersion=25.12.0.117093
 dashboardUrl=http://localhost:9000/dashboard?id=xUltimateZerox0_Smart-Mobility-System_AZ6JAb_A0GSrAtXtWPnm
-ceTaskId=67cc57b4-f224-4f06-9c60-4c56c91afbb8
-ceTaskUrl=http://localhost:9000/api/ce/task?id=67cc57b4-f224-4f06-9c60-4c56c91afbb8
+ceTaskId=4aed4b16-8709-427f-a698-9585a3b62ff0
+ceTaskUrl=http://localhost:9000/api/ce/task?id=4aed4b16-8709-427f-a698-9585a3b62ff0

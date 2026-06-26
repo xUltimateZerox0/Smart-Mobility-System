@@ -159,16 +159,24 @@ public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneServ
 
         LocalTime orarioInizio;
         LocalDate data;
+        LocalDateTime requested;
         if (orarioInizioStr != null && orarioInizioStr.contains("T")) {
-            LocalDateTime dateTime = LocalDateTime.parse(orarioInizioStr);
-            orarioInizio = dateTime.toLocalTime();
-            data = dateTime.toLocalDate();
+            requested = LocalDateTime.parse(orarioInizioStr);
+            orarioInizio = requested.toLocalTime();
+            data = requested.toLocalDate();
         } else if (orarioInizioStr != null) {
             orarioInizio = LocalTime.parse(orarioInizioStr);
             data = LocalDate.now();
+            requested = LocalDateTime.of(data, orarioInizio);
         } else {
             orarioInizio = LocalTime.now();
             data = LocalDate.now();
+            requested = null;
+        }
+
+        if (requested != null && requested.isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La data di prenotazione non può essere nel passato");
         }
 
         Prenotazione prenotazione = new Prenotazione();
