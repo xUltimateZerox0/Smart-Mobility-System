@@ -1,13 +1,13 @@
 ---
 clarity-gate-version: 2.1
 document-type: Implementation
-processed-date: 2026-06-23
-processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.md v3.0, classDiagram-v1.8-clean.uml, chiarimenti-vari.md punti 19-21
+processed-date: 2026-06-26
+processed-by: Claude (AI) + Cross-Reference Engine — documentazione.md (primary), Master_Spec.md v5.0, classDiagram-v1.8-clean.uml, chiarimenti-vari.md punti 19-21
 clarity-status: CLEAR
 hitl-status: REVIEWED
 hitl-pending-count: 0
 points-passed: 1-9
-document-sha256: 2949054942244b9cc17e501d5188b3a99b7be38638b6b0ecc9713f5f4e4909cf
+document-sha256: a1b2f1f96371ea5de9a6eb42c1455ccb5e70d040b7d060f1dfeea3049b6e24bf
 hitl-claims:
   - id: claim-6d3b7c006
     text: "I valori enum per StatoSegnalazione sono: aperta, in_lavorazione, chiusa"
@@ -125,7 +125,7 @@ hitl-claims:
 
 # Smart Mobility System — Master Specification (FINAL)
 
-**Versione:** 4.0 *(AI-Ready — cross-reference completo e validato)*
+**Versione:** 5.0 *(AI-Ready — specifica architetturale consolidata, validata e cross-referenziata)*
 **Team:** Cofee Coders
 **Progetto:** Ingegneria del Software a.a. 2025/2026
 **Architettura:** MVC Web-oriented con Controller Intermediario
@@ -134,8 +134,8 @@ hitl-claims:
 **Dominio:** Città generica con copertura WiFi full-range — nessuna limitazione geografica reale
 
 **Fonti (in ordine di priorità):**
-1. `documentazione.md` v3.0 — sorgente primaria *(chiarimenti-vari.md punto 15)*
-2. `Master_Spec.md` v3.0 — specifica architetturale consolidata
+1. `documentazione.md` — sorgente primaria *(chiarimenti-vari.md punto 15)*
+2. `Master_Spec.md` v5.0 — specifica architetturale consolidata
 3. `classDiagram-v1.8-clean.uml` (XMI 2.1) — struttura dati
 4. `chiarimenti-vari.md` — interpretazioni e vincoli
 
@@ -928,25 +928,28 @@ Persistenza dati — interfaccia CRUD standard verso database relazionale.
 
 *Tratto da documentazione.md §2.2.2 — sorgente primaria.*
 
+> ⚠ **Nota su UC.UT.03 → UC.UT.08:** UC.UT.03 **attiva** UC.UT.08 (Monitoraggio Costo) come processo runtime dopo l'avvio della corsa — non è un Include UML statico. La relazione è documentata nel sequence diagram UC.UT.03-clean.uml come `Attivazione caso d'uso UC.UT.08` (synchCall) e nella specifica UC.UT.03.cgd.md §2.
+
 | UC ID | Nome | Attore | Include | Estende | Esteso da |
 |-------|------|--------|---------|---------|-----------|
 | UC.ATT.01 | Login | Attore | — | — | — |
 | UC.UT.01 | Ricerca Mezzi | Utente | — | — | UC.UT.02 |
 | UC.UT.02 | Prenotazione Mezzo | Utente | — | UC.UT.01 | UC.UT.03 |
-| UC.UT.03 | Gestione Corsa | Utente | UC.UT.05, UC.UT.07 | UC.UT.02 | UC.UT.06 |
-| UC.UT.04 | Ottimizzazione Percorso | Utente | — | — | — |
-| UC.UT.05 | Metodo Pagamento | Utente | — | — | — |
+| UC.UT.03 | Gestione Corsa | Utente | UC.UT.05, UC.UT.08 ⚠ | UC.UT.02 | UC.UT.06 |
+| UC.UT.04 | Ricerca Percorso Migliore | Utente | — | — | — |
+| UC.UT.05 | Seleziona Metodo Pagamento | Utente | — | — | — |
 | UC.UT.06 | Sospensione Corsa | Utente | — | UC.UT.03 | — |
-| UC.UT.07 | Termina Corsa e Pagamento | Utente | — | — | — |
+| UC.UT.07 | Termina Corsa | Utente | — | — | — |
+| UC.UT.08 | Monitoraggio Costo | Utente | — | — | — |
 | UC.UT.10 | Registrazione Utente | Utente (non reg.) | — | — | — |
 | UC.UT.09 | Logout Utente | Utente | — | — | — |
-| UC.OP.01 | Gestione Flotta | Operatore Tecnico | — | — | — |
+| UC.OP.01 | Moderazione Flotta | Operatore Tecnico | — | — | — |
 | UC.OP.02 | Moderazione Utenti | Operatore SC | — | — | — |
-| UC.OP.03 | Amministrazione Prenotazioni | Operatore SC | — | — | — |
+| UC.OP.03 | Moderazione Prenotazioni | Operatore SC | — | — | — |
 | UC.OP.04 | Logout Operatore Tecnico | Operatore Tecnico | — | — | — |
 | UC.OP.05 | Logout Operatore SC | Operatore SC | — | — | — |
 | UC.AP.01 | Monitoraggio Statistiche | PA | — | — | — |
-| UC.AP.02 | Analisi Stato Flotta | PA | — | — | — |
+| UC.AP.02 | Moderazione Stato Flotta | PA | — | — | — |
 | UC.AP.03 | Restrizioni Geografiche | PA | — | — | — |
 | UC.AP.04 | Logout PA | PA | — | — | — |
 
@@ -1039,6 +1042,111 @@ transito (id_corsa→corsa, id_area→zona_geografica)
 | transito.id_corsa | corsa.id_corsa | N:M | bridge |
 | transito.id_area | zona_geografica.id_area | N:M | bridge |
 
+### 10.2 DDL (Physical Schema)
+
+```sql
+CREATE TABLE Attore (
+    id INTEGER PRIMARY KEY,
+    email VARCHAR(255),
+    password VARCHAR(255),
+    ruolo ENUM('Utente', 'Operatore', 'PA')
+);
+
+CREATE TABLE Utente (
+    idUtente INTEGER PRIMARY KEY,
+    nomeUtente VARCHAR(255),
+    cognomeUtente VARCHAR(255),
+    telefono VARCHAR(255),
+    coordinateUtente VARCHAR(255),
+    numMezziPrenotati INTEGER,
+    reportUtente CLOB,
+    statoUtente ENUM('Attivo', 'Sospeso', 'Disattivato'),
+    FOREIGN KEY (idUtente) REFERENCES Attore(id)
+);
+
+CREATE TABLE Operatore (
+    id INTEGER PRIMARY KEY,
+    tipo ENUM('OperatoreTecnico', 'OperatoreSC'),
+    FOREIGN KEY (id) REFERENCES Attore(id)
+);
+
+CREATE TABLE PA (
+    idPA INTEGER PRIMARY KEY,
+    FOREIGN KEY (idPA) REFERENCES Attore(id)
+);
+
+CREATE TABLE MetodoPagamento (
+    idMetodoPagamento INTEGER PRIMARY KEY,
+    numCarta INTEGER,
+    intestatarioCarta VARCHAR(255)
+);
+
+CREATE TABLE Mezzo (
+    idMezzo INTEGER PRIMARY KEY,
+    coordinateMezzo VARCHAR(255),
+    stato ENUM('Disponibile', 'Prenotato', 'In_Uso', 'Sospeso', 'Bloccato', 'Manutenzione'),
+    tipo ENUM('Bicicletta', 'Monopattino', 'Automobile'),
+    autonomia FLOAT(10),
+    costoOrario FLOAT(10),
+    velocitaMax FLOAT(10),
+    condizione VARCHAR(255),
+    idFlotta INTEGER,
+    tempoDisponibilita TIME
+);
+
+CREATE TABLE Corsa (
+    idCorsa INTEGER PRIMARY KEY,
+    costo FLOAT(10),
+    orarioInizio TIME,
+    orarioFine TIME,
+    coordinatePartenza VARCHAR(255),
+    coordinateArrivo VARCHAR(255),
+    idUtente INTEGER,
+    idMetodoPagamento INTEGER,
+    FOREIGN KEY (idUtente) REFERENCES Utente(idUtente),
+    FOREIGN KEY (idMetodoPagamento) REFERENCES MetodoPagamento(idMetodoPagamento)
+);
+
+CREATE TABLE Prenotazione (
+    idPrenotazione INTEGER PRIMARY KEY,
+    stato ENUM('Attiva', 'Scaduta', 'Annullata', 'Completata'),
+    orarioInizio TIME,
+    data DATE,
+    idUtente INTEGER,
+    idMezzo INTEGER,
+    FOREIGN KEY (idUtente) REFERENCES Utente(idUtente),
+    FOREIGN KEY (idMezzo) REFERENCES Mezzo(idMezzo)
+);
+
+CREATE TABLE Segnalazione (
+    idSegnalazione INTEGER PRIMARY KEY,
+    stato ENUM('Aperta', 'In lavorazione', 'Chiusa'),
+    ora TIME,
+    data DATE,
+    idMezzo INTEGER,
+    FOREIGN KEY (idMezzo) REFERENCES Mezzo(idMezzo)
+);
+
+CREATE TABLE ZonaGeografica (
+    idArea INTEGER PRIMARY KEY,
+    tipoRestrizione ENUM('ZTL', 'Divieto_Parcheggio', 'Limite_Velocità'),
+    noteRestrizione VARCHAR(255),
+    zona CLOB
+);
+
+CREATE TABLE Transito (
+    Corsa INTEGER,
+    Area INTEGER,
+    PRIMARY KEY (Corsa, Area),
+    FOREIGN KEY (Corsa) REFERENCES Corsa(idCorsa),
+    FOREIGN KEY (Area) REFERENCES ZonaGeografica(idArea)
+);
+```
+
+### 10.3 JPA Inheritance
+
+Strategia `JOINED`: tabella base `Attore` con tabelle `Utente`, `Operatore`, `PA` collegate 1:1 tramite FK.
+
 ---
 
 ## 11. Key Architectural Decisions
@@ -1070,7 +1178,31 @@ transito (id_corsa→corsa, id_area→zona_geografica)
 
 ---
 
-## 13. Summary Statistics (Cross-Reference Verified)
+## 13. Interface Summary (17 functional interfaces)
+
+| # | Interfaccia | Categoria | Realizzazione | Consumatore |
+|---|-------------|-----------|---------------|-------------|
+| 1 | Aggiornamenti Corsa | View-provided | AppUtente | Controller |
+| 2 | Stato Flotta | View-provided | AppOperatoreTecnico | Controller |
+| 3 | Diagnostica | View-provided | AppPA | Controller |
+| 4 | Eventi Utente | View-provided | AppOperatoreSC | Controller |
+| 5 | Stato Sessione | View-provided | Autenticazione | Controller |
+| 6 | Gestione Corsa | Controller-provided | GestioneCorsa, GestorePagamento, RicercaMezzi, GestionePrenotazione, GestioneAutenticazione | AppUtente |
+| 7 | Moderazione Utente | Controller-provided | GestioneUtenti, GestionePrenotazione, GestioneAutenticazione | AppOperatoreSC |
+| 8 | Amministrazione Flotta | Controller-provided | GestioneFlotta, GestioneAutenticazione | AppOperatoreTecnico |
+| 9 | Statistiche e Restrizioni | Controller-provided | GestioneStatistiche, GestioneAree, GestioneFlotta, GestioneAutenticazione | AppPA |
+| 10 | Gestione Sessioni | Controller-provided | GestioneAutenticazione | Autenticazione |
+| 11 | Gestione Dati Utente | Model-provided | Attore, Utente, Operatore, PA | Controller |
+| 12 | Gestione Dati Supporto | Model-provided | Segnalazione, Prenotazione, ZonaGeografica, Transito | Controller |
+| 13 | Gestione Dati Corsa | Model-provided | Corsa, Mezzo, MetodoPagamento | Controller |
+| 14 | API Mappa | External | Servizio Mappa | RicercaMezzi |
+| 15 | API Pagamento | External | Gateway Pagamento | GestorePagamento |
+| 16 | Connessione Dati | External | DBMS | Model |
+| 17 | API Controllo | External | Mezzo : IoT | GestioneCorsa |
+
+---
+
+## 14. Summary Statistics (Cross-Reference Verified)
 
 | Metrica | Valore |
 |---------|--------|
@@ -1090,34 +1222,55 @@ transito (id_corsa→corsa, id_area→zona_geografica)
 | Anti-patterns | 7 |
 | Relazioni FK DB | 10 |
 
-*Tutti i conteggi sono stati verificati tramite cross-reference puntuale tra documentazione.md, Master_Spec.md v3.0 e classDiagram-v1.8-clean.uml. Conteggio effettuato riga per riga sulle tabelle del presente documento. Gli artefatti XMI noti (metodi/attributi senza nome, typo) sono stati rimossi.*
+*Tutti i conteggi sono stati verificati tramite cross-reference puntuale tra documentazione.md, Master_Spec.md v5.0 e classDiagram-v1.8-clean.uml. Conteggio effettuato riga per riga sulle tabelle del presente documento. Gli artefatti XMI noti (metodi/attributi senza nome, typo) sono stati rimossi.*
 
 ---
 
-## 14. References
+## 15. References
 
 | Documento | Percorso | Ruolo |
 |-----------|----------|-------|
-| documentazione.md | `docs/specs/documentazione.md` | Sorgente primaria (v3.0) |
+| documentazione.md | `docs/specs/documentazione.md` | Sorgente primaria |
 | chiarimenti-vari.md | `docs/specs/chiarimenti-vari.md` | Interpretazioni e vincoli |
-| Master_Spec.md | `docs/specs/Master_Spec.md` | Specifica originale (v3.0) |
+| chiarimentiUC.md | `docs/specs/UC/chiarimentiUC.md` | Chiarimenti use case |
+| Master_Spec.md (v5.0) | `docs/specs/Master_Spec.md` | Specifica architetturale consolidata |
+| Master_Spec.cgd.md (questo doc) | `docs/specs/Master_Spec.cgd.md` | CGD — singola fonte di verità per generazione AI |
+| response2.md | `docs/specs/response2.md` | Cross-reference report critico |
+| verdict.md | `docs/specs/verdict.md` | Readiness verdict (basato su v4.0 — da aggiornare) |
 | Class Diagram | `docs/diagrams/class-diagram/classDiagram-v1.8-clean.uml` | XMI 2.1 |
 | Component Diagram | `docs/diagrams/component-diagram/componentDiagram-clean.uml` | XMI 2.1 |
 | Use Case Diagram | `docs/diagrams/use-case-diagram/UCdiagram-v1.1-clean.uml` | XMI 2.1 |
 | ER Diagram | `docs/diagrams/er-diagram/ERdiagram-clean.puml` | PlantUML |
 | Sequence Diagrams | `docs/diagrams/sequence-diagrams/UC.*/` | XMI 2.1 (19 UC) |
+| Tutti UC specifiche | `docs/specs/UC/UC.*.cgd.md` | Specifica dettagliata per use case |
 
 ---
 
-## 15. Test Strategy
+## 16. XMI Artifacts and Corrections
 
-### 15.1 Approach
+| Artefatto XMI | Correzione | Fonte |
+|--------------|------------|-------|
+| `CalcoloPercorso()` in GestioneCorsa | RIMOSSO — non presente nei flussi UC | chiarimenti-vari.md punto 14 |
+| `fineCorsa()` in GestioneCorsa | RIMOSSO — artefatto XMI | chiarimenti-vari.md punto 14 |
+| `coorfinateFinali` (Servizio Mappa) | Corretto a `coordinateFinali` | chiarimenti-vari.md punto 14 |
+| `EffettuaPagamento` (Gateway Pagamento) | Corretto a `effettuaPagamento` | chiarimenti-vari.md punto 14 |
+| `attribute/attribute2` in AppPA | RIMOSSO — artefatto XMI | Class_Diagram_Spec |
+| `id` ridichiarato in Operatore | Artefatto JOINED JPA, ignorato | Class_Diagram_Spec |
+| `controllaDisponibilità` (con accento, void) | Ignorato; metodo valido è `controllaDisponibilita()` (bool) con overload | Class_Diagram_Spec |
+| `reenvisibilita` in OP.01 | RIMOSSO — typo XMI | response2.md Critical #4 |
+| Interfacce Orphan (Class6, Class14, Class12, ù, unnamed) | Artefatti esportazione VP, ignorati | Component_Diagram_Spec §5 |
+
+---
+
+## 17. Test Strategy
+
+### 17.1 Approach
 - **Unit Testing (JUnit 5 + Mockito):** Test each controller, service, and model method in isolation. External systems (ServizioMappa, GatewayPagamento, DBMS, Mezzo:IoT) are mocked.
 - **Integration Testing (@SpringBootTest):** Test View→Controller→Model contracts. Use @DataJpaTest for repository layers.
 - **API Testing (MockMvc):** Test REST endpoints per controller with JSON request/response validation.
 - **Coverage Target:** Line coverage ≥ 80% per module, branch coverage ≥ 70%.
 
-### 15.2 Test Levels per Component
+### 17.2 Test Levels per Component
 
 | Component | Unit Tests | Integration Tests | Key Mock |
 |-----------|------------|-------------------|----------|
@@ -1126,13 +1279,13 @@ transito (id_corsa→corsa, id_area→zona_geografica)
 | View (AppUtente, AppPA, etc.) | 2+ per view | 1 per use case | Controller layer |
 | External (ServizioMappa, GatewayPagamento) | N/A (simulated) | 1 per external method | MockMvc |
 
-### 15.3 Test Data Strategy
+### 17.3 Test Data Strategy
 - Use in-memory H2 database for integration tests (MySQL dialect compatibility verified)
 - Pre-populate test data via data.sql or @BeforeEach fixtures
 - Test coordinates: use known test points (e.g., (12.4924, 41.8902) for Rome)
 - Spatial queries tested with JTS GeometryFactory
 
-### 15.4 Acceptance Criteria Validation
+### 17.4 Acceptance Criteria Validation
 Each UC's Acceptance Criteria (where defined) maps to at least 1 automated test:
 - **AC1 (functional):** End-to-end component test
 - **AC2 (security):** Security context test with/without valid session
@@ -1142,9 +1295,9 @@ Each UC's Acceptance Criteria (where defined) maps to at least 1 automated test:
 
 ---
 
-## 16. Error Handling Strategy
+## 18. Error Handling Strategy
 
-### 16.1 Global Error Categories
+### 18.1 Global Error Categories
 
 | Error ID | Error Type | Detection Point | System Response | Fallback | Logging |
 |----------|-----------|-----------------|----------------|----------|---------|
@@ -1159,7 +1312,7 @@ Each UC's Acceptance Criteria (where defined) maps to at least 1 automated test:
 | ERR-GL-009 | Database Constraint Violation | Repository | 500 Internal Server Error | Transaction rollback | ERROR |
 | ERR-GL-010 | Unexpected Runtime Exception | Global @ControllerAdvice | 500 Internal Server Error | mostraErrore("Errore imprevisto") | FATAL |
 
-### 16.2 Per-Layer Error Handling
+### 18.2 Per-Layer Error Handling
 
 | Layer | Error Boundary | Handling Mechanism |
 |-------|---------------|--------------------|
@@ -1169,7 +1322,7 @@ Each UC's Acceptance Criteria (where defined) maps to at least 1 automated test:
 | Repository | Data access | `DataAccessException` → wrapped in service |
 | Integration | External calls | RetryTemplate + CircuitBreaker pattern |
 
-### 16.3 Logging Conventions
+### 18.3 Logging Conventions
 - **FATAL:** System cannot continue (e.g., DB connection lost)
 - **ERROR:** Operation failed, user impacted (e.g., external system down)
 - **WARN:** Operation degraded, user may not notice (e.g., validation error)
@@ -1215,9 +1368,9 @@ Tutti i 14 claim sono stati confermati dal team Cofee Coders durante la sessione
 
 ---
 
-**Verdict:** CLEAR | REVIEWED — 17/17 claim verificati, 0 pending, 0 exceptions.
+**Verdict:** CLEAR | REVIEWED — 17/17 claim verificati, 0 pending, 0 exceptions. Documento aggiornato a v5.0 (2026-06-26).
 
 ---
 
 <!-- CLARITY_GATE_END -->
-Clarity Gate: CLEAR | REVIEWED — 17/17 claim (14 original + 3 pending design decisions resolved 2026-06-23)
+Clarity Gate: CLEAR | REVIEWED — 17/17 claim (14 original + 3 pending design decisions resolved). Versione 5.0 (2026-06-26).
