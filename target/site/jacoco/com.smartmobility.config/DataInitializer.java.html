@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.config</a> &gt; <span class="el_source">DataInitializer.java</span></div><h1>DataInitializer.java</h1><pre class="source lang-java linenums">package com.smartmobility.config;
+
+import com.smartmobility.model.MetodoPagamento;
+import com.smartmobility.model.Mezzo;
+import com.smartmobility.model.Operatore;
+import com.smartmobility.model.PA;
+import com.smartmobility.model.Utente;
+import com.smartmobility.model.ZonaGeografica;
+import com.smartmobility.model.enums.RuoloAttore;
+import com.smartmobility.model.enums.StatoMezzo;
+import com.smartmobility.model.enums.StatoUtente;
+import com.smartmobility.model.enums.TipoOperatore;
+import com.smartmobility.model.enums.TipoRestrizione;
+import com.smartmobility.repository.AttoreRepository;
+import com.smartmobility.repository.MetodoPagamentoRepository;
+import com.smartmobility.repository.MezzoRepository;
+import com.smartmobility.repository.OperatoreRepository;
+import com.smartmobility.repository.PARepository;
+import com.smartmobility.repository.UtenteRepository;
+import com.smartmobility.repository.ZonaGeograficaRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import java.time.LocalTime;
+
+@Configuration
+@Profile(&quot;dev&quot;)
+@SuppressWarnings(&quot;java:S2068&quot;)
+<span class="fc" id="L32">public class DataInitializer {</span>
+
+    private static final String EMAIL_TEST = &quot;test@smartmobility.com&quot;;
+
+    private static final String FALLBACK_PASSWORD = &quot;password&quot;;
+
+    private static String seedPassword(String key, String fallback) {
+<span class="fc" id="L39">        String val = System.getenv(key);</span>
+<span class="pc bpc" id="L40" title="3 of 4 branches missed.">        if (val != null &amp;&amp; !val.isBlank()) return val;</span>
+<span class="fc" id="L41">        return fallback;</span>
+    }
+
+<span class="fc" id="L44">    private static final String PASSWORD_UTENTE = seedPassword(&quot;SEED_PASSWORD_UTENTE&quot;, FALLBACK_PASSWORD);</span>
+<span class="fc" id="L45">    private static final String PASSWORD_PA = seedPassword(&quot;SEED_PASSWORD_PA&quot;, FALLBACK_PASSWORD);</span>
+<span class="fc" id="L46">    private static final String PASSWORD_TECNICO = seedPassword(&quot;SEED_PASSWORD_TECNICO&quot;, FALLBACK_PASSWORD);</span>
+<span class="fc" id="L47">    private static final String PASSWORD_SC = seedPassword(&quot;SEED_PASSWORD_SC&quot;, FALLBACK_PASSWORD);</span>
+
+    @Bean
+    CommandLineRunner seedData(AttoreRepository attoreRepository,
+                                UtenteRepository utenteRepository,
+                                OperatoreRepository operatoreRepository,
+                                PARepository paRepository,
+                                MezzoRepository mezzoRepository,
+                                ZonaGeograficaRepository zonaRepository,
+                                MetodoPagamentoRepository metodoPagamentoRepository) {
+<span class="fc" id="L57">        return args -&gt; {</span>
+<span class="fc" id="L58">            seedUsers(attoreRepository, utenteRepository, operatoreRepository, paRepository);</span>
+<span class="fc" id="L59">            seedMezzi(mezzoRepository);</span>
+<span class="fc" id="L60">            seedZone(zonaRepository);</span>
+<span class="fc" id="L61">            seedPaymentMethods(metodoPagamentoRepository, attoreRepository);</span>
+<span class="fc" id="L62">        };</span>
+    }
+
+    private void seedUsers(AttoreRepository attoreRepository,
+                           UtenteRepository utenteRepository,
+                           OperatoreRepository operatoreRepository,
+                           PARepository paRepository) {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (attoreRepository.findByEmail(EMAIL_TEST).isEmpty()) {</span>
+<span class="fc" id="L70">            Utente utente = new Utente();</span>
+<span class="fc" id="L71">            utente.setNomeUtente(&quot;Mario&quot;);</span>
+<span class="fc" id="L72">            utente.setCognomeUtente(&quot;Rossi&quot;);</span>
+<span class="fc" id="L73">            utente.setEmail(EMAIL_TEST);</span>
+<span class="fc" id="L74">            utente.setPassword(hashPassword(PASSWORD_UTENTE));</span>
+<span class="fc" id="L75">            utente.setRuolo(RuoloAttore.Utente);</span>
+<span class="fc" id="L76">            utente.setStatoUtente(StatoUtente.attivo);</span>
+<span class="fc" id="L77">            utente.setReportUtente(&quot;&quot;);</span>
+<span class="fc" id="L78">            utente.setNumMezziPrenotati(0);</span>
+<span class="fc" id="L79">            utente.setCoordinateUtente(&quot;45.4642,9.1900&quot;);</span>
+<span class="fc" id="L80">            utente = utenteRepository.save(utente);</span>
+<span class="fc" id="L81">            utente.setIdUtente(utente.getId());</span>
+<span class="fc" id="L82">            utenteRepository.save(utente);</span>
+        }
+
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (attoreRepository.findByEmail(&quot;pa@smartmobility.com&quot;).isEmpty()) {</span>
+<span class="fc" id="L86">            PA pa = new PA();</span>
+<span class="fc" id="L87">            pa.setEmail(&quot;pa@smartmobility.com&quot;);</span>
+<span class="fc" id="L88">            pa.setPassword(hashPassword(PASSWORD_PA));</span>
+<span class="fc" id="L89">            pa.setRuolo(RuoloAttore.PA);</span>
+<span class="fc" id="L90">            paRepository.save(pa);</span>
+        }
+
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (attoreRepository.findByEmail(&quot;tecnico@smartmobility.com&quot;).isEmpty()) {</span>
+<span class="fc" id="L94">            Operatore op = new Operatore();</span>
+<span class="fc" id="L95">            op.setEmail(&quot;tecnico@smartmobility.com&quot;);</span>
+<span class="fc" id="L96">            op.setPassword(hashPassword(PASSWORD_TECNICO));</span>
+<span class="fc" id="L97">            op.setRuolo(RuoloAttore.Operatore);</span>
+<span class="fc" id="L98">            op.setTipo(TipoOperatore.OperatoreTecnico);</span>
+<span class="fc" id="L99">            operatoreRepository.save(op);</span>
+        }
+
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if (attoreRepository.findByEmail(&quot;sc@smartmobility.com&quot;).isEmpty()) {</span>
+<span class="fc" id="L103">            Operatore op = new Operatore();</span>
+<span class="fc" id="L104">            op.setEmail(&quot;sc@smartmobility.com&quot;);</span>
+<span class="fc" id="L105">            op.setPassword(hashPassword(PASSWORD_SC));</span>
+<span class="fc" id="L106">            op.setRuolo(RuoloAttore.Operatore);</span>
+<span class="fc" id="L107">            op.setTipo(TipoOperatore.OperatoreSC);</span>
+<span class="fc" id="L108">            operatoreRepository.save(op);</span>
+        }
+<span class="fc" id="L110">    }</span>
+
+    private void seedMezzi(MezzoRepository mezzoRepository) {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (mezzoRepository.count() &gt; 0) return;</span>
+
+<span class="fc" id="L115">        Mezzo m1 = new Mezzo();</span>
+<span class="fc" id="L116">        m1.setTipo(&quot;bici&quot;);</span>
+<span class="fc" id="L117">        m1.setCoordinateMezzo(&quot;45.4642,9.1900&quot;);</span>
+<span class="fc" id="L118">        m1.setStato(StatoMezzo.disponibile);</span>
+<span class="fc" id="L119">        m1.setAutonomia(50);</span>
+<span class="fc" id="L120">        m1.setCostoOrario(5);</span>
+<span class="fc" id="L121">        m1.setVelocitaMax(25);</span>
+<span class="fc" id="L122">        m1.setCondizione(&quot;buona&quot;);</span>
+<span class="fc" id="L123">        m1.setIdFlotta(&quot;1&quot;);</span>
+<span class="fc" id="L124">        m1.setTempoDisponibilita(LocalTime.of(8, 0));</span>
+<span class="fc" id="L125">        mezzoRepository.save(m1);</span>
+
+<span class="fc" id="L127">        Mezzo m2 = new Mezzo();</span>
+<span class="fc" id="L128">        m2.setTipo(&quot;scooter&quot;);</span>
+<span class="fc" id="L129">        m2.setCoordinateMezzo(&quot;45.4670,9.1850&quot;);</span>
+<span class="fc" id="L130">        m2.setStato(StatoMezzo.disponibile);</span>
+<span class="fc" id="L131">        m2.setAutonomia(80);</span>
+<span class="fc" id="L132">        m2.setCostoOrario(15);</span>
+<span class="fc" id="L133">        m2.setVelocitaMax(45);</span>
+<span class="fc" id="L134">        m2.setCondizione(&quot;ottima&quot;);</span>
+<span class="fc" id="L135">        m2.setIdFlotta(&quot;1&quot;);</span>
+<span class="fc" id="L136">        m2.setTempoDisponibilita(LocalTime.of(7, 0));</span>
+<span class="fc" id="L137">        mezzoRepository.save(m2);</span>
+
+<span class="fc" id="L139">        Mezzo m3 = new Mezzo();</span>
+<span class="fc" id="L140">        m3.setTipo(&quot;auto&quot;);</span>
+<span class="fc" id="L141">        m3.setCoordinateMezzo(&quot;45.4700,9.1950&quot;);</span>
+<span class="fc" id="L142">        m3.setStato(StatoMezzo.disponibile);</span>
+<span class="fc" id="L143">        m3.setAutonomia(200);</span>
+<span class="fc" id="L144">        m3.setCostoOrario(30);</span>
+<span class="fc" id="L145">        m3.setVelocitaMax(130);</span>
+<span class="fc" id="L146">        m3.setCondizione(&quot;buona&quot;);</span>
+<span class="fc" id="L147">        m3.setIdFlotta(&quot;1&quot;);</span>
+<span class="fc" id="L148">        m3.setTempoDisponibilita(LocalTime.of(6, 0));</span>
+<span class="fc" id="L149">        mezzoRepository.save(m3);</span>
+
+<span class="fc" id="L151">        Mezzo m4 = new Mezzo();</span>
+<span class="fc" id="L152">        m4.setTipo(&quot;bici&quot;);</span>
+<span class="fc" id="L153">        m4.setCoordinateMezzo(&quot;45.4600,9.1800&quot;);</span>
+<span class="fc" id="L154">        m4.setStato(StatoMezzo.in_uso);</span>
+<span class="fc" id="L155">        m4.setAutonomia(30);</span>
+<span class="fc" id="L156">        m4.setCostoOrario(5);</span>
+<span class="fc" id="L157">        m4.setVelocitaMax(25);</span>
+<span class="fc" id="L158">        m4.setCondizione(&quot;danneggiata&quot;);</span>
+<span class="fc" id="L159">        m4.setIdFlotta(&quot;1&quot;);</span>
+<span class="fc" id="L160">        m4.setTempoDisponibilita(LocalTime.of(9, 0));</span>
+<span class="fc" id="L161">        mezzoRepository.save(m4);</span>
+
+<span class="fc" id="L163">        Mezzo m5 = new Mezzo();</span>
+<span class="fc" id="L164">        m5.setTipo(&quot;scooter&quot;);</span>
+<span class="fc" id="L165">        m5.setCoordinateMezzo(&quot;45.4750,9.2000&quot;);</span>
+<span class="fc" id="L166">        m5.setStato(StatoMezzo.manutenzione);</span>
+<span class="fc" id="L167">        m5.setAutonomia(60);</span>
+<span class="fc" id="L168">        m5.setCostoOrario(15);</span>
+<span class="fc" id="L169">        m5.setVelocitaMax(45);</span>
+<span class="fc" id="L170">        m5.setCondizione(&quot;manutenzione&quot;);</span>
+<span class="fc" id="L171">        m5.setIdFlotta(&quot;1&quot;);</span>
+<span class="fc" id="L172">        m5.setTempoDisponibilita(LocalTime.of(10, 0));</span>
+<span class="fc" id="L173">        mezzoRepository.save(m5);</span>
+<span class="fc" id="L174">    }</span>
+
+    private void seedPaymentMethods(MetodoPagamentoRepository metodoPagamentoRepository,
+                                     AttoreRepository attoreRepository) {
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (metodoPagamentoRepository.count() == 0) {</span>
+<span class="fc" id="L179">            attoreRepository.findByEmail(EMAIL_TEST).ifPresent(attore -&gt; {</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">                if (attore instanceof Utente utente) {</span>
+<span class="fc" id="L181">                    MetodoPagamento metodo = new MetodoPagamento();</span>
+<span class="fc" id="L182">                    metodo.setNumCarta(&quot;4111111111111111&quot;);</span>
+<span class="fc" id="L183">                    metodo.setIntestatarioCarta(&quot;Mario Rossi&quot;);</span>
+<span class="fc" id="L184">                    metodo.setDsCarta(&quot;12/28&quot;);</span>
+<span class="fc" id="L185">                    metodo.setUtente(utente);</span>
+<span class="fc" id="L186">                    metodoPagamentoRepository.save(metodo);</span>
+                }
+<span class="fc" id="L188">            });</span>
+        }
+<span class="fc" id="L190">    }</span>
+
+    private void seedZone(ZonaGeograficaRepository zonaRepository) {
+<span class="fc bfc" id="L193" title="All 2 branches covered.">        if (zonaRepository.count() &gt; 0) return;</span>
+
+<span class="fc" id="L195">        ZonaGeografica z1 = new ZonaGeografica();</span>
+<span class="fc" id="L196">        z1.setTipoRestrizione(TipoRestrizione.ZTL);</span>
+<span class="fc" id="L197">        z1.setNoteRestrizione(&quot;Centro storico - accesso vietato 8:00-20:00&quot;);</span>
+<span class="fc" id="L198">        z1.setZona(&quot;45.4640,9.1900,45.4660,9.1950&quot;);</span>
+<span class="fc" id="L199">        zonaRepository.save(z1);</span>
+
+<span class="fc" id="L201">        ZonaGeografica z2 = new ZonaGeografica();</span>
+<span class="fc" id="L202">        z2.setTipoRestrizione(TipoRestrizione.divieto_parcheggio);</span>
+<span class="fc" id="L203">        z2.setNoteRestrizione(&quot;Area stazione - divieto sosta permanente&quot;);</span>
+<span class="fc" id="L204">        z2.setZona(&quot;45.4700,9.1850,45.4720,9.1900&quot;);</span>
+<span class="fc" id="L205">        zonaRepository.save(z2);</span>
+
+<span class="fc" id="L207">        ZonaGeografica z3 = new ZonaGeografica();</span>
+<span class="fc" id="L208">        z3.setTipoRestrizione(TipoRestrizione.limite_velocita);</span>
+<span class="fc" id="L209">        z3.setNoteRestrizione(&quot;Zona residenziale - limite 30 km/h&quot;);</span>
+<span class="fc" id="L210">        z3.setZona(&quot;45.4620,9.1880,45.4680,9.1980&quot;);</span>
+<span class="fc" id="L211">        zonaRepository.save(z3);</span>
+<span class="fc" id="L212">    }</span>
+
+    private static String hashPassword(String password) {
+<span class="fc" id="L215">        return new BCryptPasswordEncoder().encode(password);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestioneUtentiServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.service.impl</a> &gt; <span class="el_source">GestioneUtentiServiceImpl.java</span></div><h1>GestioneUtentiServiceImpl.java</h1><pre class="source lang-java linenums">package com.smartmobility.service.impl;
+
+import com.smartmobility.dto.response.UtenteResponse;
+import com.smartmobility.model.Corsa;
+import com.smartmobility.model.Utente;
+import com.smartmobility.model.enums.StatoUtente;
+import com.smartmobility.repository.CorsaRepository;
+import com.smartmobility.repository.UtenteRepository;
+import com.smartmobility.service.GestioneCorsaService;
+import com.smartmobility.service.GestioneUtentiService;
+import com.smartmobility.service.SessionRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+@Service
+public class GestioneUtentiServiceImpl implements GestioneUtentiService {
+
+<span class="fc" id="L24">    private static final Logger log = LoggerFactory.getLogger(GestioneUtentiServiceImpl.class);</span>
+    private static final String UTENTE_NON_TROVATO = &quot;Utente non trovato&quot;;
+
+    private final UtenteRepository utenteRepository;
+    private final SessionRegistry sessionRegistry;
+    private final CorsaRepository corsaRepository;
+    private final GestioneCorsaService gestioneCorsaService;
+
+    public GestioneUtentiServiceImpl(UtenteRepository utenteRepository,
+                                      SessionRegistry sessionRegistry,
+                                      CorsaRepository corsaRepository,
+<span class="fc" id="L35">                                      GestioneCorsaService gestioneCorsaService) {</span>
+<span class="fc" id="L36">        this.utenteRepository = utenteRepository;</span>
+<span class="fc" id="L37">        this.sessionRegistry = sessionRegistry;</span>
+<span class="fc" id="L38">        this.corsaRepository = corsaRepository;</span>
+<span class="fc" id="L39">        this.gestioneCorsaService = gestioneCorsaService;</span>
+<span class="fc" id="L40">    }</span>
+
+    @Override
+    public List&lt;UtenteResponse&gt; getElencoUtenti() {
+<span class="nc" id="L44">        return utenteRepository.findAll().stream()</span>
+<span class="nc" id="L45">                .map(u -&gt; new UtenteResponse(</span>
+<span class="nc" id="L46">                        u.getId(),</span>
+<span class="nc" id="L47">                        u.getIdUtente(),</span>
+<span class="nc" id="L48">                        u.getNomeUtente(),</span>
+<span class="nc" id="L49">                        u.getCognomeUtente(),</span>
+<span class="nc" id="L50">                        u.getEmail(),</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                        u.getStatoUtente() != null ? u.getStatoUtente().name() : null</span>
+                ))
+<span class="nc" id="L53">                .toList();</span>
+    }
+
+    @Override
+    public String cercaReport(Long idUtente) {
+<span class="fc" id="L58">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="fc" id="L59">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+<span class="fc" id="L60">        return utente.getReportUtente();</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean gestioneUtente(Long idUtente) {
+<span class="fc" id="L66">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="pc" id="L67">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (utente.getStatoUtente() == StatoUtente.attivo) {</span>
+<span class="fc" id="L70">            utente.setStatoUtente(StatoUtente.sospeso);</span>
+<span class="fc" id="L71">            sessionRegistry.invalidateByEmail(utente.getEmail());</span>
+
+<span class="fc" id="L73">            List&lt;Corsa&gt; corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">            for (Corsa corsa : corseAttive) {</span>
+                try {
+<span class="nc" id="L76">                    gestioneCorsaService.forzaTerminaCorsa(corsa.getIdCorsa());</span>
+<span class="nc" id="L77">                    log.info(&quot;Corsa {} terminata forzatamente per moderazione utente {}&quot;, corsa.getIdCorsa(), idUtente);</span>
+<span class="nc" id="L78">                } catch (Exception e) {</span>
+<span class="nc" id="L79">                    log.error(&quot;Errore terminazione corsa {} per moderazione: {}&quot;, corsa.getIdCorsa(), e.getMessage());</span>
+<span class="nc" id="L80">                }</span>
+<span class="nc" id="L81">            }</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        } else if (utente.getStatoUtente() == StatoUtente.sospeso) {</span>
+<span class="fc" id="L83">            utente.setStatoUtente(StatoUtente.attivo);</span>
+        } else {
+<span class="fc" id="L85">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Utente disattivato non modificabile&quot;);</span>
+        }
+
+<span class="fc" id="L88">        utenteRepository.save(utente);</span>
+<span class="fc" id="L89">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean bloccaUtente(Long idUtente) {
+<span class="fc" id="L95">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="fc" id="L96">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+<span class="fc" id="L97">        utente.setStatoUtente(StatoUtente.sospeso);</span>
+<span class="fc" id="L98">        utenteRepository.save(utente);</span>
+<span class="fc" id="L99">        sessionRegistry.invalidateByEmail(utente.getEmail());</span>
+
+<span class="fc" id="L101">        List&lt;Corsa&gt; corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        for (Corsa corsa : corseAttive) {</span>
+            try {
+<span class="nc" id="L104">                gestioneCorsaService.forzaTerminaCorsa(corsa.getIdCorsa());</span>
+<span class="nc" id="L105">                log.info(&quot;Corsa {} terminata forzatamente per blocco utente {}&quot;, corsa.getIdCorsa(), idUtente);</span>
+<span class="nc" id="L106">            } catch (Exception e) {</span>
+<span class="nc" id="L107">                log.error(&quot;Errore durante terminazione forzata corsa {} per utente {}: {}&quot;, corsa.getIdCorsa(), idUtente, e.getMessage());</span>
+<span class="nc" id="L108">            }</span>
+<span class="nc" id="L109">        }</span>
+
+<span class="fc" id="L111">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean sbloccaUtente(Long idUtente) {
+<span class="fc" id="L117">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="fc" id="L118">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+<span class="fc" id="L119">        utente.setStatoUtente(StatoUtente.attivo);</span>
+<span class="fc" id="L120">        utenteRepository.save(utente);</span>
+<span class="fc" id="L121">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean disattivaUtente(Long idUtente) {
+<span class="fc" id="L127">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="fc" id="L128">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+<span class="fc" id="L129">        utente.setStatoUtente(StatoUtente.disattivato);</span>
+<span class="fc" id="L130">        utenteRepository.save(utente);</span>
+<span class="fc" id="L131">        sessionRegistry.invalidateByEmail(utente.getEmail());</span>
+<span class="fc" id="L132">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    public void cancellaReport(Long idUtente) {
+<span class="nc" id="L138">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="nc" id="L139">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+<span class="nc" id="L140">        utente.setReportUtente(null);</span>
+<span class="nc" id="L141">        utenteRepository.save(utente);</span>
+<span class="nc" id="L142">    }</span>
+
+    @Override
+    @Transactional
+    public void azioneCorrettiva(Long idUtente, String azione) {
+<span class="fc" id="L147">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="pc" id="L148">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, UTENTE_NON_TROVATO));</span>
+
+<span class="fc" id="L150">        String existing = utente.getReportUtente();</span>
+<span class="pc bpc" id="L151" title="1 of 4 branches missed.">        String updated = existing == null || existing.isBlank()</span>
+<span class="fc" id="L152">                ? azione</span>
+<span class="fc" id="L153">                : existing + &quot;\n&quot; + azione;</span>
+<span class="fc" id="L154">        utente.setReportUtente(updated);</span>
+<span class="fc" id="L155">        utenteRepository.save(utente);</span>
+<span class="fc" id="L156">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

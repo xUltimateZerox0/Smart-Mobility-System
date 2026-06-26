@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransitoId.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">TransitoId.java</span></div><h1>TransitoId.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import java.io.Serializable;
+import java.util.Objects;
+
+@Embeddable
+public class TransitoId implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Column(name = &quot;id_corsa&quot;)
+    private Long idCorsa;
+
+    @Column(name = &quot;id_area&quot;)
+    private Long idArea;
+
+<span class="fc" id="L18">    public TransitoId() { /* required by JPA */ }</span>
+
+    public Long getIdCorsa() {
+<span class="fc" id="L21">        return idCorsa;</span>
+    }
+
+    public void setIdCorsa(Long idCorsa) {
+<span class="fc" id="L25">        this.idCorsa = idCorsa;</span>
+<span class="fc" id="L26">    }</span>
+
+    public Long getIdArea() {
+<span class="fc" id="L29">        return idArea;</span>
+    }
+
+    public void setIdArea(Long idArea) {
+<span class="fc" id="L33">        this.idArea = idArea;</span>
+<span class="fc" id="L34">    }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (this == o) return true;</span>
+<span class="pc bpc" id="L39" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L40">        TransitoId that = (TransitoId) o;</span>
+<span class="fc bfc" id="L41" title="All 4 branches covered.">        return Objects.equals(idCorsa, that.idCorsa) &amp;&amp; Objects.equals(idArea, that.idArea);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="fc" id="L46">        return Objects.hash(idCorsa, idArea);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

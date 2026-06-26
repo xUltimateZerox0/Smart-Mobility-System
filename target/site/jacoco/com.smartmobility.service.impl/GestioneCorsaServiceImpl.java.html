@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestioneCorsaServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.service.impl</a> &gt; <span class="el_source">GestioneCorsaServiceImpl.java</span></div><h1>GestioneCorsaServiceImpl.java</h1><pre class="source lang-java linenums">package com.smartmobility.service.impl;
+
+import com.smartmobility.dto.response.CorsaResponse;
+import com.smartmobility.dto.response.PercorsoResponse;
+import com.smartmobility.dto.response.StimaCorsaResponse;
+import com.smartmobility.integration.MezzoIoTService;
+import com.smartmobility.integration.ServizioMappaService;
+import com.smartmobility.model.Corsa;
+import com.smartmobility.model.MetodoPagamento;
+import com.smartmobility.model.Mezzo;
+import com.smartmobility.model.Prenotazione;
+import com.smartmobility.model.Utente;
+import com.smartmobility.model.enums.StatoMezzo;
+import com.smartmobility.model.enums.StatoPrenotazione;
+import com.smartmobility.repository.CorsaRepository;
+import com.smartmobility.repository.MetodoPagamentoRepository;
+import com.smartmobility.repository.MezzoRepository;
+import com.smartmobility.repository.PrenotazioneRepository;
+import com.smartmobility.repository.UtenteRepository;
+import com.smartmobility.service.GestioneCorsaService;
+import com.smartmobility.service.GestorePagamentoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Service
+public class GestioneCorsaServiceImpl implements GestioneCorsaService {
+
+    private static final double SOSPENSIONE_FISSO = 1.0;
+    private static final String CORSA_NON_TROVATA = &quot;Corsa non trovata&quot;;
+    private static final long PAYMENT_TTL_MS = 30L * 60 * 1000; // 30 minuti
+<span class="fc" id="L43">    private static final Logger log = LoggerFactory.getLogger(GestioneCorsaServiceImpl.class);</span>
+
+    private final CorsaRepository corsaRepository;
+    private final MezzoRepository mezzoRepository;
+    private final UtenteRepository utenteRepository;
+    private final MetodoPagamentoRepository metodoPagamentoRepository;
+    private final PrenotazioneRepository prenotazioneRepository;
+    private final MezzoIoTService mezzoIoTService;
+    private final ServizioMappaService servizioMappaService;
+    private final GestorePagamentoService gestorePagamentoService;
+
+    private GestioneCorsaService selfProxy;
+
+<span class="fc" id="L56">    private final Map&lt;Long, PendingPayment&gt; pendingPaymentMethods = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L57">    private final Map&lt;Long, Long&gt; pausaStartTimes = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L58">    private final Object lock = new Object();</span>
+
+    private static class PendingPayment {
+        final Long metodoId;
+        final long timestamp;
+<span class="fc" id="L63">        PendingPayment(Long metodoId, long timestamp) {</span>
+<span class="fc" id="L64">            this.metodoId = metodoId;</span>
+<span class="fc" id="L65">            this.timestamp = timestamp;</span>
+<span class="fc" id="L66">        }</span>
+        boolean isExpired() {
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            return System.currentTimeMillis() - timestamp &gt; PAYMENT_TTL_MS;</span>
+        }
+    }
+
+    public GestioneCorsaServiceImpl(CorsaRepository corsaRepository,
+                                     MezzoRepository mezzoRepository,
+                                     UtenteRepository utenteRepository,
+                                     MetodoPagamentoRepository metodoPagamentoRepository,
+                                     PrenotazioneRepository prenotazioneRepository,
+                                     MezzoIoTService mezzoIoTService,
+                                     ServizioMappaService servizioMappaService,
+<span class="fc" id="L79">                                     GestorePagamentoService gestorePagamentoService) {</span>
+<span class="fc" id="L80">        this.corsaRepository = corsaRepository;</span>
+<span class="fc" id="L81">        this.mezzoRepository = mezzoRepository;</span>
+<span class="fc" id="L82">        this.utenteRepository = utenteRepository;</span>
+<span class="fc" id="L83">        this.metodoPagamentoRepository = metodoPagamentoRepository;</span>
+<span class="fc" id="L84">        this.prenotazioneRepository = prenotazioneRepository;</span>
+<span class="fc" id="L85">        this.mezzoIoTService = mezzoIoTService;</span>
+<span class="fc" id="L86">        this.servizioMappaService = servizioMappaService;</span>
+<span class="fc" id="L87">        this.gestorePagamentoService = gestorePagamentoService;</span>
+<span class="fc" id="L88">    }</span>
+
+    @Autowired
+    @Lazy
+    public void setSelfProxy(GestioneCorsaService selfProxy) {
+<span class="fc" id="L93">        this.selfProxy = selfProxy;</span>
+<span class="fc" id="L94">    }</span>
+
+    @Override
+    @Transactional
+    public Long avviaCorsa(Long idMezzo, Long idUtente, String qrCode) {
+<span class="pc bpc" id="L99" title="1 of 4 branches missed.">        if (qrCode == null || qrCode.isBlank()) {</span>
+<span class="fc" id="L100">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;QR Code obbligatorio per avviare la corsa&quot;);</span>
+        }
+
+<span class="fc" id="L103">        Long idMezzoDaQR = parseQrCode(qrCode);</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (!idMezzo.equals(idMezzoDaQR)) {</span>
+<span class="fc" id="L105">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Il QR Code non corrisponde al veicolo selezionato&quot;);</span>
+        }
+
+<span class="fc" id="L108">        Mezzo mezzo = mezzoRepository.findById(idMezzo)</span>
+<span class="pc" id="L109">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Mezzo non trovato&quot;));</span>
+
+<span class="fc bfc" id="L111" title="All 4 branches covered.">        if (mezzo.getStato() != StatoMezzo.prenotato &amp;&amp; mezzo.getStato() != StatoMezzo.disponibile) {</span>
+<span class="fc" id="L112">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Mezzo non disponibile per corsa (stato attuale: &quot; + mezzo.getStato() + &quot;)&quot;);</span>
+        }
+
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        if (mezzo.getStato() == StatoMezzo.prenotato) {</span>
+<span class="fc" id="L116">            boolean hasBooking = prenotazioneRepository.findByUtenteIdAndStato(</span>
+<span class="fc" id="L117">                    idUtente, StatoPrenotazione.attiva).stream()</span>
+<span class="pc bpc" id="L118" title="2 of 4 branches missed.">                    .anyMatch(p -&gt; p.getMezzo() != null &amp;&amp; p.getMezzo().getIdMezzo().equals(idMezzo));</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">            if (!hasBooking) {</span>
+<span class="fc" id="L120">                throw new ResponseStatusException(HttpStatus.FORBIDDEN,</span>
+                        &quot;Veicolo prenotato da un altro utente. Non puoi avviare la corsa.&quot;);
+            }
+        }
+
+<span class="fc" id="L125">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="pc" id="L126">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Utente non trovato&quot;));</span>
+
+<span class="fc" id="L128">        List&lt;Corsa&gt; corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (!corseAttive.isEmpty()) {</span>
+<span class="fc" id="L130">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Hai già una corsa attiva. Termina la corsa corrente prima di avviarne una nuova.&quot;);</span>
+        }
+
+<span class="fc" id="L133">        Corsa corsa = new Corsa();</span>
+<span class="fc" id="L134">        corsa.setOrarioInizio(LocalDateTime.now());</span>
+<span class="fc" id="L135">        corsa.setCoordinatePartenza(mezzo.getCoordinateMezzo());</span>
+<span class="fc" id="L136">        corsa.setUtente(utente);</span>
+<span class="fc" id="L137">        corsa.setMezzo(mezzo);</span>
+<span class="fc" id="L138">        corsa.setCosto(0);</span>
+<span class="fc" id="L139">        corsa.setCoordinateArrivo(null);</span>
+<span class="fc" id="L140">        corsa = corsaRepository.save(corsa);</span>
+
+<span class="fc" id="L142">        PendingPayment pending = pendingPaymentMethods.remove(idUtente);</span>
+<span class="pc bpc" id="L143" title="1 of 4 branches missed.">        if (pending == null || pending.isExpired()) {</span>
+<span class="fc" id="L144">            throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,</span>
+                    &quot;Nessun metodo di pagamento selezionato o selezione scaduta. Seleziona un metodo di pagamento prima di avviare la corsa.&quot;);
+        }
+<span class="fc" id="L147">        MetodoPagamento metodo = metodoPagamentoRepository.findById(pending.metodoId)</span>
+<span class="pc" id="L148">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+                        &quot;Metodo di pagamento non valido o non trovato&quot;));
+<span class="fc" id="L150">        corsa.setMetodoPagamento(metodo);</span>
+<span class="fc" id="L151">        corsa.setTotalePausaMillis(0L);</span>
+<span class="fc" id="L152">        corsa = corsaRepository.save(corsa);</span>
+
+<span class="fc" id="L154">        boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(idMezzo);</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (!sbloccato) {</span>
+<span class="nc" id="L156">            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, &quot;Impossibile sbloccare il veicolo: errore di comunicazione IoT&quot;);</span>
+        }
+
+<span class="fc" id="L159">        mezzo.setStato(StatoMezzo.in_uso);</span>
+<span class="fc" id="L160">        mezzoRepository.save(mezzo);</span>
+
+<span class="fc" id="L162">        completaPrenotazioniAttive(utente, mezzo);</span>
+
+<span class="fc" id="L164">        return corsa.getIdCorsa();</span>
+    }
+
+    private Long parseQrCode(String qrCode) {
+        try {
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">            if (qrCode.startsWith(&quot;QR-&quot;)) {</span>
+<span class="fc" id="L170">                String[] parts = qrCode.split(&quot;-&quot;);</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">                if (parts.length &gt;= 2) {</span>
+<span class="fc" id="L172">                    return Long.parseLong(parts[1]);</span>
+                }
+            }
+<span class="nc" id="L175">            return Long.parseLong(qrCode);</span>
+<span class="nc" id="L176">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L177">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;QR Code non valido&quot;);</span>
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CorsaResponse getCorsaAttiva(Long idUtente) {
+<span class="fc" id="L184">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="pc" id="L185">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Utente non trovato&quot;));</span>
+
+<span class="fc" id="L187">        List&lt;Corsa&gt; corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        if (corseAttive.isEmpty()) {</span>
+<span class="fc" id="L189">            return null;</span>
+        }
+
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (corseAttive.size() &gt; 1) {</span>
+<span class="fc" id="L193">            log.error(&quot;Grave inconsistenza: utente {} ha {} corse attive multiple&quot;, idUtente, corseAttive.size());</span>
+<span class="fc" id="L194">            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,</span>
+                    &quot;Rilevate multiple corse attive per l'utente. Contattare l'assistenza.&quot;);
+        }
+
+<span class="fc" id="L198">        Corsa corsa = corseAttive.get(0);</span>
+<span class="fc" id="L199">        Mezzo mezzo = corsa.getMezzo();</span>
+
+<span class="fc" id="L201">        Long idMetodo = null;</span>
+<span class="fc" id="L202">        String metodoLabel = null;</span>
+<span class="fc" id="L203">        MetodoPagamento mp = corsa.getMetodoPagamento();</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        if (mp != null) {</span>
+<span class="fc" id="L205">            idMetodo = mp.getIdMetodoPagamento();</span>
+<span class="fc" id="L206">            String num = mp.getNumCarta();</span>
+<span class="pc bpc" id="L207" title="2 of 4 branches missed.">            if (num != null &amp;&amp; num.length() &gt;= 4) {</span>
+<span class="fc" id="L208">                metodoLabel = num.substring(num.length() - 4) + &quot; - &quot; + mp.getIntestatarioCarta();</span>
+            } else {
+<span class="nc" id="L210">                metodoLabel = mp.getIntestatarioCarta();</span>
+            }
+        }
+
+<span class="fc" id="L214">        return new CorsaResponse(</span>
+<span class="fc" id="L215">                corsa.getIdCorsa(),</span>
+<span class="fc" id="L216">                utente.getIdUtente(),</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">                mezzo != null ? mezzo.getIdMezzo() : null,</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">                corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,</span>
+                null,
+<span class="fc" id="L220">                (double) corsa.getCosto(),</span>
+                null,
+                &quot;in_corso&quot;,
+                idMetodo,
+                metodoLabel,
+<span class="fc" id="L225">                corsa.isPaused(),</span>
+<span class="fc" id="L226">                corsa.getTotalePausaMillis()</span>
+        );
+    }
+
+    @Override
+    @Transactional
+    public CorsaResponse terminaCorsa(Long idCorsa) {
+<span class="fc" id="L233">        Corsa corsa = corsaRepository.findById(idCorsa)</span>
+<span class="fc" id="L234">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));</span>
+
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        if (corsa.getOrarioFine() != null) {</span>
+<span class="nc" id="L237">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Corsa già terminata&quot;);</span>
+        }
+
+<span class="fc" id="L240">        double cost = calcolaCosto(corsa, true);</span>
+<span class="fc" id="L241">        elaboraPagamentoCorsa(corsa, cost, idCorsa);</span>
+
+<span class="fc" id="L243">        corsa.setCosto((float) cost);</span>
+<span class="fc" id="L244">        corsa.setOrarioFine(LocalDateTime.now());</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);</span>
+<span class="fc" id="L246">        corsa.setPaused(false);</span>
+<span class="fc" id="L247">        corsaRepository.save(corsa);</span>
+<span class="fc" id="L248">        completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());</span>
+
+<span class="fc" id="L250">        aggiornaStatoVeicoloDopoCorsa(corsa);</span>
+
+<span class="fc" id="L252">        pausaStartTimes.remove(idCorsa);</span>
+
+<span class="fc" id="L254">        String metodoLabel = null;</span>
+<span class="fc" id="L255">        Long idMetodo = null;</span>
+<span class="fc" id="L256">        MetodoPagamento mp = corsa.getMetodoPagamento();</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">        if (mp != null) {</span>
+<span class="fc" id="L258">            idMetodo = mp.getIdMetodoPagamento();</span>
+<span class="fc" id="L259">            String num = mp.getNumCarta();</span>
+<span class="pc bpc" id="L260" title="2 of 4 branches missed.">            if (num != null &amp;&amp; num.length() &gt;= 4) {</span>
+<span class="fc" id="L261">                metodoLabel = num.substring(num.length() - 4) + &quot; - &quot; + mp.getIntestatarioCarta();</span>
+            } else {
+<span class="nc" id="L263">                metodoLabel = mp.getIntestatarioCarta();</span>
+            }
+        }
+
+<span class="fc" id="L267">        return new CorsaResponse(</span>
+<span class="fc" id="L268">                corsa.getIdCorsa(),</span>
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">                corsa.getUtente() != null ? corsa.getUtente().getIdUtente() : null,</span>
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">                corsa.getMezzo() != null ? corsa.getMezzo().getIdMezzo() : null,</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">                corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">                corsa.getOrarioFine() != null ? corsa.getOrarioFine().toString() : null,</span>
+<span class="fc" id="L273">                (double) corsa.getCosto(),</span>
+<span class="fc" id="L274">                0.0,</span>
+                &quot;completata&quot;,
+                idMetodo,
+                metodoLabel,
+                false,
+                0
+        );
+    }
+
+    @Override
+    @Transactional
+    public CorsaResponse forzaTerminaCorsa(Long idCorsa) {
+<span class="nc" id="L286">        Corsa corsa = corsaRepository.findById(idCorsa)</span>
+<span class="nc" id="L287">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));</span>
+
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        if (corsa.getOrarioFine() != null) {</span>
+<span class="nc" id="L290">            return buildCorsaResponse(corsa);</span>
+        }
+
+<span class="nc" id="L293">        double cost = calcolaCosto(corsa, true);</span>
+
+<span class="nc" id="L295">        corsa.setCosto((float) cost);</span>
+<span class="nc" id="L296">        corsa.setOrarioFine(LocalDateTime.now());</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">        corsa.setCoordinateArrivo(corsa.getMezzo() != null ? corsa.getMezzo().getCoordinateMezzo() : null);</span>
+
+<span class="nc bnc" id="L299" title="All 4 branches missed.">        if (corsa.getUtente() != null &amp;&amp; corsa.getMetodoPagamento() != null) {</span>
+            try {
+<span class="nc" id="L301">                gestorePagamentoService.pagamentoCorsa(</span>
+<span class="nc" id="L302">                        corsa.getUtente().getIdUtente(),</span>
+<span class="nc" id="L303">                        corsa.getMetodoPagamento().getIdMetodoPagamento(),</span>
+                        idCorsa,
+                        cost);
+<span class="nc" id="L306">            } catch (Exception e) {</span>
+<span class="nc" id="L307">                log.warn(&quot;Pagamento forzato non riuscito per corsa {}: {}&quot;, idCorsa, e.getMessage());</span>
+<span class="nc" id="L308">            }</span>
+        }
+
+<span class="nc" id="L311">        corsa.setPaused(false);</span>
+<span class="nc" id="L312">        corsaRepository.save(corsa);</span>
+<span class="nc" id="L313">        completaPrenotazioniAttive(corsa.getUtente(), corsa.getMezzo());</span>
+
+<span class="nc" id="L315">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (mezzo != null) {</span>
+<span class="nc" id="L317">            mezzo.setStato(StatoMezzo.disponibile);</span>
+<span class="nc" id="L318">            mezzoRepository.save(mezzo);</span>
+        }
+
+<span class="nc" id="L321">        pausaStartTimes.remove(idCorsa);</span>
+
+<span class="nc" id="L323">        return buildCorsaResponse(corsa);</span>
+    }
+
+    @Override
+    @Transactional
+    public CorsaResponse terminaCorsaAttivaUtente(Long idUtente) {
+<span class="nc" id="L329">        List&lt;Corsa&gt; corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (corseAttive.isEmpty()) {</span>
+<span class="nc" id="L331">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Nessuna corsa attiva per l'utente&quot;);</span>
+        }
+<span class="nc" id="L333">        return selfProxy.forzaTerminaCorsa(corseAttive.get(0).getIdCorsa());</span>
+    }
+
+    private CorsaResponse buildCorsaResponse(Corsa corsa) {
+<span class="nc" id="L337">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="nc" id="L338">        String metodoLabel = null;</span>
+<span class="nc" id="L339">        Long idMetodo = null;</span>
+<span class="nc" id="L340">        MetodoPagamento mp = corsa.getMetodoPagamento();</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">        if (mp != null) {</span>
+<span class="nc" id="L342">            idMetodo = mp.getIdMetodoPagamento();</span>
+<span class="nc" id="L343">            String num = mp.getNumCarta();</span>
+<span class="nc bnc" id="L344" title="All 4 branches missed.">            if (num != null &amp;&amp; num.length() &gt;= 4) {</span>
+<span class="nc" id="L345">                metodoLabel = num.substring(num.length() - 4) + &quot; - &quot; + mp.getIntestatarioCarta();</span>
+            } else {
+<span class="nc" id="L347">                metodoLabel = mp.getIntestatarioCarta();</span>
+            }
+        }
+
+<span class="nc" id="L351">        return new CorsaResponse(</span>
+<span class="nc" id="L352">                corsa.getIdCorsa(),</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">                corsa.getUtente() != null ? corsa.getUtente().getIdUtente() : null,</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">                mezzo != null ? mezzo.getIdMezzo() : null,</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">                corsa.getOrarioInizio() != null ? corsa.getOrarioInizio().toString() : null,</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">                corsa.getOrarioFine() != null ? corsa.getOrarioFine().toString() : null,</span>
+<span class="nc" id="L357">                (double) corsa.getCosto(),</span>
+<span class="nc" id="L358">                0.0,</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">                corsa.getOrarioFine() != null ? &quot;completata&quot; : &quot;in_corso&quot;,</span>
+                idMetodo,
+                metodoLabel,
+<span class="nc" id="L362">                corsa.isPaused(),</span>
+<span class="nc" id="L363">                corsa.getTotalePausaMillis()</span>
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StimaCorsaResponse aggiornaStima(Long idCorsa) {
+<span class="fc" id="L370">        Corsa corsa = corsaRepository.findById(idCorsa)</span>
+<span class="pc" id="L371">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));</span>
+
+<span class="fc" id="L373">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">        if (mezzo == null) {</span>
+<span class="nc" id="L375">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Mezzo associato alla corsa non trovato&quot;);</span>
+        }
+
+<span class="fc" id="L378">        double stima = calcolaCosto(corsa, true);</span>
+
+<span class="fc" id="L380">        return new StimaCorsaResponse(stima, mezzo.getCostoOrario());</span>
+    }
+
+    private double calcolaCosto(Corsa corsa, boolean includeSospensione) {
+<span class="fc" id="L384">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">        if (mezzo == null) return 0;</span>
+
+<span class="fc" id="L387">        LocalDateTime start = corsa.getOrarioInizio();</span>
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">        LocalDateTime end = corsa.getOrarioFine() != null ? corsa.getOrarioFine() : LocalDateTime.now();</span>
+
+<span class="fc" id="L390">        long secondiTotali = ChronoUnit.SECONDS.between(start, end);</span>
+<span class="fc" id="L391">        long pausaMs = corsa.getTotalePausaMillis();</span>
+<span class="fc" id="L392">        long secondiPausa = pausaMs / 1000;</span>
+<span class="fc" id="L393">        long secondiEffettivi = Math.max(0, secondiTotali - secondiPausa);</span>
+
+<span class="fc" id="L395">        double ore = secondiEffettivi / 3600.0;</span>
+<span class="fc" id="L396">        double costo = mezzo.getCostoOrario() * ore;</span>
+
+<span class="pc bpc" id="L398" title="2 of 4 branches missed.">        if (includeSospensione &amp;&amp; pausaMs &gt; 0) {</span>
+<span class="nc" id="L399">            costo += SOSPENSIONE_FISSO;</span>
+        }
+
+<span class="fc" id="L402">        return costo;</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean sospensioneCorsa(Long idCorsa) {
+<span class="fc" id="L408">        Corsa corsa = corsaRepository.findById(idCorsa)</span>
+<span class="pc" id="L409">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Corsa non trovata. Verificare i dati.&quot;));</span>
+
+<span class="pc bpc" id="L411" title="1 of 2 branches missed.">        if (corsa.getOrarioFine() != null) {</span>
+<span class="nc" id="L412">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Impossibile sospendere: corsa già terminata&quot;);</span>
+        }
+
+<span class="fc" id="L415">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">        if (mezzo == null) {</span>
+<span class="nc" id="L417">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Mezzo associato alla corsa non trovato&quot;);</span>
+        }
+
+<span class="fc" id="L420">        synchronized (lock) {</span>
+<span class="fc bfc" id="L421" title="All 2 branches covered.">            if (mezzo.getStato() == StatoMezzo.in_uso) {</span>
+<span class="fc" id="L422">                boolean bloccato = mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());</span>
+<span class="pc bpc" id="L423" title="1 of 2 branches missed.">                if (!bloccato) {</span>
+<span class="nc" id="L424">                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, &quot;Impossibile bloccare il mezzo. Contattare assistenza.&quot;);</span>
+                }
+<span class="fc" id="L426">                mezzo.setStato(StatoMezzo.sospeso);</span>
+<span class="fc" id="L427">                mezzoRepository.save(mezzo);</span>
+<span class="fc" id="L428">                corsa.setPaused(true);</span>
+<span class="fc" id="L429">                pausaStartTimes.put(idCorsa, System.currentTimeMillis());</span>
+<span class="fc" id="L430">                corsaRepository.save(corsa);</span>
+<span class="fc" id="L431">                return true;</span>
+<span class="fc bfc" id="L432" title="All 2 branches covered.">            } else if (mezzo.getStato() == StatoMezzo.sospeso) {</span>
+<span class="fc" id="L433">                boolean sbloccato = mezzoIoTService.sbloccoMezzoFisico(mezzo.getIdMezzo());</span>
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">                if (!sbloccato) {</span>
+<span class="nc" id="L435">                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, &quot;Impossibile sbloccare il mezzo. Contattare assistenza.&quot;);</span>
+                }
+<span class="fc" id="L437">                mezzo.setStato(StatoMezzo.in_uso);</span>
+<span class="fc" id="L438">                mezzoRepository.save(mezzo);</span>
+<span class="fc" id="L439">                Long pStart = pausaStartTimes.remove(idCorsa);</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">                if (pStart != null) {</span>
+<span class="fc" id="L441">                    long durata = System.currentTimeMillis() - pStart;</span>
+<span class="fc" id="L442">                    corsa.setTotalePausaMillis(corsa.getTotalePausaMillis() + durata);</span>
+                }
+<span class="fc" id="L444">                corsa.setPaused(false);</span>
+<span class="fc" id="L445">                corsaRepository.save(corsa);</span>
+<span class="fc" id="L446">                return true;</span>
+            }
+<span class="fc" id="L448">        }</span>
+
+<span class="fc" id="L450">        return false;</span>
+    }
+
+    @Override
+    public boolean richiediSblocco(String qrCode) {
+        Long idMezzo;
+        try {
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">            if (qrCode.startsWith(&quot;QR-&quot;)) {</span>
+<span class="nc" id="L458">                String[] parts = qrCode.split(&quot;-&quot;);</span>
+<span class="nc bnc" id="L459" title="All 2 branches missed.">                if (parts.length &gt;= 2) {</span>
+<span class="nc" id="L460">                    idMezzo = Long.parseLong(parts[1]);</span>
+                } else {
+<span class="nc" id="L462">                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;QR Code non valido&quot;);</span>
+                }
+<span class="nc" id="L464">            } else {</span>
+<span class="fc" id="L465">                idMezzo = Long.parseLong(qrCode);</span>
+            }
+<span class="fc" id="L467">        } catch (NumberFormatException e) {</span>
+<span class="fc" id="L468">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;QR Code non valido&quot;);</span>
+<span class="fc" id="L469">        }</span>
+
+<span class="fc" id="L471">        Mezzo mezzo = mezzoRepository.findById(idMezzo)</span>
+<span class="pc" id="L472">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Mezzo non trovato&quot;));</span>
+
+<span class="pc bpc" id="L474" title="3 of 8 branches missed.">        if (mezzo.getStato() != StatoMezzo.prenotato &amp;&amp; mezzo.getStato() != StatoMezzo.disponibile &amp;&amp; mezzo.getStato() != StatoMezzo.in_uso &amp;&amp; mezzo.getStato() != StatoMezzo.sospeso) {</span>
+<span class="fc" id="L475">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Mezzo non sbloccabile&quot;);</span>
+        }
+
+<span class="fc" id="L478">        return mezzoIoTService.sbloccoMezzoFisico(idMezzo);</span>
+    }
+
+    @Override
+    @SuppressWarnings(&quot;java:S3518&quot;)
+    public PercorsoResponse richiediCalcoloPercorso(String coordinateUtente, String destinazione) {
+<span class="fc" id="L484">        Map&lt;String, Object&gt; percorso = servizioMappaService.getPercorso(coordinateUtente, destinazione, null);</span>
+<span class="pc bpc" id="L485" title="2 of 4 branches missed.">        if (percorso == null || percorso.isEmpty()) {</span>
+<span class="nc" id="L486">            return new PercorsoResponse(coordinateUtente, destinazione, 0.0, 0, 0.0,</span>
+                    &quot;Percorso non disponibile&quot;);
+        }
+<span class="pc bpc" id="L489" title="1 of 2 branches missed.">        Double distanza = percorso.containsKey(&quot;distanza&quot;) ?</span>
+<span class="pc" id="L490">                ((Number) percorso.get(&quot;distanza&quot;)).doubleValue() : 0.0;</span>
+<span class="pc bpc" id="L491" title="1 of 2 branches missed.">        Integer durata = percorso.containsKey(&quot;durata&quot;) ?</span>
+<span class="pc" id="L492">                ((Number) percorso.get(&quot;durata&quot;)).intValue() : 0;</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">        String messaggio = percorso.containsKey(&quot;messaggio&quot;) ?</span>
+<span class="pc" id="L494">                (String) percorso.get(&quot;messaggio&quot;) : &quot;Percorso calcolato con successo&quot;;</span>
+
+<span class="fc" id="L496">        double tariffaStandard = 12.0;</span>
+<span class="fc" id="L497">        double ore = durata / 60.0;</span>
+<span class="pc bpc" id="L498" title="1 of 2 branches missed.">        if (ore &lt;= 0) ore = 1.0 / 60.0;</span>
+<span class="pc bpc" id="L499" title="1 of 2 branches missed.">        double tariffaOraria = Math.max(tariffaStandard, distanza &gt; 0 ? (distanza * 1.5 / ore) : tariffaStandard);</span>
+<span class="fc" id="L500">        double costoStimato = Math.round(tariffaOraria * ore * 100.0) / 100.0;</span>
+
+<span class="fc" id="L502">        return new PercorsoResponse(</span>
+                coordinateUtente,
+                destinazione,
+<span class="fc" id="L505">                distanza,</span>
+                durata,
+                costoStimato,
+                messaggio
+        );
+    }
+
+    @Override
+    @Transactional
+    public void acquisisciSceltaMetodo(Long idMetodoPagamento, Long idUtente) {
+<span class="fc" id="L515">        MetodoPagamento metodo = metodoPagamentoRepository.findById(idMetodoPagamento)</span>
+<span class="pc" id="L516">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Metodo di pagamento non trovato&quot;));</span>
+
+<span class="pc bpc" id="L518" title="1 of 2 branches missed.">        if (metodo.getUtente() == null) {</span>
+<span class="nc" id="L519">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Metodo di pagamento non associato ad un utente&quot;);</span>
+        }
+
+<span class="pc bpc" id="L522" title="1 of 2 branches missed.">        if (!metodo.getUtente().getIdUtente().equals(idUtente)) {</span>
+<span class="nc" id="L523">            throw new ResponseStatusException(HttpStatus.FORBIDDEN, &quot;Metodo di pagamento non appartiene all'utente corrente&quot;);</span>
+        }
+
+<span class="fc" id="L526">        List&lt;Corsa&gt; corseAttive = corsaRepository.findByIdUtenteAndOrarioFineIsNull(idUtente);</span>
+<span class="fc bfc" id="L527" title="All 2 branches covered.">        if (!corseAttive.isEmpty()) {</span>
+<span class="fc" id="L528">            Corsa corsa = corseAttive.get(0);</span>
+<span class="fc" id="L529">            corsa.setMetodoPagamento(metodo);</span>
+<span class="fc" id="L530">            corsaRepository.save(corsa);</span>
+<span class="fc" id="L531">        } else {</span>
+<span class="fc" id="L532">            pendingPaymentMethods.put(idUtente, new PendingPayment(idMetodoPagamento, System.currentTimeMillis()));</span>
+        }
+<span class="fc" id="L534">    }</span>
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean controllaDisponibilita(Long idCorsa) {
+<span class="fc" id="L539">        Corsa corsa = corsaRepository.findById(idCorsa)</span>
+<span class="pc" id="L540">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));</span>
+
+<span class="fc" id="L542">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="pc bpc" id="L543" title="1 of 2 branches missed.">        if (mezzo == null) return false;</span>
+
+<span class="fc bfc" id="L545" title="All 2 branches covered.">        return mezzo.getStato() == StatoMezzo.disponibile</span>
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">                || mezzo.getStato() == StatoMezzo.prenotato</span>
+<span class="pc bpc" id="L547" title="1 of 2 branches missed.">                || mezzo.getStato() == StatoMezzo.in_uso;</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean controllaDisponibilita(Long idCorsa, String info) {
+<span class="fc" id="L553">        Corsa corsa = corsaRepository.findById(idCorsa)</span>
+<span class="pc" id="L554">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, CORSA_NON_TROVATA));</span>
+<span class="fc" id="L555">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="pc bpc" id="L556" title="1 of 2 branches missed.">        if (mezzo == null) return false;</span>
+
+<span class="pc bpc" id="L558" title="1 of 2 branches missed.">        boolean base = mezzo.getStato() == StatoMezzo.disponibile</span>
+<span class="nc bnc" id="L559" title="All 2 branches missed.">                || mezzo.getStato() == StatoMezzo.prenotato</span>
+<span class="pc bnc" id="L560" title="All 2 branches missed.">                || mezzo.getStato() == StatoMezzo.in_uso;</span>
+<span class="pc bpc" id="L561" title="1 of 2 branches missed.">        if (!base) return false;</span>
+
+<span class="pc bpc" id="L563" title="2 of 4 branches missed.">        if (info != null &amp;&amp; !info.isBlank()) {</span>
+<span class="fc" id="L564">            return info.equalsIgnoreCase(mezzo.getTipo());</span>
+        }
+<span class="nc" id="L566">        return base;</span>
+    }
+
+    private void completaPrenotazioniAttive(Utente utente, Mezzo mezzo) {
+<span class="pc bpc" id="L570" title="2 of 4 branches missed.">        if (utente == null || mezzo == null) return;</span>
+<span class="fc" id="L571">        List&lt;Prenotazione&gt; attive = prenotazioneRepository.findByUtenteIdAndStato(</span>
+<span class="fc" id="L572">                utente.getIdUtente(), StatoPrenotazione.attiva);</span>
+<span class="fc bfc" id="L573" title="All 2 branches covered.">        for (Prenotazione p : attive) {</span>
+<span class="pc bpc" id="L574" title="2 of 4 branches missed.">            if (p.getMezzo() != null &amp;&amp; p.getMezzo().getIdMezzo().equals(mezzo.getIdMezzo())) {</span>
+<span class="fc" id="L575">                p.setStato(StatoPrenotazione.completata);</span>
+<span class="fc" id="L576">                prenotazioneRepository.save(p);</span>
+            }
+<span class="fc" id="L578">        }</span>
+<span class="fc" id="L579">    }</span>
+
+    private void elaboraPagamentoCorsa(Corsa corsa, double cost, Long idCorsa) {
+<span class="pc bpc" id="L582" title="1 of 4 branches missed.">        if (corsa.getUtente() != null &amp;&amp; corsa.getMetodoPagamento() != null) {</span>
+<span class="fc" id="L583">            boolean pagato = gestorePagamentoService.pagamentoCorsa(</span>
+<span class="fc" id="L584">                    corsa.getUtente().getIdUtente(),</span>
+<span class="fc" id="L585">                    corsa.getMetodoPagamento().getIdMetodoPagamento(),</span>
+                    idCorsa,
+                    cost);
+<span class="fc bfc" id="L588" title="All 2 branches covered.">            if (!pagato) {</span>
+<span class="fc" id="L589">                throw new ResponseStatusException(HttpStatus.PAYMENT_REQUIRED,</span>
+                        &quot;Pagamento non riuscito. La corsa rimane aperta.&quot;);
+            }
+        }
+<span class="fc" id="L593">    }</span>
+
+    private void aggiornaStatoVeicoloDopoCorsa(Corsa corsa) {
+<span class="fc" id="L596">        Mezzo mezzo = corsa.getMezzo();</span>
+<span class="pc bpc" id="L597" title="1 of 2 branches missed.">        if (mezzo != null) {</span>
+<span class="fc bfc" id="L598" title="All 2 branches covered.">            if (mezzo.getStato() != StatoMezzo.sospeso) {</span>
+<span class="fc" id="L599">                mezzoIoTService.bloccoMezzoFisico(mezzo.getIdMezzo());</span>
+            }
+<span class="fc" id="L601">            mezzo.setStato(StatoMezzo.disponibile);</span>
+<span class="fc" id="L602">            mezzoRepository.save(mezzo);</span>
+        }
+<span class="fc" id="L604">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

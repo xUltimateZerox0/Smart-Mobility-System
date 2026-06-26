@@ -1,0 +1,146 @@
+@startuml
+' Impostazioni grafiche per un layout pulito in stile Database Relazionale
+hide circle
+skinparam linetype ortho
+skinparam roundcorner 5
+skinparam class {
+    BackgroundColor #E6E6FA
+    ArrowColor #333333
+    BorderColor #333333
+}
+skinparam note {
+    BackgroundColor #CCFFCC
+    BorderColor #333333
+}
+
+' --- NOTE ---
+note as NoteEnum
+  i seguenti attributi sono enumerazioni:
+  ZonaGeografica.tipoRestrizione
+  Mezzo.stato
+  Mezzo.tipo
+  Prenotazione.stato
+  Segnalazione.stato
+  Utente.statoUtente
+  Attore.ruolo
+  Operatore.tipo
+end note
+
+' --- DEFINIZIONE DELLE ENTITÀ E DELLE COLONNE ---
+
+entity "Attore" as Attore {
+  * id : integer <<PK>>
+  --
+  email : varchar(255)
+  password : varchar(255)
+  ruolo : integer
+}
+
+entity "Operatore" as Operatore {
+  * id : integer <<PK, FK>>
+  --
+  tipo : integer(1)
+}
+
+entity "PA" as PA {
+  * idPA : integer <<PK, FK>>
+  --
+}
+
+entity "Utente" as Utente {
+  * idUtente : integer <<PK, FK>>
+  --
+  nomeUtente : varchar(255)
+  cognomeUtente : varchar(255)
+  telefono : varchar(255)
+  coordinateUtente : varchar(255)
+  numMezziPrenotati : integer
+  reportUtente : clob
+  statoUtente : integer
+}
+
+entity "MetodoPagamento" as MetodoPagamento {
+  * idMetodoPagamento : integer <<PK>>
+  --
+  numCarta : integer(16)
+  intestatarioCarta : varchar(255)
+}
+
+entity "ZonaGeografica" as ZonaGeografica {
+  * idArea : integer <<PK>>
+  --
+  tipoRestrizione : integer(1)
+  noteRestrizione : varchar(255)
+  zona : clob
+}
+
+entity "Corsa" as Corsa {
+  * idCorsa : integer <<PK>>
+  --
+  costo : float(10)
+  orarioInizio : time
+  orarioFine : time
+  coordinatePartenza : varchar(255)
+  coordinateArrivo : varchar(255)
+}
+
+entity "Transito" as Transito {
+  * Corsa : integer <<PK, FK>>
+  * Area : integer <<PK, FK>>
+  --
+}
+
+entity "Prenotazione" as Prenotazione {
+  * idPrenotazione : integer <<PK>>
+  --
+  stato : integer
+  orarioInizio : time
+  data : date
+}
+
+entity "Mezzo" as Mezzo {
+  * idMezzo : integer <<PK>>
+  --
+  coordinateMezzo : varchar(255)
+  stato : integer
+  tipo : integer
+  autonomia : float(10)
+  costoOrario : float(10)
+  velocitaMax : float(10)
+  condizione : varchar(255)
+  idFlotta : integer
+  tempoDisponibilita : time
+}
+
+entity "Segnalazione" as Segnalazione {
+  * idSegnalazione : integer <<PK>>
+  --
+  stato : integer
+  ora : time
+  data : date
+}
+
+' --- DEFINIZIONE DELLE RELAZIONI ---
+
+' Gerarchia IS-A (Generalizzazione)
+Attore <|.. Operatore : è_un
+Attore <|.. PA : è_un
+Attore <|.. Utente : è_un
+
+' Relazioni tra le entità principali
+MetodoPagamento ||..o{ Corsa : paga
+Utente ||..o{ Corsa : esegue
+Utente ||..o{ Prenotazione : richiede
+Utente ||..o{ Segnalazione : riguarda
+
+Mezzo ||..o{ Prenotazione : impiegato_in
+Mezzo ||..o{ Segnalazione : oggetto_di
+
+' Relazione tra Corsa e Prenotazione (tratteggiata)
+Corsa ||..o{ Prenotazione
+
+' Entità Associativa / Relazioni Identificanti (Linee continue)
+ZonaGeografica ||--o{ Transito : in
+Corsa ||--o{ Transito : effettua
+
+@enduml

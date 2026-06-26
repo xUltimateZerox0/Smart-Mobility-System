@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StartRideRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.dto.request</a> &gt; <span class="el_source">StartRideRequest.java</span></div><h1>StartRideRequest.java</h1><pre class="source lang-java linenums">package com.smartmobility.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.util.Objects;
+
+public class StartRideRequest {
+    @NotNull
+    private Long idMezzo;
+
+    @NotNull
+    private Long idUtente;
+
+    @NotBlank
+    private String qrCode;
+
+<span class="fc" id="L17">    public StartRideRequest() {}</span>
+
+<span class="fc" id="L19">    public StartRideRequest(Long idMezzo, Long idUtente, String qrCode) {</span>
+<span class="fc" id="L20">        this.idMezzo = idMezzo;</span>
+<span class="fc" id="L21">        this.idUtente = idUtente;</span>
+<span class="fc" id="L22">        this.qrCode = qrCode;</span>
+<span class="fc" id="L23">    }</span>
+
+<span class="fc" id="L25">    public Long getIdMezzo() { return idMezzo; }</span>
+<span class="fc" id="L26">    public void setIdMezzo(Long idMezzo) { this.idMezzo = idMezzo; }</span>
+<span class="fc" id="L27">    public Long getIdUtente() { return idUtente; }</span>
+<span class="fc" id="L28">    public void setIdUtente(Long idUtente) { this.idUtente = idUtente; }</span>
+<span class="fc" id="L29">    public String getQrCode() { return qrCode; }</span>
+<span class="fc" id="L30">    public void setQrCode(String qrCode) { this.qrCode = qrCode; }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (this == o) return true;</span>
+<span class="fc bfc" id="L35" title="All 4 branches covered.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L36">        StartRideRequest that = (StartRideRequest) o;</span>
+<span class="pc bpc" id="L37" title="2 of 6 branches missed.">        return Objects.equals(idMezzo, that.idMezzo) &amp;&amp; Objects.equals(idUtente, that.idUtente) &amp;&amp; Objects.equals(qrCode, that.qrCode);</span>
+    }
+
+    @Override
+<span class="fc" id="L41">    public int hashCode() { return Objects.hash(idMezzo, idUtente, qrCode); }</span>
+
+    @Override
+<span class="fc" id="L44">    public String toString() { return &quot;StartRideRequest{idMezzo=&quot; + idMezzo + &quot;, idUtente=&quot; + idUtente + &quot;, qrCode='&quot; + qrCode + &quot;'}&quot;; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

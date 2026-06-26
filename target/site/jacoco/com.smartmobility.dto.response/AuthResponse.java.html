@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.dto.response</a> &gt; <span class="el_source">AuthResponse.java</span></div><h1>AuthResponse.java</h1><pre class="source lang-java linenums">package com.smartmobility.dto.response;
+
+import java.util.Objects;
+
+public class AuthResponse {
+    private String token;
+    private String email;
+    private String ruolo;
+    private Long idUtente;
+    private String tipo;
+
+<span class="fc" id="L12">    public AuthResponse() {}</span>
+
+<span class="fc" id="L14">    public AuthResponse(String token, String email, String ruolo, Long idUtente, String tipo) {</span>
+<span class="fc" id="L15">        this.token = token;</span>
+<span class="fc" id="L16">        this.email = email;</span>
+<span class="fc" id="L17">        this.ruolo = ruolo;</span>
+<span class="fc" id="L18">        this.idUtente = idUtente;</span>
+<span class="fc" id="L19">        this.tipo = tipo;</span>
+<span class="fc" id="L20">    }</span>
+
+<span class="fc" id="L22">    public String getToken() { return token; }</span>
+<span class="fc" id="L23">    public void setToken(String token) { this.token = token; }</span>
+<span class="fc" id="L24">    public String getEmail() { return email; }</span>
+<span class="fc" id="L25">    public void setEmail(String email) { this.email = email; }</span>
+<span class="fc" id="L26">    public String getRuolo() { return ruolo; }</span>
+<span class="fc" id="L27">    public void setRuolo(String ruolo) { this.ruolo = ruolo; }</span>
+<span class="fc" id="L28">    public Long getIdUtente() { return idUtente; }</span>
+<span class="fc" id="L29">    public void setIdUtente(Long idUtente) { this.idUtente = idUtente; }</span>
+<span class="fc" id="L30">    public String getTipo() { return tipo; }</span>
+<span class="fc" id="L31">    public void setTipo(String tipo) { this.tipo = tipo; }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (this == o) return true;</span>
+<span class="fc bfc" id="L36" title="All 4 branches covered.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L37">        AuthResponse that = (AuthResponse) o;</span>
+<span class="pc bpc" id="L38" title="4 of 10 branches missed.">        return Objects.equals(token, that.token) &amp;&amp; Objects.equals(email, that.email) &amp;&amp; Objects.equals(ruolo, that.ruolo) &amp;&amp; Objects.equals(idUtente, that.idUtente) &amp;&amp; Objects.equals(tipo, that.tipo);</span>
+    }
+
+    @Override
+<span class="fc" id="L42">    public int hashCode() { return Objects.hash(token, email, ruolo, idUtente, tipo); }</span>
+
+    @Override
+<span class="fc" id="L45">    public String toString() { return &quot;AuthResponse{token='&quot; + token + &quot;', email='&quot; + email + &quot;', ruolo='&quot; + ruolo + &quot;', idUtente=&quot; + idUtente + &quot;, tipo='&quot; + tipo + &quot;'}&quot;; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

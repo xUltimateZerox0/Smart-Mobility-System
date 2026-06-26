@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Mezzo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">Mezzo.java</span></div><h1>Mezzo.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import com.smartmobility.model.enums.StatoMezzo;
+import jakarta.persistence.*;
+import java.time.LocalTime;
+
+@Entity
+@Table(name = &quot;mezzo&quot;)
+public class Mezzo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id_mezzo&quot;)
+    private Long idMezzo;
+
+    @Column(name = &quot;coordinate_mezzo&quot;)
+    private String coordinateMezzo;
+
+    @Enumerated(EnumType.STRING)
+    private StatoMezzo stato;
+
+    private float autonomia;
+
+    @Column(name = &quot;costo_orario&quot;)
+    private float costoOrario;
+
+    @Column(name = &quot;velocita_max&quot;)
+    private float velocitaMax;
+
+    private String condizione;
+
+    private String tipo;
+
+    @Column(name = &quot;id_flotta&quot;)
+    private String idFlotta;
+
+    @Column(name = &quot;tempo_disponibilita&quot;)
+    private LocalTime tempoDisponibilita;
+
+<span class="fc" id="L40">    public Mezzo() { /* required by JPA */ }</span>
+
+    public Long getIdMezzo() {
+<span class="fc" id="L43">        return idMezzo;</span>
+    }
+
+    public void setIdMezzo(Long idMezzo) {
+<span class="fc" id="L47">        this.idMezzo = idMezzo;</span>
+<span class="fc" id="L48">    }</span>
+
+    public String getCoordinateMezzo() {
+<span class="fc" id="L51">        return coordinateMezzo;</span>
+    }
+
+    public void setCoordinateMezzo(String coordinateMezzo) {
+<span class="fc" id="L55">        this.coordinateMezzo = coordinateMezzo;</span>
+<span class="fc" id="L56">    }</span>
+
+    public StatoMezzo getStato() {
+<span class="fc" id="L59">        return stato;</span>
+    }
+
+    public void setStato(StatoMezzo stato) {
+<span class="fc" id="L63">        this.stato = stato;</span>
+<span class="fc" id="L64">    }</span>
+
+    public float getAutonomia() {
+<span class="fc" id="L67">        return autonomia;</span>
+    }
+
+    public void setAutonomia(float autonomia) {
+<span class="fc" id="L71">        this.autonomia = autonomia;</span>
+<span class="fc" id="L72">    }</span>
+
+    public float getCostoOrario() {
+<span class="fc" id="L75">        return costoOrario;</span>
+    }
+
+    public void setCostoOrario(float costoOrario) {
+<span class="fc" id="L79">        this.costoOrario = costoOrario;</span>
+<span class="fc" id="L80">    }</span>
+
+    public float getVelocitaMax() {
+<span class="nc" id="L83">        return velocitaMax;</span>
+    }
+
+    public void setVelocitaMax(float velocitaMax) {
+<span class="fc" id="L87">        this.velocitaMax = velocitaMax;</span>
+<span class="fc" id="L88">    }</span>
+
+    public String getCondizione() {
+<span class="fc" id="L91">        return condizione;</span>
+    }
+
+    public void setCondizione(String condizione) {
+<span class="fc" id="L95">        this.condizione = condizione;</span>
+<span class="fc" id="L96">    }</span>
+
+    public String getTipo() {
+<span class="fc" id="L99">        return tipo;</span>
+    }
+
+    public void setTipo(String tipo) {
+<span class="fc" id="L103">        this.tipo = tipo;</span>
+<span class="fc" id="L104">    }</span>
+
+    public String getIdFlotta() {
+<span class="fc" id="L107">        return idFlotta;</span>
+    }
+
+    public void setIdFlotta(String idFlotta) {
+<span class="fc" id="L111">        this.idFlotta = idFlotta;</span>
+<span class="fc" id="L112">    }</span>
+
+    public LocalTime getTempoDisponibilita() {
+<span class="fc" id="L115">        return tempoDisponibilita;</span>
+    }
+
+    public void setTempoDisponibilita(LocalTime tempoDisponibilita) {
+<span class="fc" id="L119">        this.tempoDisponibilita = tempoDisponibilita;</span>
+<span class="fc" id="L120">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GestionePrenotazioneServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.service.impl</a> &gt; <span class="el_source">GestionePrenotazioneServiceImpl.java</span></div><h1>GestionePrenotazioneServiceImpl.java</h1><pre class="source lang-java linenums">package com.smartmobility.service.impl;
+
+import com.smartmobility.dto.response.PrenotazioneResponse;
+import com.smartmobility.model.Mezzo;
+import com.smartmobility.model.Prenotazione;
+import com.smartmobility.model.Utente;
+import com.smartmobility.model.enums.StatoMezzo;
+import com.smartmobility.model.enums.StatoPrenotazione;
+import com.smartmobility.repository.MezzoRepository;
+import com.smartmobility.repository.PrenotazioneRepository;
+import com.smartmobility.repository.UtenteRepository;
+import com.smartmobility.service.GestionePrenotazioneService;
+import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+@Service
+public class GestionePrenotazioneServiceImpl implements GestionePrenotazioneService {
+
+    private static final String PRENOTAZIONE_NON_TROVATA = &quot;Prenotazione non trovata&quot;;
+
+    private final PrenotazioneRepository prenotazioneRepository;
+    private final MezzoRepository mezzoRepository;
+    private final UtenteRepository utenteRepository;
+
+    private GestionePrenotazioneService selfProxy;
+
+    public GestionePrenotazioneServiceImpl(PrenotazioneRepository prenotazioneRepository,
+                                            MezzoRepository mezzoRepository,
+<span class="fc" id="L39">                                            UtenteRepository utenteRepository) {</span>
+<span class="fc" id="L40">        this.prenotazioneRepository = prenotazioneRepository;</span>
+<span class="fc" id="L41">        this.mezzoRepository = mezzoRepository;</span>
+<span class="fc" id="L42">        this.utenteRepository = utenteRepository;</span>
+<span class="fc" id="L43">    }</span>
+
+    @Autowired
+    @Lazy
+    public void setSelfProxy(GestionePrenotazioneService selfProxy) {
+<span class="fc" id="L48">        this.selfProxy = selfProxy;</span>
+<span class="fc" id="L49">    }</span>
+
+    @Override
+    @Transactional
+    public PrenotazioneResponse inviaRichiestaPrenotazione(Long idMezzo, Long idUtente, String orarioInizio) {
+<span class="fc" id="L54">        Prenotazione p = creaPrenotazione(idMezzo, idUtente, orarioInizio);</span>
+<span class="fc" id="L55">        return toPrenotazioneResponse(p);</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getQRCode(Long idPrenotazione) {
+<span class="nc" id="L61">        Prenotazione prenotazione = prenotazioneRepository.findByIdWithMezzo(idPrenotazione)</span>
+<span class="nc" id="L62">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, PRENOTAZIONE_NON_TROVATA));</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (prenotazione.getMezzo() == null) {</span>
+<span class="nc" id="L64">            throw new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Prenotazione non ha un mezzo associato&quot;);</span>
+        }
+<span class="nc" id="L66">        return &quot;QR-&quot; + prenotazione.getMezzo().getIdMezzo() + &quot;-&quot; + idPrenotazione + &quot;-&quot; + System.currentTimeMillis();</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;PrenotazioneResponse&gt; richiediLista() {
+<span class="nc" id="L72">        return prenotazioneRepository.findAllWithDetails().stream()</span>
+<span class="nc" id="L73">                .map(this::toPrenotazioneResponse)</span>
+<span class="nc" id="L74">                .toList();</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;PrenotazioneResponse&gt; richiediListaPerUtente(Long idUtente) {
+<span class="nc" id="L80">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="nc" id="L81">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Utente non trovato&quot;));</span>
+<span class="nc" id="L82">        return prenotazioneRepository.findByUtenteIdWithDetails(utente.getId()).stream()</span>
+<span class="nc" id="L83">                .map(this::toPrenotazioneResponse)</span>
+<span class="nc" id="L84">                .toList();</span>
+    }
+
+    @Override
+    @Transactional
+    public boolean annullaPrenotazione(Long idPrenotazione) {
+<span class="fc" id="L90">        Prenotazione prenotazione = prenotazioneRepository.findByIdWithMezzo(idPrenotazione)</span>
+<span class="pc" id="L91">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, PRENOTAZIONE_NON_TROVATA));</span>
+
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (prenotazione.getStato() != StatoPrenotazione.attiva) {</span>
+<span class="fc" id="L94">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Prenotazione non è attiva&quot;);</span>
+        }
+
+<span class="fc" id="L97">        prenotazione.setStato(StatoPrenotazione.annullata);</span>
+<span class="fc" id="L98">        prenotazioneRepository.save(prenotazione);</span>
+
+<span class="fc" id="L100">        Mezzo mezzo = prenotazione.getMezzo();</span>
+<span class="pc bpc" id="L101" title="2 of 4 branches missed.">        if (mezzo != null &amp;&amp; mezzo.getStato() == StatoMezzo.prenotato) {</span>
+<span class="nc" id="L102">            mezzo.setStato(StatoMezzo.disponibile);</span>
+<span class="nc" id="L103">            mezzoRepository.save(mezzo);</span>
+        }
+
+<span class="fc" id="L106">        return true;</span>
+    }
+
+    @Override
+    @Transactional
+    public void gestisciTimeout() {
+<span class="fc" id="L112">        List&lt;Prenotazione&gt; prenotazioniAttive = prenotazioneRepository.findByStatoWithDetails(StatoPrenotazione.attiva);</span>
+<span class="fc" id="L113">        LocalDateTime now = LocalDateTime.now();</span>
+
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        for (Prenotazione p : prenotazioniAttive) {</span>
+<span class="pc bpc" id="L116" title="2 of 4 branches missed.">            if (p.getOrarioInizio() != null &amp;&amp; p.getData() != null) {</span>
+<span class="fc" id="L117">                LocalDateTime inizio = LocalDateTime.of(p.getData(), p.getOrarioInizio());</span>
+<span class="fc" id="L118">                long minutiPassati = Duration.between(inizio, now).toMinutes();</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">                if (minutiPassati &gt;= 15) {</span>
+<span class="fc" id="L120">                    p.setStato(StatoPrenotazione.scaduta);</span>
+<span class="fc" id="L121">                    prenotazioneRepository.save(p);</span>
+
+<span class="fc" id="L123">                    Mezzo mezzo = p.getMezzo();</span>
+<span class="pc bpc" id="L124" title="1 of 4 branches missed.">                    if (mezzo != null &amp;&amp; mezzo.getStato() == StatoMezzo.prenotato) {</span>
+<span class="fc" id="L125">                        mezzo.setStato(StatoMezzo.disponibile);</span>
+<span class="fc" id="L126">                        mezzoRepository.save(mezzo);</span>
+                    }
+                }
+            }
+<span class="fc" id="L130">        }</span>
+<span class="fc" id="L131">    }</span>
+
+    @Override
+    @Transactional
+    public void notificaScadenzaTempo(Long idPrenotazione) {
+<span class="fc" id="L136">        Prenotazione prenotazione = prenotazioneRepository.findById(idPrenotazione)</span>
+<span class="pc" id="L137">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, PRENOTAZIONE_NON_TROVATA));</span>
+
+<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        if (prenotazione.getStato() == StatoPrenotazione.attiva) {</span>
+<span class="fc" id="L140">            selfProxy.gestisciTimeout();</span>
+        }
+<span class="fc" id="L142">    }</span>
+
+    private Prenotazione creaPrenotazione(Long idMezzo, Long idUtente, String orarioInizioStr) {
+<span class="fc" id="L145">        Mezzo mezzo = mezzoRepository.findById(idMezzo)</span>
+<span class="fc" id="L146">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Mezzo non trovato&quot;));</span>
+
+<span class="fc bfc" id="L148" title="All 2 branches covered.">        if (mezzo.getStato() != StatoMezzo.disponibile) {</span>
+<span class="fc" id="L149">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Mezzo non disponibile&quot;);</span>
+        }
+
+<span class="fc" id="L152">        Utente utente = utenteRepository.findByIdUtente(idUtente)</span>
+<span class="pc" id="L153">                .orElseThrow(() -&gt; new ResponseStatusException(HttpStatus.NOT_FOUND, &quot;Utente non trovato&quot;));</span>
+
+<span class="fc" id="L155">        List&lt;Prenotazione&gt; attive = prenotazioneRepository.findByUtenteIdAndStato(idUtente, StatoPrenotazione.attiva);</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (!attive.isEmpty()) {</span>
+<span class="fc" id="L157">            throw new ResponseStatusException(HttpStatus.CONFLICT, &quot;Utente ha già una prenotazione attiva&quot;);</span>
+        }
+
+        LocalTime orarioInizio;
+        LocalDate data;
+        LocalDateTime requested;
+<span class="fc bfc" id="L163" title="All 4 branches covered.">        if (orarioInizioStr != null &amp;&amp; orarioInizioStr.contains(&quot;T&quot;)) {</span>
+<span class="fc" id="L164">            requested = LocalDateTime.parse(orarioInizioStr);</span>
+<span class="fc" id="L165">            orarioInizio = requested.toLocalTime();</span>
+<span class="fc" id="L166">            data = requested.toLocalDate();</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        } else if (orarioInizioStr != null) {</span>
+<span class="fc" id="L168">            orarioInizio = LocalTime.parse(orarioInizioStr);</span>
+<span class="fc" id="L169">            data = LocalDate.now();</span>
+<span class="fc" id="L170">            requested = LocalDateTime.of(data, orarioInizio);</span>
+        } else {
+<span class="fc" id="L172">            orarioInizio = LocalTime.now();</span>
+<span class="fc" id="L173">            data = LocalDate.now();</span>
+<span class="fc" id="L174">            requested = null;</span>
+        }
+
+<span class="fc bfc" id="L177" title="All 4 branches covered.">        if (requested != null &amp;&amp; requested.isBefore(LocalDateTime.now())) {</span>
+<span class="fc" id="L178">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,</span>
+                    &quot;La data di prenotazione non può essere nel passato&quot;);
+        }
+
+<span class="fc" id="L182">        Prenotazione prenotazione = new Prenotazione();</span>
+<span class="fc" id="L183">        prenotazione.setMezzo(mezzo);</span>
+<span class="fc" id="L184">        prenotazione.setUtente(utente);</span>
+<span class="fc" id="L185">        prenotazione.setOrarioInizio(orarioInizio);</span>
+<span class="fc" id="L186">        prenotazione.setData(data);</span>
+<span class="fc" id="L187">        prenotazione.setStato(StatoPrenotazione.attiva);</span>
+<span class="fc" id="L188">        prenotazione.setQrCode(&quot;QR-&quot; + mezzo.getIdMezzo() + &quot;-&quot; + System.currentTimeMillis());</span>
+<span class="fc" id="L189">        prenotazioneRepository.save(prenotazione);</span>
+
+<span class="fc" id="L191">        mezzo.setStato(StatoMezzo.prenotato);</span>
+<span class="fc" id="L192">        mezzoRepository.save(mezzo);</span>
+
+<span class="fc" id="L194">        return prenotazione;</span>
+    }
+
+    private PrenotazioneResponse toPrenotazioneResponse(Prenotazione p) {
+<span class="fc" id="L198">        String nomeVeicolo = null;</span>
+<span class="fc" id="L199">        String tipoVeicolo = null;</span>
+<span class="fc" id="L200">        Long idVeicolo = null;</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">        if (p.getMezzo() != null) {</span>
+<span class="fc" id="L202">            nomeVeicolo = p.getMezzo().getTipo() + &quot; #&quot; + p.getMezzo().getIdMezzo();</span>
+<span class="fc" id="L203">            tipoVeicolo = p.getMezzo().getTipo();</span>
+<span class="fc" id="L204">            idVeicolo = p.getMezzo().getIdMezzo();</span>
+        }
+        String dataInizio;
+<span class="pc bpc" id="L207" title="2 of 4 branches missed.">        if (p.getData() != null &amp;&amp; p.getOrarioInizio() != null) {</span>
+<span class="fc" id="L208">            dataInizio = p.getData().toString() + &quot;T&quot; + p.getOrarioInizio().toString();</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        } else if (p.getData() != null) {</span>
+<span class="nc" id="L210">            dataInizio = p.getData().toString();</span>
+        } else {
+<span class="nc" id="L212">            dataInizio = null;</span>
+        }
+<span class="fc" id="L214">        return new PrenotazioneResponse(</span>
+<span class="fc" id="L215">                p.getIdPrenotazione(),</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">                p.getUtente() != null ? p.getUtente().getIdUtente() : null,</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">                p.getMezzo() != null ? p.getMezzo().getIdMezzo() : null,</span>
+                dataInizio,
+                null,
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">                p.getStato() != null ? p.getStato().name() : null,</span>
+                nomeVeicolo,
+                tipoVeicolo,
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">                p.getOrarioInizio() != null ? p.getOrarioInizio().toString() : null,</span>
+<span class="fc" id="L224">                p.getQrCode(),</span>
+                idVeicolo
+        );
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
