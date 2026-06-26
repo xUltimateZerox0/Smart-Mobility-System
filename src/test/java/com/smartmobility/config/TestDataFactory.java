@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@SuppressWarnings("java:S2068") // test-only credentials
 public class TestDataFactory {
 
     public static Utente createUtente(Long id, Long idUtente, String nome, String cognome, String email, StatoUtente stato) {

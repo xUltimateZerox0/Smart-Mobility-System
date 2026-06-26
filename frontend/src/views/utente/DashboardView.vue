@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Dashboard Utente</h1>
-    <p style="color:var(--gray);margin-bottom:24px">Benvenuto, {{ auth.userEmail }}</p>
+    <p style="color:var(--gray);margin-bottom:24px">Benvenuto/a, {{ auth.userEmail }}</p>
     <div class="dashboard-grid">
       <div class="card">
         <h3>Veicoli nelle vicinanze</h3>

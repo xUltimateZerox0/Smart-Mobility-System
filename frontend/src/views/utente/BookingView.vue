@@ -11,7 +11,10 @@
         <div v-if="b.stato === 'attiva' && b.qrCode" class="qr-box">
           <code>{{ b.qrCode }}</code>
         </div>
-        <button v-if="b.stato === 'attiva'" @click="cancel(b.id)" class="btn-danger" style="margin-top:8px">Annulla</button>
+        <div v-if="b.stato === 'attiva'" style="margin-top:8px;display:flex;gap:8px">
+          <button @click="startRide(b)" class="btn-primary">Avvia Corsa</button>
+          <button @click="cancel(b.id)" class="btn-danger">Annulla</button>
+        </div>
       </div>
     </div>
     <p v-else-if="!loadError" style="color:var(--gray)">Nessuna prenotazione</p>
@@ -25,9 +28,15 @@ import { ref, onMounted } from 'vue'
 import * as bookingsApi from '../../api/bookings'
 import type { PrenotazioneResponse } from '../../types'
 
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+
 const bookings = ref<PrenotazioneResponse[]>([])
-const cancelError = ref('')
 const loadError = ref('')
+const cancelError = ref('')
 
 onMounted(async () => {
   try {
@@ -49,6 +58,12 @@ function formatTime(dateStr: string) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
   return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+}
+
+function startRide(b: PrenotazioneResponse) {
+  if (!auth.userId || !b.qrCode) return
+  const qr = encodeURIComponent(b.qrCode)
+  router.push(`/utente/ride/${b.idMezzo}?qrCode=${qr}`)
 }
 
 async function cancel(id: number) {

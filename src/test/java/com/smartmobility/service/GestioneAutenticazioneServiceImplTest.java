@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S2068") // test-only credentials
 class GestioneAutenticazioneServiceImplTest {
 
     @Mock
