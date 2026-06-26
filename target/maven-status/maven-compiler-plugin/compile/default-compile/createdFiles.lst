@@ -74,7 +74,6 @@ com/smartmobility/view/AppUtente.class
 com/smartmobility/service/GestionePrenotazioneService.class
 com/smartmobility/dto/response/SegnalazioneResponse.class
 com/smartmobility/dto/request/ExportStatisticsRequest.class
-com/smartmobility/integration/DBMSService.class
 com/smartmobility/model/enums/StatoUtente.class
 com/smartmobility/model/Segnalazione.class
 com/smartmobility/dto/request/PaymentMethodSelectionRequest.class

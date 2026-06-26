@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Corsa.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">Corsa.java</span></div><h1>Corsa.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = &quot;corsa&quot;)
+public class Corsa {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id_corsa&quot;)
+    private Long idCorsa;
+
+    private float costo;
+
+    @Column(name = &quot;orario_inizio&quot;)
+    private LocalDateTime orarioInizio;
+
+    @Column(name = &quot;orario_fine&quot;)
+    private LocalDateTime orarioFine;
+
+    @Column(name = &quot;coordinate_partenza&quot;)
+    private String coordinatePartenza;
+
+    @Column(name = &quot;coordinate_arrivo&quot;)
+    private String coordinateArrivo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;id_metodo_pagamento&quot;)
+    private MetodoPagamento metodoPagamento;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;id_mezzo&quot;)
+    private Mezzo mezzo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;id_utente&quot;)
+    private Utente utente;
+
+    @Column(name = &quot;is_paused&quot;)
+    private boolean isPaused;
+
+    @Column(name = &quot;totale_pausa_millis&quot;)
+    private long totalePausaMillis;
+
+<span class="fc" id="L47">    public Corsa() { /* required by JPA */ }</span>
+
+    public Long getIdCorsa() {
+<span class="fc" id="L50">        return idCorsa;</span>
+    }
+
+    public void setIdCorsa(Long idCorsa) {
+<span class="fc" id="L54">        this.idCorsa = idCorsa;</span>
+<span class="fc" id="L55">    }</span>
+
+    public float getCosto() {
+<span class="fc" id="L58">        return costo;</span>
+    }
+
+    public void setCosto(float costo) {
+<span class="fc" id="L62">        this.costo = costo;</span>
+<span class="fc" id="L63">    }</span>
+
+    public LocalDateTime getOrarioInizio() {
+<span class="fc" id="L66">        return orarioInizio;</span>
+    }
+
+    public void setOrarioInizio(LocalDateTime orarioInizio) {
+<span class="fc" id="L70">        this.orarioInizio = orarioInizio;</span>
+<span class="fc" id="L71">    }</span>
+
+    public LocalDateTime getOrarioFine() {
+<span class="fc" id="L74">        return orarioFine;</span>
+    }
+
+    public void setOrarioFine(LocalDateTime orarioFine) {
+<span class="fc" id="L78">        this.orarioFine = orarioFine;</span>
+<span class="fc" id="L79">    }</span>
+
+    public String getCoordinatePartenza() {
+<span class="fc" id="L82">        return coordinatePartenza;</span>
+    }
+
+    public void setCoordinatePartenza(String coordinatePartenza) {
+<span class="fc" id="L86">        this.coordinatePartenza = coordinatePartenza;</span>
+<span class="fc" id="L87">    }</span>
+
+    public String getCoordinateArrivo() {
+<span class="fc" id="L90">        return coordinateArrivo;</span>
+    }
+
+    public void setCoordinateArrivo(String coordinateArrivo) {
+<span class="fc" id="L94">        this.coordinateArrivo = coordinateArrivo;</span>
+<span class="fc" id="L95">    }</span>
+
+    public MetodoPagamento getMetodoPagamento() {
+<span class="fc" id="L98">        return metodoPagamento;</span>
+    }
+
+    public void setMetodoPagamento(MetodoPagamento metodoPagamento) {
+<span class="fc" id="L102">        this.metodoPagamento = metodoPagamento;</span>
+<span class="fc" id="L103">    }</span>
+
+    public Mezzo getMezzo() {
+<span class="fc" id="L106">        return mezzo;</span>
+    }
+
+    public void setMezzo(Mezzo mezzo) {
+<span class="fc" id="L110">        this.mezzo = mezzo;</span>
+<span class="fc" id="L111">    }</span>
+
+    public Utente getUtente() {
+<span class="fc" id="L114">        return utente;</span>
+    }
+
+    public void setUtente(Utente utente) {
+<span class="fc" id="L118">        this.utente = utente;</span>
+<span class="fc" id="L119">    }</span>
+
+    public boolean isPaused() {
+<span class="fc" id="L122">        return isPaused;</span>
+    }
+
+    public void setPaused(boolean paused) {
+<span class="fc" id="L126">        isPaused = paused;</span>
+<span class="fc" id="L127">    }</span>
+
+    public long getTotalePausaMillis() {
+<span class="fc" id="L130">        return totalePausaMillis;</span>
+    }
+
+    public void setTotalePausaMillis(long totalePausaMillis) {
+<span class="fc" id="L134">        this.totalePausaMillis = totalePausaMillis;</span>
+<span class="fc" id="L135">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

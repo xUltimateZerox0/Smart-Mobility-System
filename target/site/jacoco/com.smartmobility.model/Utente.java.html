@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Utente.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">Utente.java</span></div><h1>Utente.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import com.smartmobility.model.enums.StatoUtente;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = &quot;utente&quot;)
+@PrimaryKeyJoinColumn(name = &quot;id&quot;)
+public class Utente extends Attore {
+
+    @Column(name = &quot;id_utente&quot;, unique = true)
+    private Long idUtente;
+
+    @Column(name = &quot;nome_utente&quot;)
+    private String nomeUtente;
+
+    @Column(name = &quot;cognome_utente&quot;)
+    private String cognomeUtente;
+
+    private String telefono;
+
+    @Column(name = &quot;coordinate_utente&quot;)
+    private String coordinateUtente;
+
+    @Column(name = &quot;report_utente&quot;)
+    private String reportUtente;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;stato_utente&quot;)
+    private StatoUtente statoUtente;
+
+    @Column(name = &quot;num_mezzi_prenotati&quot;)
+    private int numMezziPrenotati;
+
+    @Column(name = &quot;data_nascita&quot;)
+    private String dataNascita;
+
+<span class="fc" id="L38">    public Utente() { /* required by JPA */ }</span>
+
+    public Long getIdUtente() {
+<span class="fc" id="L41">        return idUtente;</span>
+    }
+
+    public void setIdUtente(Long idUtente) {
+<span class="fc" id="L45">        this.idUtente = idUtente;</span>
+<span class="fc" id="L46">    }</span>
+
+    public String getNomeUtente() {
+<span class="fc" id="L49">        return nomeUtente;</span>
+    }
+
+    public void setNomeUtente(String nomeUtente) {
+<span class="fc" id="L53">        this.nomeUtente = nomeUtente;</span>
+<span class="fc" id="L54">    }</span>
+
+    public String getCognomeUtente() {
+<span class="fc" id="L57">        return cognomeUtente;</span>
+    }
+
+    public void setCognomeUtente(String cognomeUtente) {
+<span class="fc" id="L61">        this.cognomeUtente = cognomeUtente;</span>
+<span class="fc" id="L62">    }</span>
+
+    public String getTelefono() {
+<span class="fc" id="L65">        return telefono;</span>
+    }
+
+    public void setTelefono(String telefono) {
+<span class="fc" id="L69">        this.telefono = telefono;</span>
+<span class="fc" id="L70">    }</span>
+
+    public String getCoordinateUtente() {
+<span class="fc" id="L73">        return coordinateUtente;</span>
+    }
+
+    public void setCoordinateUtente(String coordinateUtente) {
+<span class="fc" id="L77">        this.coordinateUtente = coordinateUtente;</span>
+<span class="fc" id="L78">    }</span>
+
+    public String getReportUtente() {
+<span class="fc" id="L81">        return reportUtente;</span>
+    }
+
+    public void setReportUtente(String reportUtente) {
+<span class="fc" id="L85">        this.reportUtente = reportUtente;</span>
+<span class="fc" id="L86">    }</span>
+
+    public StatoUtente getStatoUtente() {
+<span class="fc" id="L89">        return statoUtente;</span>
+    }
+
+    public void setStatoUtente(StatoUtente statoUtente) {
+<span class="fc" id="L93">        this.statoUtente = statoUtente;</span>
+<span class="fc" id="L94">    }</span>
+
+    public int getNumMezziPrenotati() {
+<span class="fc" id="L97">        return numMezziPrenotati;</span>
+    }
+
+    public void setNumMezziPrenotati(int numMezziPrenotati) {
+<span class="fc" id="L101">        this.numMezziPrenotati = numMezziPrenotati;</span>
+<span class="fc" id="L102">    }</span>
+
+<span class="fc" id="L104">    public String getDataNascita() { return dataNascita; }</span>
+<span class="fc" id="L105">    public void setDataNascita(String dataNascita) { this.dataNascita = dataNascita; }</span>
+
+    public Utente ricercaUtente(Long idUtente) {
+<span class="fc bfc" id="L108" title="All 4 branches covered.">        if (this.idUtente != null &amp;&amp; this.idUtente.equals(idUtente)) {</span>
+<span class="fc" id="L109">            return this;</span>
+        }
+<span class="fc" id="L111">        return null;</span>
+    }
+
+    public void azioneCorrettiva(String azione) {
+<span class="pc bpc" id="L115" title="1 of 4 branches missed.">        if (reportUtente == null || reportUtente.isEmpty()) {</span>
+<span class="fc" id="L116">            this.reportUtente = azione;</span>
+        } else {
+<span class="fc" id="L118">            this.reportUtente = reportUtente + &quot; | &quot; + azione;</span>
+        }
+<span class="fc" id="L120">    }</span>
+
+    @SuppressWarnings(&quot;java:S1172&quot;)
+    public void creaAccountUtente(String nome, String cognome, String email, String password, String datanascita) {
+<span class="fc" id="L124">        this.nomeUtente = nome;</span>
+<span class="fc" id="L125">        this.cognomeUtente = cognome;</span>
+<span class="fc" id="L126">        setEmail(email);</span>
+<span class="fc" id="L127">        setPassword(password);</span>
+<span class="fc" id="L128">        this.statoUtente = StatoUtente.attivo;</span>
+<span class="fc" id="L129">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppOperatoreSC.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.view</a> &gt; <span class="el_source">AppOperatoreSC.java</span></div><h1>AppOperatoreSC.java</h1><pre class="source lang-java linenums">package com.smartmobility.view;
+
+import com.smartmobility.dto.response.UtenteResponse;
+import com.smartmobility.service.GestioneAutenticazioneService;
+import com.smartmobility.service.GestionePrenotazioneService;
+import com.smartmobility.service.GestioneUtentiService;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+@Component
+@SuppressWarnings(&quot;unused&quot;)
+public class AppOperatoreSC {
+
+<span class="fc" id="L18">    private static final Logger LOG = Logger.getLogger(AppOperatoreSC.class.getName());</span>
+    private static final String ERRORE_GENERICO = &quot;Errore&quot;;
+
+    private final GestioneUtentiService gestioneUtentiService;
+    private final GestionePrenotazioneService gestionePrenotazioneService;
+    private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idOperatoreSC;
+    private Long idSessioneOperatoreSC;
+
+<span class="fc" id="L27">    public AppOperatoreSC(GestioneUtentiService gestioneUtentiService, GestionePrenotazioneService gestionePrenotazioneService, GestioneAutenticazioneService gestioneAutenticazioneService) {</span>
+<span class="fc" id="L28">        this.gestioneUtentiService = gestioneUtentiService;</span>
+<span class="fc" id="L29">        this.gestionePrenotazioneService = gestionePrenotazioneService;</span>
+<span class="fc" id="L30">        this.gestioneAutenticazioneService = gestioneAutenticazioneService;</span>
+<span class="fc" id="L31">    }</span>
+
+    public void mostraPrenotazioni() {
+<span class="nc" id="L34">        gestionePrenotazioneService.richiediLista();</span>
+<span class="nc" id="L35">    }</span>
+
+    public void mostraErrore(String msg) {
+<span class="nc" id="L38">        LOG.log(Level.SEVERE, &quot;ERRORE: {0}&quot;, msg);</span>
+<span class="nc" id="L39">    }</span>
+
+    public void mostraSuccesso(String msg) {
+<span class="nc" id="L42">        LOG.log(Level.INFO, &quot;SUCCESSO: {0}&quot;, msg);</span>
+<span class="nc" id="L43">    }</span>
+
+    public void mostraReport(Long idUtente) {
+        try {
+<span class="nc" id="L47">            String report = gestioneUtentiService.cercaReport(idUtente);</span>
+<span class="nc bnc" id="L48" title="All 4 branches missed.">            if (report != null &amp;&amp; !report.isBlank()) {</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">                if (LOG.isLoggable(Level.INFO)) {</span>
+<span class="nc" id="L50">                    LOG.log(Level.INFO, String.format(&quot;REPORT per utente %s: %s&quot;, idUtente, report));</span>
+                }
+            } else {
+<span class="nc" id="L53">                LOG.log(Level.INFO, &quot;REPORT per utente {0}: Nessun report presente&quot;, idUtente);</span>
+            }
+<span class="nc" id="L55">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore nel recupero report&quot;);</span>
+<span class="nc" id="L57">        }</span>
+<span class="nc" id="L58">    }</span>
+
+    public void mostraElencoUtenti() {
+        try {
+<span class="nc" id="L62">            List&lt;UtenteResponse&gt; utenti = gestioneUtentiService.getElencoUtenti();</span>
+<span class="nc" id="L63">            LOG.info(&quot;ELENCO UTENTI:&quot;);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            for (UtenteResponse u : utenti) {</span>
+<span class="nc" id="L65">                LOG.info(&quot;  ID=&quot; + u.getIdUtente() + &quot; | &quot; + u.getNome() + &quot; &quot; + u.getCognome() + &quot; | &quot; + u.getEmail() + &quot; | stato=&quot; + u.getStato());</span>
+<span class="nc" id="L66">            }</span>
+<span class="nc" id="L67">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);</span>
+<span class="nc" id="L69">        }</span>
+<span class="nc" id="L70">    }</span>
+
+    public void moderazioneUtente(Long idUtente) {
+        try {
+<span class="nc" id="L74">            boolean result = gestioneUtentiService.gestioneUtente(idUtente);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            LOG.log(Level.INFO, &quot;MODERAZIONE utente {0}: {1}&quot;, new Object[]{idUtente, result ? &quot;completata&quot; : &quot;fallita&quot;});</span>
+<span class="nc" id="L76">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);</span>
+<span class="nc" id="L78">        }</span>
+<span class="nc" id="L79">    }</span>
+
+    public void bloccaUtente(Long idUtente) {
+        try {
+<span class="nc" id="L83">            boolean result = gestioneUtentiService.bloccaUtente(idUtente);</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">            LOG.log(Level.INFO, &quot;BLOCCO utente {0}: {1}&quot;, new Object[]{idUtente, result ? &quot;completato&quot; : &quot;fallito&quot;});</span>
+<span class="nc" id="L85">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);</span>
+<span class="nc" id="L87">        }</span>
+<span class="nc" id="L88">    }</span>
+
+    public void sbloccaUtente(Long idUtente) {
+        try {
+<span class="nc" id="L92">            boolean result = gestioneUtentiService.sbloccaUtente(idUtente);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            LOG.log(Level.INFO, &quot;SBLOCCO utente {0}: {1}&quot;, new Object[]{idUtente, result ? &quot;completato&quot; : &quot;fallito&quot;});</span>
+<span class="nc" id="L94">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);</span>
+<span class="nc" id="L96">        }</span>
+<span class="nc" id="L97">    }</span>
+
+    public void disattivaUtente(Long idUtente) {
+        try {
+<span class="nc" id="L101">            boolean result = gestioneUtentiService.disattivaUtente(idUtente);</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            LOG.log(Level.INFO, &quot;DISATTIVAZIONE utente {0}: {1}&quot;, new Object[]{idUtente, result ? &quot;completata&quot; : &quot;fallita&quot;});</span>
+<span class="nc" id="L103">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : ERRORE_GENERICO);</span>
+<span class="nc" id="L105">        }</span>
+<span class="nc" id="L106">    }</span>
+
+    public void richiediListaPrenotazioni() {
+<span class="nc" id="L109">        gestionePrenotazioneService.richiediLista();</span>
+<span class="nc" id="L110">    }</span>
+
+    public void selezionaPrenotazione(Long idPrenotazione) {
+<span class="nc" id="L113">        LOG.log(Level.INFO, &quot;Prenotazione selezionata: {0}&quot;, idPrenotazione);</span>
+<span class="nc" id="L114">    }</span>
+
+    public void aggiornaReport(Long idUtente, String azione) {
+        try {
+<span class="nc" id="L118">            gestioneUtentiService.azioneCorrettiva(idUtente, azione);</span>
+<span class="nc" id="L119">            LOG.log(Level.INFO, &quot;AZIONE CORRETTIVA per utente {0}: {1}&quot;, new Object[]{idUtente, azione});</span>
+<span class="nc" id="L120">        } catch (ResponseStatusException e) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            mostraErrore(e.getReason() != null ? e.getReason() : &quot;Errore nell'aggiornamento report&quot;);</span>
+<span class="nc" id="L122">        }</span>
+<span class="nc" id="L123">    }</span>
+
+    public void richiestaLogout(String email) {
+<span class="nc" id="L126">        gestioneAutenticazioneService.inviaRichiestaLogout(email);</span>
+<span class="nc" id="L127">    }</span>
+
+    public Long getIdOperatoreSC() {
+<span class="nc" id="L130">        return idOperatoreSC;</span>
+    }
+
+    public void setIdOperatoreSC(Long idOperatoreSC) {
+<span class="nc" id="L134">        this.idOperatoreSC = idOperatoreSC;</span>
+<span class="nc" id="L135">    }</span>
+
+    public Long getIdSessioneOperatoreSC() {
+<span class="nc" id="L138">        return idSessioneOperatoreSC;</span>
+    }
+
+    public void setIdSessioneOperatoreSC(Long idSessioneOperatoreSC) {
+<span class="nc" id="L142">        this.idSessioneOperatoreSC = idSessioneOperatoreSC;</span>
+<span class="nc" id="L143">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

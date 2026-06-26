@@ -68,20 +68,22 @@ View (Vue 3)  →  REST API  →  Controller (Spring)  →  Service  →  Reposi
 - Prenotazione veicolo (timeout 15 min)
 - Avvio corsa tramite scansione QR code
 - Sospensione / ripresa corsa
-- Termine corsa con stima costi
+- Termine corsa con costo
 - Gestione metodi di pagamento
+- Visualizzazione prenotazioni
 
 ### Operatore Tecnico
 - Dashboard flotta — visualizzazione stato di tutti i veicoli
 - Blocco/sblocco remoto veicoli
-- Segnalazione veicoli per manutenzione
 
 ### Operatore Servizio Clienti
-- Visualizzazione report utenti e storico prenotazioni
-- Moderazione account utente (sospensione, azioni correttive)
+- Visualizzazione report utenti
+- Moderazione account utente (sospensione, disattivazione, report)
 
 ### PA (Pubblica Amministrazione)
-- Monitoraggio condizioni flotta
+- Monitoraggio stato flotta
+- Analisi automatica condizioni flotta (imposta la manutenzione ai mezzi che la richiedono e crea una segnalazione)
+- Visualizzazione segnalazioni
 - Statistiche corse ed export dati
 - Gestione zone geografiche con rilevamento conflitti restrizioni
 
@@ -124,8 +126,8 @@ cd frontend && npm install && npm run dev
 | Ruolo                  | Email                                      | Password |
 |------------------------|--------------------------------------------|----------|
 | Utente                 | test@smartmobility.com                     | password |
-| Operatore Tecnico      | operatore.tecnico@smartmobility.com        | password |
-| Operatore SC           | operatore.sc@smartmobility.com             | password |
+| Operatore Tecnico      | operatore@smartmobility.com                | password |
+| Operatore SC           | sc@smartmobility.com                       | password |
 | PA                     | pa@smartmobility.com                       | password |
 
 ---

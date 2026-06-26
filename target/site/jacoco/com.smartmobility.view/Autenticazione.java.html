@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Autenticazione.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.view</a> &gt; <span class="el_source">Autenticazione.java</span></div><h1>Autenticazione.java</h1><pre class="source lang-java linenums">package com.smartmobility.view;
+
+import com.smartmobility.dto.response.AuthResponse;
+import com.smartmobility.service.GestioneAutenticazioneService;
+import org.springframework.stereotype.Component;
+
+import java.util.logging.Logger;
+
+@Component
+@SuppressWarnings(&quot;unused&quot;)
+public class Autenticazione {
+
+<span class="fc" id="L13">    private static final Logger LOG = Logger.getLogger(Autenticazione.class.getName());</span>
+
+    private final GestioneAutenticazioneService gestioneAutenticazioneService;
+    private Long idAttore;
+    private Long idSessioneAttore;
+
+<span class="fc" id="L19">    public Autenticazione(GestioneAutenticazioneService gestioneAutenticazioneService) {</span>
+<span class="fc" id="L20">        this.gestioneAutenticazioneService = gestioneAutenticazioneService;</span>
+<span class="fc" id="L21">    }</span>
+
+    public void mostraFormRegistrazione() {
+<span class="nc" id="L24">        LOG.info(&quot;Mostra form registrazione&quot;);</span>
+<span class="nc" id="L25">    }</span>
+
+    public void registraUtente(String nome, String cognome, String email, String password, String datanascita) {
+<span class="nc" id="L28">        AuthResponse result = gestioneAutenticazioneService.verificaValidita(nome, cognome, email, password, datanascita);</span>
+<span class="nc" id="L29">        LOG.info(&quot;Registrazione completata per: &quot; + result.getEmail());</span>
+<span class="nc" id="L30">        this.idAttore = result.getIdUtente();</span>
+<span class="nc" id="L31">    }</span>
+
+    public void accedi(String email, String password) {
+<span class="nc" id="L34">        AuthResponse result = gestioneAutenticazioneService.invioCredenziali(email, password);</span>
+<span class="nc" id="L35">        LOG.info(&quot;Login effettuato per: &quot; + result.getEmail() + &quot; (ruolo: &quot; + result.getRuolo() + &quot;)&quot;);</span>
+<span class="nc" id="L36">        this.idAttore = result.getIdUtente();</span>
+<span class="nc" id="L37">    }</span>
+
+    public void registrazioneUtente() {
+<span class="nc" id="L40">        LOG.info(&quot;Registrazione utente completata&quot;);</span>
+<span class="nc" id="L41">    }</span>
+
+    public Long getIdAttore() {
+<span class="nc" id="L44">        return idAttore;</span>
+    }
+
+    public void setIdAttore(Long idAttore) {
+<span class="nc" id="L48">        this.idAttore = idAttore;</span>
+<span class="nc" id="L49">    }</span>
+
+    public Long getIdSessioneAttore() {
+<span class="nc" id="L52">        return idSessioneAttore;</span>
+    }
+
+    public void setIdSessioneAttore(Long idSessioneAttore) {
+<span class="nc" id="L56">        this.idSessioneAttore = idSessioneAttore;</span>
+<span class="nc" id="L57">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

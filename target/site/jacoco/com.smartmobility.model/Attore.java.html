@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Attore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">Attore.java</span></div><h1>Attore.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import com.smartmobility.model.enums.RuoloAttore;
+import jakarta.persistence.*;
+
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = &quot;attore&quot;)
+public abstract class Attore {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private RuoloAttore ruolo;
+
+<span class="fc" id="L24">    protected Attore() { /* required by JPA */ }</span>
+
+    public Long getId() {
+<span class="fc" id="L27">        return id;</span>
+    }
+
+    public void setId(Long id) {
+<span class="fc" id="L31">        this.id = id;</span>
+<span class="fc" id="L32">    }</span>
+
+    public String getEmail() {
+<span class="fc" id="L35">        return email;</span>
+    }
+
+    public void setEmail(String email) {
+<span class="fc" id="L39">        this.email = email;</span>
+<span class="fc" id="L40">    }</span>
+
+    public String getPassword() {
+<span class="fc" id="L43">        return password;</span>
+    }
+
+    public void setPassword(String password) {
+<span class="fc" id="L47">        this.password = password;</span>
+<span class="fc" id="L48">    }</span>
+
+    public RuoloAttore getRuolo() {
+<span class="fc" id="L51">        return ruolo;</span>
+    }
+
+    public void setRuolo(RuoloAttore ruolo) {
+<span class="fc" id="L55">        this.ruolo = ruolo;</span>
+<span class="fc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

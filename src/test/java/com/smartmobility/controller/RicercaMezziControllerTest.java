@@ -164,4 +164,35 @@ class RicercaMezziControllerTest {
                         .header("Authorization", "Bearer test-token"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void checkVehicleAvailability_WhenAvailable_ReturnsTrue() throws Exception {
+        when(ricercaMezziService.verificaDisponibilita(1L)).thenReturn(true);
+
+        mockMvc.perform(get("/vehicles/1/availability")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+    }
+
+    @Test
+    void checkVehicleAvailability_WhenUnavailable_ReturnsFalse() throws Exception {
+        when(ricercaMezziService.verificaDisponibilita(1L)).thenReturn(false);
+
+        mockMvc.perform(get("/vehicles/1/availability")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(false));
+    }
+
+    @Test
+    void checkVehicleAvailability_WithInvalidId_ReturnsNotFound() throws Exception {
+        when(ricercaMezziService.verificaDisponibilita(999L))
+                .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Mezzo non trovato"));
+
+        mockMvc.perform(get("/vehicles/999/availability")
+                        .header("Authorization", "Bearer test-token"))
+                .andExpect(status().isNotFound());
+    }
 }

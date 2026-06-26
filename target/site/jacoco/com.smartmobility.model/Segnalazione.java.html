@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Segnalazione.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Smart Mobility System</a> &gt; <a href="index.source.html" class="el_package">com.smartmobility.model</a> &gt; <span class="el_source">Segnalazione.java</span></div><h1>Segnalazione.java</h1><pre class="source lang-java linenums">package com.smartmobility.model;
+
+import com.smartmobility.model.enums.StatoSegnalazione;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+@Entity
+@Table(name = &quot;segnalazione&quot;)
+public class Segnalazione {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;id_segnalazione&quot;)
+    private Long idSegnalazione;
+
+    @Enumerated(EnumType.STRING)
+    private StatoSegnalazione stato;
+
+    private LocalTime ora;
+
+    private LocalDate data;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;id_mezzo&quot;)
+    private Mezzo mezzo;
+
+    @Column(name = &quot;motivazione&quot;)
+    private String motivazione;
+
+<span class="fc" id="L31">    public Segnalazione() { /* required by JPA */ }</span>
+
+    public Long getIdSegnalazione() {
+<span class="nc" id="L34">        return idSegnalazione;</span>
+    }
+
+    public void setIdSegnalazione(Long idSegnalazione) {
+<span class="nc" id="L38">        this.idSegnalazione = idSegnalazione;</span>
+<span class="nc" id="L39">    }</span>
+
+    public StatoSegnalazione getStato() {
+<span class="nc" id="L42">        return stato;</span>
+    }
+
+    public void setStato(StatoSegnalazione stato) {
+<span class="fc" id="L46">        this.stato = stato;</span>
+<span class="fc" id="L47">    }</span>
+
+    public LocalTime getOra() {
+<span class="nc" id="L50">        return ora;</span>
+    }
+
+    public void setOra(LocalTime ora) {
+<span class="fc" id="L54">        this.ora = ora;</span>
+<span class="fc" id="L55">    }</span>
+
+    public LocalDate getData() {
+<span class="nc" id="L58">        return data;</span>
+    }
+
+    public void setData(LocalDate data) {
+<span class="fc" id="L62">        this.data = data;</span>
+<span class="fc" id="L63">    }</span>
+
+    public Mezzo getMezzo() {
+<span class="nc" id="L66">        return mezzo;</span>
+    }
+
+    public void setMezzo(Mezzo mezzo) {
+<span class="fc" id="L70">        this.mezzo = mezzo;</span>
+<span class="fc" id="L71">    }</span>
+
+    public String getMotivazione() {
+<span class="nc" id="L74">        return motivazione;</span>
+    }
+
+    public void setMotivazione(String motivazione) {
+<span class="fc" id="L78">        this.motivazione = motivazione;</span>
+<span class="fc" id="L79">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
