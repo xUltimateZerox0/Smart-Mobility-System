@@ -79,19 +79,20 @@ async function handleLogout() {
   transition: all 0.2s;
 }
 .nav-item:hover, .nav-item.router-link-exact-active {
-  background: rgba(255,255,255,0.1);
-  color: #212529;
+  background: #374151;
+  color: #ffffff;
+  font-weight: 700;
   text-decoration: none;
 }
 .nav-ride {
-  background: rgba(40, 167, 69, 0.2);
-  color: #1a7a30;
-  font-weight: 600;
+  background: #14532d;
+  color: #ffffff;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.nav-ride:hover { background: rgba(40, 167, 69, 0.3); }
+.nav-ride:hover { background: #166534; }
 .ride-indicator {
   width: 8px;
   height: 8px;
